@@ -1,0 +1,8 @@
+{
+    "PMC_Config": {
+        "FanSpeed": 1.2345,
+        "HomingSpeed": 100,
+        "RelativeMoveSpeed": 100,
+        "AbsoluteMoveSpeed": 100
+    }
+}

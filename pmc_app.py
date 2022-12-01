@@ -7,6 +7,7 @@ from kivy.properties import StringProperty
 import re
 from datetime import datetime
 import pmc_iface
+import pmc_config
 
 pmc = pmc_iface.PrimaryMirrorControlInterface()
 
@@ -285,8 +286,13 @@ class PMC_GUI(GridLayout):
         pmc.HomeAll()
         self.enableAbsoluteControls()
         self.updateOutputFields()
-                
-    def defaultButton(self):
+        
+    def configButtonPushed(self):
+        pmc_config.editConfig()
+        # term = self.ids['app_term']
+        # term.addMessage('Button not assigned yet!')
+                       
+    def defaultButtonPushed(self):
         term = self.ids['app_term']
         term.addMessage('Button not assigned yet!')
         
