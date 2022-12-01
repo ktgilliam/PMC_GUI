@@ -6,6 +6,7 @@
     Label:
         id: title_label
         text: "PRIMARY MIRROR CONTROL"
+        font_size: '20sp'
         bold: True
         size_hint_y: None
         height: 30
@@ -16,33 +17,33 @@
                 width: 2
                 rectangle: self.x, self.y, self.width, self.height
     GridLayout:
-        cols: 2
+        cols: 3
         GridLayout:
             cols: 1
-            id: tip_tilt_ctrl
+            id: rel_ctrl
             size_hint_x: None
             width: 400
             canvas.before:
                 Color:
-                    rgba: 1, 1, 1, 1 #blue
+                    rgba: 1, 1, 1, 1 
                 Line:
                     width: 2
                     rectangle: self.x, self.y, self.width, self.height
             Label:
-                text: "TIP/TILT"
+                text: "Tip/Tilt/Focus (Relative)"
                 size_hint_y: None
                 height: 30
             GridLayout:
                 cols: 2
+                canvas.before:
+                    Color:
+                        rgba: 1, 1, 1, 1 
+                    Line:
+                        width: 2
+                        rectangle: self.x, self.y, self.width, self.height
                 GridLayout:
                     cols: 1
                     padding: [10, 10, 10, 10]
-                    # canvas.before:
-                    #     Color:
-                    #         rgba: 0, 1, 1, 1 #cyan
-                    #     Line:
-                    #         width: 2
-                    #         rectangle: self.x, self.y, self.width, self.height
                     GridLayout:
                         cols: 3
                         #______________
@@ -53,7 +54,7 @@
                             height: 40
                             size_hint_x: None
                             width: 50
-                            on_press: root.doSomething()
+                            on_press: root.plusTipButtonPushed()
                         Label:
                         #______________
                         Button:
@@ -62,7 +63,7 @@
                             height: 40
                             size_hint_x: None
                             width: 50
-                            on_press: root.doSomething()
+                            on_press: root.minusTiltButtonPushed()
                         Label: # Would like to put an indicator light here.
                         Button:
                             text: '+ Tilt'
@@ -70,7 +71,7 @@
                             height: 40
                             size_hint_x: None
                             width: 50
-                            on_press: root.doSomething()
+                            on_press: root.plusTiltButtonPushed()
                         #______________
                         Label:
                         Button:
@@ -79,7 +80,7 @@
                             height: 40
                             size_hint_x: None
                             width: 50
-                            on_press: root.doSomething()
+                            on_press: root.minusTipButtonPushed()
                         Label:
                         #______________
                         Label:
@@ -94,45 +95,33 @@
                         orientation: 'horizontal'
                         size_hint_y: None
                         height: 40
-                        # canvas.before:
-                        #     Color:
-                        #         rgba: 0, 1, 0, 1 #green
-                        #     Line:
-                        #         width: 2
-                        #         rectangle: self.x, self.y, self.width, self.height
                         Button:
+                            id: _1uradButton
                             text: '1'
                             size_hint_y: None
                             height: 30
-                            # size_hint_x: None
-                            # width: 40
+                            on_press: root._1uradButtonPushed()
                         Button:
+                            id: _10uradButton
                             text: '10'
                             size_hint_y: None
                             height: 30
-                            # size_hint_x: None
-                            # width: 40
+                            on_press: root._10uradButtonPushed()
                         Button:
+                            id: _100uradButton
                             text: '100'
                             size_hint_y: None
                             height: 30
-                            # size_hint_x: None
-                            # width: 40
+                            on_press: root._100uradButtonPushed()
                         Button:
+                            id: _1000uradButton
                             text: '1000'
                             size_hint_y: None
                             height: 30
-                            # size_hint_x: None
-                            # width: 40
+                            on_press: root._1000uradButtonPushed()
                 GridLayout:
                     cols: 1
                     padding: [10, 10, 10, 10]
-                    # canvas.before:
-                    #     Color:
-                    #         rgba: 1, 1, 0, 1 #yellow
-                    #     Line:
-                    #         width: 2
-                    #         rectangle: self.x, self.y, self.width, self.height
                     GridLayout:
                         cols: 3
                         Label:
@@ -140,12 +129,14 @@
                             text: '+Focus'
                             size_hint_y: None
                             height: 40
+                            on_press: root.plusFocusButtonPushed()
                         Label:
                         Label:
                         Button:
                             text: '-Focus'
                             size_hint_y: None
                             height: 40
+                            on_press: root.minusFocusButtonPushed()
                         Label:
                         Label:
                         Label:
@@ -158,32 +149,108 @@
                         orientation: 'horizontal'
                         size_hint_y: None
                         height: 40
-                        # canvas.before:
-                        #     Color:
-                        #         rgba: 0, 1, 0, 1 #green
-                        #     Line:
-                        #         width: 2
-                        #         rectangle: self.x, self.y, self.width, self.height
                         Button:
+                            id: _1umButton
                             text: '1'
                             size_hint_y: None
                             height: 30
+                            on_press: root._1umButtonPushed()
                         Button:
+                            id: _10umButton
                             text: '10'
                             size_hint_y: None
                             height: 30
-                            # size_hint: .25, .2
+                            on_press: root._10umButtonPushed()
                         Button:
+                            id: _100umButton
                             text: '100'
                             size_hint_y: None
                             height: 30
-                            # size_hint: .25, .2
+                            on_press: root._100umButtonPushed()
                         Button:
+                            id: _1000umButton
                             text: '1000'
                             size_hint_y: None
                             height: 30
-                            # size_hint: .25, .2
+                            on_press: root._1000umButtonPushed()
                     #_________________
+        GridLayout:
+            cols: 1
+            canvas.before:
+                Color:
+                    rgba: 1, 1, 1, 1 
+                Line:
+                    width: 2
+                    rectangle: self.x, self.y, self.width, self.height
+            Label:
+                text: 'Tip/Tilt/Focus Absolute'
+                size_hint_y: None
+                height: 30
+
+            GridLayout:
+                cols: 3
+                padding: [15, 10, 10, 10]
+                id: abs_ctrl
+                canvas.before:
+                    Color:
+                        rgba: 1, 1, 1, 1
+                    Line:
+                        width: 2
+                        rectangle: self.x, self.y, self.width, self.height
+                Label: 
+                    text: 'Tip [urad]: '
+                    size_hint_y: None
+                    height: 30
+                    size_hint_x: None
+                    width: 70
+                FloatInput:
+                    id: tip_abs_TI
+                    text: '0.0'
+                    size_hint_y: None
+                    height: 30
+                Button:
+                    text:'Go'
+                    size_hint_y: None
+                    height: 30
+                    size_hint_x: None
+                    width:30
+                    on_press: root.tipAbsGoButtonPushed()
+                Label: 
+                    text: 'Tilt [urad]: '
+                    size_hint_y: None
+                    height: 30
+                    size_hint_x: None
+                    width: 70
+                FloatInput:
+                    id: tilt_abs_TI
+                    text: '0.0'
+                    size_hint_y: None
+                    height: 30
+                Button:
+                    text:'Go'
+                    size_hint_y: None
+                    height: 30
+                    size_hint_x: None
+                    width:30
+                    on_press: root.tiltAbsGoButtonPushed()
+                Label: 
+                    text: 'Focus [um]: '
+                    size_hint_y: None
+                    height: 30
+                    size_hint_x: None
+                    width: 70
+                FloatInput:
+                    id: focus_abs_TI
+                    text: '0.0'
+                    size_hint_y: None
+                    height: 30
+                Button:
+                    text:'Go'
+                    size_hint_y: None
+                    height: 30
+                    size_hint_x: None
+                    width:30
+                    on_press: root.focusAbsGoButtonPushed()
         GridLayout:
             cols: 1
             id: vector_ctrl
@@ -197,53 +264,65 @@
                 text: "VECTOR"
                 size_hint_y: None
                 height: 30
-            Label:
-                text: "(Not yet implemented)"
-                size_hint_y: None
-                height: 30
             GridLayout:
-                cols: 2
-                row_force_default: True
-                row_default_height: 30
-                padding: [10, 10, 10, 10]
-                # canvas.before:
-                #     Color:
-                #         rgba: 0, 1, 0, 1 #green
-                #     Line:
-                #         width: 2
-                #         rectangle: self.x, self.y, self.width, self.height
+                cols: 1
+                canvas.before:
+                    Color:
+                        rgba: 1, 1, 1, 1 
+                    Line:
+                        width: 2
+                        rectangle: self.x, self.y, self.width, self.height
                 Label:
-                    text: "X: "
-                    size_hint_x: None
-                    width: 30
-                TextInput:
-                    id: x_val
-                    multiline: 'false'
-                    disabled: True
+                    text: "(Not yet implemented)"
+                    size_hint_y: None
+                    height: 30
+                GridLayout:
+                    cols: 2
+                    row_force_default: True
+                    row_default_height: 30
+                    padding: [10, 10, 10, 10]
+                    # canvas.before:
+                    #     Color:
+                    #         rgba: 0, 1, 0, 1 #green
+                    #     Line:
+                    #         width: 2
+                    #         rectangle: self.x, self.y, self.width, self.height
+                    Label:
+                        text: "X: "
+                        size_hint_x: None
+                        width: 30
+                    FloatInput:
+                        id: x_val
+                        multiline: 'false'
+                        disabled: True
+                        text: '1.0'
+                    Label:
+                        text: "Y: "
+                        size_hint_x: None
+                        width: 30
+                    FloatInput:
+                        id: y_val
+                        multiline: 'false'
+                        disabled: True
+                        text: '0.0'
+                    Label:
+                        text: "Z: "
+                        size_hint_x: None
+                        width: 30
+                    FloatInput:
+                        id: z_val
+                        multiline: 'false'
+                        disabled: True
+                        text: '0.0'
+                    Label:
+                        size_hint_x: None
+                        width: 30
+                    Button:
+                        text: 'Apply'
+                        disabled: True
                 Label:
-                    text: "Y: "
-                    size_hint_x: None
-                    width: 30
-                TextInput:
-                    id: y_val
-                    multiline: 'false'
-                    disabled: True
-                Label:
-                    text: "Z: "
-                    size_hint_x: None
-                    width: 30
-                TextInput:
-                    id: z_val
-                    multiline: 'false'
-                    disabled: True
-                Label:
-                    size_hint_x: None
-                    width: 30
-                Button:
-                    text: 'Apply'
-                    disabled: True
+            
     TerminalWidget:
-
         id: app_term
         label: 'Terminal'
             # size_hint :1,1
@@ -274,4 +353,5 @@
             height: max( (len(self._lines)+1) * self.line_height, scrlv.height)
             disabled: True
             text: root.text
-            foreground_color: ( 0, 0, 0, 1)
+            background_color: ( 1, 1, 1, 1)
+            # foreground_color: (0,0,0,1)
