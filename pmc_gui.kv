@@ -49,37 +49,45 @@
                         #______________
                         Label:
                         Button:
+                            id: do_pos_tip_btn
                             text: '+ Tip'
                             size_hint_y: None
                             height: 40
                             size_hint_x: None
                             width: 50
+                            disabled: True
                             on_press: root.plusTipButtonPushed()
                         Label:
                         #______________
                         Button:
+                            id: do_neg_tilt_btn
                             text: '- Tilt'
                             size_hint_y: None
                             height: 40
                             size_hint_x: None
                             width: 50
+                            disabled: True
                             on_press: root.minusTiltButtonPushed()
                         Label: # Would like to put an indicator light here.
                         Button:
+                            id: do_pos_tilt_btn
                             text: '+ Tilt'
                             size_hint_y: None
                             height: 40
                             size_hint_x: None
                             width: 50
+                            disabled: True
                             on_press: root.plusTiltButtonPushed()
                         #______________
                         Label:
                         Button:
+                            id: do_neg_tip_btn
                             text: '- Tip'
                             size_hint_y: None
                             height: 40
                             size_hint_x: None
                             width: 50
+                            disabled: True
                             on_press: root.minusTipButtonPushed()
                         Label:
                         #______________
@@ -96,25 +104,25 @@
                         size_hint_y: None
                         height: 40
                         Button:
-                            id: _1uradButton
+                            id: _1urad_btn
                             text: '1'
                             size_hint_y: None
                             height: 30
                             on_press: root._1uradButtonPushed()
                         Button:
-                            id: _10uradButton
+                            id: _10urad_btn
                             text: '10'
                             size_hint_y: None
                             height: 30
                             on_press: root._10uradButtonPushed()
                         Button:
-                            id: _100uradButton
+                            id: _100urad_btn
                             text: '100'
                             size_hint_y: None
                             height: 30
                             on_press: root._100uradButtonPushed()
                         Button:
-                            id: _1000uradButton
+                            id: _1000urad_btn
                             text: '1000'
                             size_hint_y: None
                             height: 30
@@ -126,16 +134,20 @@
                         cols: 3
                         Label:
                         Button:
+                            id: do_pos_focus_btn
                             text: '+Focus'
                             size_hint_y: None
                             height: 40
+                            disabled: True
                             on_press: root.plusFocusButtonPushed()
                         Label:
                         Label:
                         Button:
+                            id: do_neg_focus_btn
                             text: '-Focus'
                             size_hint_y: None
                             height: 40
+                            disabled: True
                             on_press: root.minusFocusButtonPushed()
                         Label:
                         Label:
@@ -150,25 +162,25 @@
                         size_hint_y: None
                         height: 40
                         Button:
-                            id: _1umButton
+                            id: _1um_btn
                             text: '1'
                             size_hint_y: None
                             height: 30
                             on_press: root._1umButtonPushed()
                         Button:
-                            id: _10umButton
+                            id: _10um_btn
                             text: '10'
                             size_hint_y: None
                             height: 30
                             on_press: root._10umButtonPushed()
                         Button:
-                            id: _100umButton
+                            id: _100um_btn
                             text: '100'
                             size_hint_y: None
                             height: 30
                             on_press: root._100umButtonPushed()
                         Button:
-                            id: _1000umButton
+                            id: _1000um_btn
                             text: '1000'
                             size_hint_y: None
                             height: 30
@@ -209,11 +221,13 @@
                     size_hint_y: None
                     height: 30
                 Button:
+                    id: do_go_abs_tip_btn
                     text:'Go'
                     size_hint_y: None
                     height: 30
                     size_hint_x: None
                     width:30
+                    disabled: True
                     on_press: root.tipAbsGoButtonPushed()
                 Label: 
                     text: 'Tilt [urad]: '
@@ -227,11 +241,13 @@
                     size_hint_y: None
                     height: 30
                 Button:
+                    id: do_go_abs_tilt_btn
                     text:'Go'
                     size_hint_y: None
                     height: 30
                     size_hint_x: None
                     width:30
+                    disabled: True
                     on_press: root.tiltAbsGoButtonPushed()
                 Label: 
                     text: 'Focus [um]: '
@@ -245,11 +261,13 @@
                     size_hint_y: None
                     height: 30
                 Button:
+                    id: do_go_abs_focus_btn
                     text:'Go'
                     size_hint_y: None
                     height: 30
                     size_hint_x: None
                     width:30
+                    disabled: True
                     on_press: root.focusAbsGoButtonPushed()
             GridLayout:
                 cols:1
@@ -260,18 +278,22 @@
                 StackLayout:
                     padding: [15, 10, 10, 10]
                     Button:
+                        id: connect_btn
                         text:'Connect'
                         size_hint_y: None
                         height: 30
                         size_hint_x: None
                         width:70
+                        background_color: (1,0,0,1)
                         on_press: root.connectButtonPushed()
                     Button:
+                        id: do_home_all_btn
                         text:'Home All'
                         size_hint_y: None
                         height: 30
                         size_hint_x: None
                         width:70
+                        disabled: True
                         on_press: root.homingButtonPushed()
                     Button:
                         text:'Edit Config'
@@ -279,6 +301,7 @@
                         height: 30
                         size_hint_x: None
                         width:80
+                        disabled: True
                         # on_press: root.homingButtonPushed()
         GridLayout:
             cols: 1

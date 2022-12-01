@@ -79,7 +79,36 @@ class PMC_GUI(GridLayout):
         focusValField = self.ids['focus_val']
         # focusValField.text = str(self._currentFocus)
         focusValField.text = str(round(self._currentFocus, 4))
-
+        
+    def enableControls(self):
+        buttonFilt = re.compile('do_[a-z\_]+_btn')
+        buttonList = [b for b in self.ids if buttonFilt.match(b)]
+        for b in buttonList:
+            # print(b)
+            btn = self.ids[b]
+            btn.disabled = False
+            
+    def disableControls(self):
+        buttonFilt = re.compile('do_[a-z\_]+_btn')
+        buttonList = [b for b in self.ids if buttonFilt.match(b)]
+        for b in buttonList:
+            # print(b)
+            btn = self.ids[b]
+            btn.disabled = True
+             
+    def resetTipTiltStepSizeButtons(self):
+        buttonFilt = re.compile('_10*urad_btn')
+        buttonList = [b for b in self.ids if buttonFilt.match(b)]
+        for b in buttonList:
+            btn = self.ids[b]
+            btn.background_color = (1,1,1,1)
+        
+    def resetFocusStepSizeButtons(self):
+        buttonFilt = re.compile('_10*um_btn')
+        buttonList = [b for b in self.ids if buttonFilt.match(b)]
+        for b in buttonList:
+            btn = self.ids[b]
+            btn.background_color = (1,1,1,1)
     def plusTipButtonPushed(self):
         term = self.ids['app_term']
         term.addMessage(' + Tip Button Pushed!')
@@ -122,26 +151,14 @@ class PMC_GUI(GridLayout):
         self._currentFocus = self._currentFocus - self._focusStepSize_um
         self.updateOutputFields()
     
-    def resetTipTiltStepSizeButtons(self):
-        buttonFilt = re.compile('_10*uradButton')
-        buttonList = [b for b in self.ids if buttonFilt.match(b)]
-        for b in buttonList:
-            btn = self.ids[b]
-            btn.background_color = (1,1,1,1)
-        
-    def resetFocusStepSizeButtons(self):
-        buttonFilt = re.compile('_10*umButton')
-        buttonList = [b for b in self.ids if buttonFilt.match(b)]
-        for b in buttonList:
-            btn = self.ids[b]
-            btn.background_color = (1,1,1,1)
+
             
     def _1uradButtonPushed(self):
         self._tipTiltStepSize_urad = 1
         term = self.ids['app_term']
         term.addMessage('Tip/Tilt Step size: ' + str(self._tipTiltStepSize_urad) + 'urad')
         self.resetTipTiltStepSizeButtons()
-        btn = self.ids['_1uradButton']
+        btn = self.ids['_1urad_btn']
         btn.background_color = (0,1,0,1)
         
     def _10uradButtonPushed(self):
@@ -149,7 +166,7 @@ class PMC_GUI(GridLayout):
         term = self.ids['app_term']
         term.addMessage('Tip/Tilt Step size: ' + str(self._tipTiltStepSize_urad) + 'urad') 
         self.resetTipTiltStepSizeButtons()
-        btn = self.ids['_10uradButton']
+        btn = self.ids['_10urad_btn']
         btn.background_color = (0,1,0,1)
         
     def _100uradButtonPushed(self):
@@ -157,7 +174,7 @@ class PMC_GUI(GridLayout):
         term = self.ids['app_term']
         term.addMessage('Tip/Tilt Step size: ' + str(self._tipTiltStepSize_urad) + 'urad')
         self.resetTipTiltStepSizeButtons()
-        btn = self.ids['_100uradButton']
+        btn = self.ids['_100urad_btn']
         btn.background_color = (0,1,0,1)
         
     def _1000uradButtonPushed(self):
@@ -165,7 +182,7 @@ class PMC_GUI(GridLayout):
         term = self.ids['app_term']
         term.addMessage('Tip/Tilt Step size: ' + str(self._tipTiltStepSize_urad) + 'urad') 
         self.resetTipTiltStepSizeButtons()
-        btn = self.ids['_1000uradButton']
+        btn = self.ids['_1000urad_btn']
         btn.background_color = (0,1,0,1)
         
     def _1umButtonPushed(self):
@@ -173,7 +190,7 @@ class PMC_GUI(GridLayout):
         term = self.ids['app_term']
         term.addMessage('Tip/Tilt Step size: ' + str(self._focusStepSize_um) + 'um')
         self.resetFocusStepSizeButtons()
-        btn = self.ids['_1umButton']
+        btn = self.ids['_1um_btn']
         btn.background_color = (0,1,0,1)
 
     def _10umButtonPushed(self):
@@ -181,7 +198,7 @@ class PMC_GUI(GridLayout):
         term = self.ids['app_term']
         term.addMessage('Tip/Tilt Step size: ' + str(self._focusStepSize_um) + 'um') 
         self.resetFocusStepSizeButtons()
-        btn = self.ids['_10umButton']
+        btn = self.ids['_10um_btn']
         btn.background_color = (0,1,0,1)
         
     def _100umButtonPushed(self):
@@ -189,7 +206,7 @@ class PMC_GUI(GridLayout):
         term = self.ids['app_term']
         term.addMessage('Tip/Tilt Step size: ' + str(self._focusStepSize_um) + 'um')
         self.resetFocusStepSizeButtons()
-        btn = self.ids['_100umButton']
+        btn = self.ids['_100um_btn']
         btn.background_color = (0,1,0,1)
 
     def _1000umButtonPushed(self):
@@ -197,7 +214,7 @@ class PMC_GUI(GridLayout):
         term = self.ids['app_term']
         term.addMessage('Tip/Tilt Step size: ' + str(self._focusStepSize_um) + 'um')   
         self.resetFocusStepSizeButtons()
-        btn = self.ids['_1000umButton']
+        btn = self.ids['_1000um_btn']
         btn.background_color = (0,1,0,1) 
              
     def tipAbsGoButtonPushed(self):
@@ -229,9 +246,19 @@ class PMC_GUI(GridLayout):
  
     def connectButtonPushed(self):
         term = self.ids['app_term']
-        term.addMessage('Connect Button Pushed!')
-        pmc.Connect()
-               
+        # term.addMessage('Connect Button Pushed!')
+        conBtn = self.ids['connect_btn']
+        if not self._isConnected:
+            self._isConnected = pmc.Connect()
+            if self._isConnected:
+                self.enableControls()
+                conBtn.background_color = (0,1,0,1)
+        else:
+            pmc.Disonnect()
+            self._isConnected = False
+            self.disableControls()
+            conBtn.background_color = (1,0,0,1)
+
     def homingButtonPushed(self):
         term = self.ids['app_term']
         term.addMessage('Homing Button Pushed!')

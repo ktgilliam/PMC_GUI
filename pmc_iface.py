@@ -20,6 +20,10 @@ class PrimaryMirrorControlInterface:
         
     def Connect(self):
         print('Connecting')
-        
+        return True
+    
+    def Disonnect(self):
+        print('Disconnecting')
+    
     def HomeAll(self):
         print('Homing')
