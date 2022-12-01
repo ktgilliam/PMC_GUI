@@ -7,7 +7,13 @@ from kivy.properties import StringProperty
 import re
 from datetime import datetime
 import pmc_iface
-import pmc_config
+import pmc_config_app
+
+#https://stackoverflow.com/questions/70693778/how-to-open-make-new-window-in-kivy-python
+import subprocess
+import sys
+from threading import Thread
+
 
 pmc = pmc_iface.PrimaryMirrorControlInterface()
 
@@ -61,6 +67,8 @@ class FloatInput(TextInput):
         else:           
             s = '.'.join( re.sub(pat, '', s) for s in substring.split('.', 1) )
         return super().insert_text(s, from_undo=from_undo)
+
+
 
 class PMC_GUI(GridLayout):
     
@@ -288,7 +296,8 @@ class PMC_GUI(GridLayout):
         self.updateOutputFields()
         
     def configButtonPushed(self):
-        pmc_config.editConfig()
+        self.open_config_window()
+        # pmc_config_app.editConfig()
         # term = self.ids['app_term']
         # term.addMessage('Button not assigned yet!')
                        
@@ -296,10 +305,14 @@ class PMC_GUI(GridLayout):
         term = self.ids['app_term']
         term.addMessage('Button not assigned yet!')
         
+    @staticmethod
+    def open_config_window():
+        Thread(target=lambda *largs: subprocess.run([sys.executable, "pmc_config_app.py"])).start()
         
 class PMC_APP(App):
     def build(self):
         return PMC_GUI()
+    
         
 
 if __name__ == "__main__":
