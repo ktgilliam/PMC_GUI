@@ -1,5 +1,5 @@
 class PrimaryMirrorControlInterface:
-        
+    _isHomed = False
     def TipRelative(self,steps):
         print('Tip Relative: ' + str(steps))
         
@@ -26,4 +26,8 @@ class PrimaryMirrorControlInterface:
         print('Disconnecting')
     
     def HomeAll(self):
+        self._isHomed = True
         print('Homing')
+        
+    def isHomed(self):
+        return self._isHomed

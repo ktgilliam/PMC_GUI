@@ -82,7 +82,7 @@ class PMC_GUI(GridLayout):
         # focusValField.text = str(self._currentFocus)
         focusValField.text = str(round(self._currentFocus, 4))
         
-    def enableControls(self):
+    def enableRelativeControls(self):
         buttonFilt = re.compile('do_[a-z\_]+_btn')
         buttonList = [b for b in self.ids if buttonFilt.match(b)]
         for b in buttonList:
@@ -90,8 +90,16 @@ class PMC_GUI(GridLayout):
             btn = self.ids[b]
             btn.disabled = False
             
+    def enableAbsoluteControls(self):
+        buttonFilt = re.compile('go_[a-z\_]+_btn')
+        buttonList = [b for b in self.ids if buttonFilt.match(b)]
+        for b in buttonList:
+            # print(b)
+            btn = self.ids[b]
+            btn.disabled = False
+            
     def disableControls(self):
-        buttonFilt = re.compile('do_[a-z\_]+_btn')
+        buttonFilt = re.compile('[d|g]o_[a-z\_]+_btn')
         buttonList = [b for b in self.ids if buttonFilt.match(b)]
         for b in buttonList:
             # print(b)
@@ -255,7 +263,9 @@ class PMC_GUI(GridLayout):
             self._isConnected = pmc.Connect()
             if self._isConnected:
                 term.addMessage('Connected!')
-                self.enableControls()
+                self.enableRelativeControls()
+                if pmc.isHomed():
+                    self.enableAbsoluteControls()
                 conBtn.background_color = (0,1,0,1)
                 conBtn.text = 'Connected'
         else:
@@ -273,6 +283,7 @@ class PMC_GUI(GridLayout):
         self._currentTilt = 0.0
         self._currentFocus = 0.0
         pmc.HomeAll()
+        self.enableAbsoluteControls()
         self.updateOutputFields()
                 
     def defaultButton(self):
