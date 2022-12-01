@@ -66,6 +66,7 @@ class PMC_GUI(GridLayout):
     _currentTip = 0.0
     _currentTilt = 0.0
     _currentFocus = 0.0
+    _isConnected = False
     
     def updateOutputFields(self):
         tipValField = self.ids['tip_val']
@@ -205,6 +206,7 @@ class PMC_GUI(GridLayout):
         if len(tipAbsTI.text) > 0:
             self._currentTip = float(tipAbsTI.text)
             term.addMessage('Mirror Tip set to : ' + str(self._currentTip))
+            pmc.TipAbsolute(self._currentTip)
             self.updateOutputFields()
         
     def tiltAbsGoButtonPushed(self):
@@ -213,6 +215,7 @@ class PMC_GUI(GridLayout):
         if len(tiltAbsTI.text) > 0:
             self._currentTilt = float(tiltAbsTI.text)        
             term.addMessage('Mirror Tilt set to : ' + str(self._currentTilt))
+            pmc.TiltAbsolute(self._currentTilt)
             self.updateOutputFields()
         
     def focusAbsGoButtonPushed(self):
@@ -221,6 +224,7 @@ class PMC_GUI(GridLayout):
         if len(focusAbsTI.text) > 0:
             self._currentFocus = float(focusAbsTI.text)        
             term.addMessage('Mirror Focus set to : ' + str(self._currentFocus))
+            pmc.FocusAbsolute(self._currentFocus)
             self.updateOutputFields()
  
     def connectButtonPushed(self):

@@ -9,6 +9,15 @@ class PrimaryMirrorControlInterface:
     def FocusRelative(self,steps):
         print('Focus Relative: ' + str(steps))
         
+    def TipAbsolute(self,steps):
+        print('Tip Absolute: ' + str(steps))
+        
+    def TiltAbsolute(self,steps):
+        print('Tilt Absolute: ' + str(steps))
+        
+    def FocusAbsolute(self,steps):
+        print('Focus Absolute: ' + str(steps))
+        
     def Connect(self):
         print('Connecting')
         
