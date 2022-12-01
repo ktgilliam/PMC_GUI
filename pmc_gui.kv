@@ -5,7 +5,7 @@
     # Top half is for inputs.
     Label:
         id: title_label
-        text: "PRIMARY MIRROR CONTROL"
+        text: "PRIMARY MIRROR CONTROL [Version 0.1]"
         font_size: '20sp'
         bold: True
         size_hint_y: None
@@ -202,9 +202,9 @@
                     size_hint_y: None
                     height: 30
                     size_hint_x: None
-                    width: 70
+                    width: 90
                 FloatInput:
-                    id: tip_abs_TI
+                    id: tip_abs
                     text: '0.0'
                     size_hint_y: None
                     height: 30
@@ -220,9 +220,9 @@
                     size_hint_y: None
                     height: 30
                     size_hint_x: None
-                    width: 70
+                    width: 90
                 FloatInput:
-                    id: tilt_abs_TI
+                    id: tilt_abs
                     text: '0.0'
                     size_hint_y: None
                     height: 30
@@ -238,9 +238,9 @@
                     size_hint_y: None
                     height: 30
                     size_hint_x: None
-                    width: 70
+                    width: 90
                 FloatInput:
-                    id: focus_abs_TI
+                    id: focus_abs
                     text: '0.0'
                     size_hint_y: None
                     height: 30
@@ -251,9 +251,31 @@
                     size_hint_x: None
                     width:30
                     on_press: root.focusAbsGoButtonPushed()
+            GridLayout:
+                cols:1
+                Label:
+                    text: 'Other Controls'
+                    size_hint_y : None
+                    height:30
+                StackLayout:
+                    padding: [15, 10, 10, 10]
+                    Button:
+                        text:'Connect'
+                        size_hint_y: None
+                        height: 30
+                        size_hint_x: None
+                        width:70
+                        on_press: root.connectButtonPushed()
+                    Button:
+                        text:'Home All'
+                        size_hint_y: None
+                        height: 30
+                        size_hint_x: None
+                        width:70
+                        on_press: root.homingButtonPushed()
         GridLayout:
             cols: 1
-            id: vector_ctrl
+            id: outputs
             canvas.before:
                 Color:
                     rgba: 1, 1, 1, 1
@@ -261,7 +283,7 @@
                     width: 2
                     rectangle: self.x, self.y, self.width, self.height
             Label:
-                text: "VECTOR"
+                text: "Output"
                 size_hint_y: None
                 height: 30
             GridLayout:
@@ -272,54 +294,38 @@
                     Line:
                         width: 2
                         rectangle: self.x, self.y, self.width, self.height
-                Label:
-                    text: "(Not yet implemented)"
-                    size_hint_y: None
-                    height: 30
                 GridLayout:
                     cols: 2
                     row_force_default: True
                     row_default_height: 30
                     padding: [10, 10, 10, 10]
-                    # canvas.before:
-                    #     Color:
-                    #         rgba: 0, 1, 0, 1 #green
-                    #     Line:
-                    #         width: 2
-                    #         rectangle: self.x, self.y, self.width, self.height
                     Label:
-                        text: "X: "
+                        text: "Tip [urad]: "
                         size_hint_x: None
-                        width: 30
+                        width: 90
                     FloatInput:
-                        id: x_val
+                        id: tip_val
                         multiline: 'false'
-                        disabled: True
-                        text: '1.0'
-                    Label:
-                        text: "Y: "
-                        size_hint_x: None
-                        width: 30
-                    FloatInput:
-                        id: y_val
-                        multiline: 'false'
-                        disabled: True
+                        readonly: True
                         text: '0.0'
                     Label:
-                        text: "Z: "
+                        text: "Tilt [urad]: "
                         size_hint_x: None
-                        width: 30
+                        width: 90
                     FloatInput:
-                        id: z_val
+                        id: tilt_val
                         multiline: 'false'
-                        disabled: True
+                        readonly: True
                         text: '0.0'
                     Label:
+                        text: "Focus [um]: "
                         size_hint_x: None
-                        width: 30
-                    Button:
-                        text: 'Apply'
-                        disabled: True
+                        width: 90
+                    FloatInput:
+                        id: focus_val
+                        multiline: 'false'
+                        readonly: True
+                        text: '0.0'
                 Label:
             
     TerminalWidget:
@@ -351,7 +357,7 @@
             multiline: True
             size_hint: 1,None
             height: max( (len(self._lines)+1) * self.line_height, scrlv.height)
-            disabled: True
+            readonly: True
             text: root.text
             background_color: ( 1, 1, 1, 1)
             # foreground_color: (0,0,0,1)
