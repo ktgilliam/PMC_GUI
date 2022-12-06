@@ -1,0 +1,28 @@
+#:kivy 1.0
+
+<TerminalWidget>:
+    cols: 1
+    padding: [5, 5, 5, 5]
+    # term_id: root.id
+    # id: root.id
+    canvas.before:
+        Color:
+            rgba: 1, 1, 1, 1
+        Line:
+            width: 2
+            rectangle: self.x, self.y, self.width, self.height
+    Label:
+        text: root.label
+        size_hint_y: None
+        height: 20
+    ScrollView:
+        id: scrlv
+        TextInput:
+            # id: self.term_id
+            multiline: True
+            size_hint: 1,None
+            height: max( (len(self._lines)+1) * self.line_height, scrlv.height)
+            readonly: True
+            text: root.text
+            background_color: ( 1, 1, 1, 1)
+            # foreground_color: (0,0,0,1)

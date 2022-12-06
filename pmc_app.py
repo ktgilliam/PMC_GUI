@@ -1,19 +1,20 @@
+from threading import Thread
+import subprocess
+import sys
 from kivy.app import App
 from kivy.lang import Builder
 from kivy.uix.gridlayout import GridLayout
-from kivy.uix.textinput import TextInput
-from kivy.properties import ObjectProperty
-from kivy.properties import StringProperty
+from kivy.core.window import Window
+
 import re
-from datetime import datetime
+
 import pmc_iface
 import pmc_config_app
+import numeric_widgets
+
+from terminal_widget import TerminalWidget
 
 #https://stackoverflow.com/questions/70693778/how-to-open-make-new-window-in-kivy-python
-import subprocess
-import sys
-from threading import Thread
-
 
 pmc = pmc_iface.PrimaryMirrorControlInterface()
 
@@ -24,49 +25,8 @@ pmc = pmc_iface.PrimaryMirrorControlInterface()
 
 Builder.load_file('pmc_gui.kv')
 
-from kivy.core.window import Window
 Window.size = (900, 600)
 Window.minimum_width, Window.minimum_height = Window.size
-
-from kivy.app import App
-
-class TerminalWidget(GridLayout):
-    term_id = ObjectProperty(None)
-    label = StringProperty('your label here')
-    text = StringProperty('')
-    
-    # count = 0
-    def addMessage(self, msg):
-        # self.count = self.count + 1
-        now = datetime.now()
-        current_time = now.strftime("%H:%M:%S")
-        printMsg = current_time + ':  ' + msg + '\n' + self.text
-        self.text = printMsg
-
-class FloatInput(TextInput):
-    pat = re.compile('[^0-9]') 
-
-    def on_focus(self, instance, value):
-        if not value:
-            if len(self.text) == 0:
-                self.text = '0.0'
-            elif len(self.text) == 1 and (self.text == '-' or self.text == '+'):
-                 self.text = '0.0'
-                 
-    def insert_text(self, substring, from_undo=False):
-        if len(substring) == 0:
-            print('empty')
-        cindex = self.cursor_index()
-        if cindex == 0 and  (substring == '-' or substring == '+'):
-            print('dash found')
-            return super().insert_text(substring, from_undo=from_undo)
-
-        pat = self.pat
-        if '.' in self.text:
-            s = re.sub(pat, '', substring)
-        else:           
-            s = '.'.join( re.sub(pat, '', s) for s in substring.split('.', 1) )
-        return super().insert_text(s, from_undo=from_undo)
 
 
 
@@ -131,42 +91,42 @@ class PMC_GUI(GridLayout):
             
     def plusTipButtonPushed(self):
         term = self.ids['app_term']
-        term.addMessage(' Tip [+' + str(self._tipTiltStepSize_urad) + ' urad]')
+        term.printMessage(' Tip [+' + str(self._tipTiltStepSize_urad) + ' urad]')
         pmc.TipRelative(self._tipTiltStepSize_urad)
         self._currentTip = self._currentTip + self._tipTiltStepSize_urad
         self.updateOutputFields()
         
     def minusTipButtonPushed(self):
         term = self.ids['app_term']
-        term.addMessage(' Tip [-' + str(self._tipTiltStepSize_urad) + ' urad]')
+        term.printMessage(' Tip [-' + str(self._tipTiltStepSize_urad) + ' urad]')
         pmc.TipRelative(-1*self._tipTiltStepSize_urad)
         self._currentTip = self._currentTip - self._tipTiltStepSize_urad
         self.updateOutputFields()
         
     def plusTiltButtonPushed(self):
         term = self.ids['app_term']
-        term.addMessage(' Tilt [+' + str(self._tipTiltStepSize_urad) + ' urad]')
+        term.printMessage(' Tilt [+' + str(self._tipTiltStepSize_urad) + ' urad]')
         pmc.TiltRelative(self._tipTiltStepSize_urad)
         self._currentTilt = self._currentTilt + self._tipTiltStepSize_urad
         self.updateOutputFields()
 
     def minusTiltButtonPushed(self):
         term = self.ids['app_term']
-        term.addMessage(' Tilt [-' + str(self._tipTiltStepSize_urad) + ' urad]')
+        term.printMessage(' Tilt [-' + str(self._tipTiltStepSize_urad) + ' urad]')
         pmc.TiltRelative(-1*self._tipTiltStepSize_urad)
         self._currentTilt = self._currentTilt - self._tipTiltStepSize_urad
         self.updateOutputFields()
         
     def plusFocusButtonPushed(self):
         term = self.ids['app_term']
-        term.addMessage(' Focus [+' + str(self._focusStepSize_um) + ' urad]')
+        term.printMessage(' Focus [+' + str(self._focusStepSize_um) + ' urad]')
         pmc.FocusRelative(self._focusStepSize_um)
         self._currentFocus = self._currentFocus + self._focusStepSize_um
         self.updateOutputFields()
         
     def minusFocusButtonPushed(self):
         term = self.ids['app_term']
-        term.addMessage(' Focus [-' + str(self._focusStepSize_um) + ' urad]')
+        term.printMessage(' Focus [-' + str(self._focusStepSize_um) + ' urad]')
         pmc.FocusRelative(-1*self._focusStepSize_um)
         self._currentFocus = self._currentFocus - self._focusStepSize_um
         self.updateOutputFields()
@@ -176,7 +136,7 @@ class PMC_GUI(GridLayout):
     def _1uradButtonPushed(self):
         self._tipTiltStepSize_urad = 1
         # term = self.ids['app_term']
-        # term.addMessage('Tip/Tilt Step size: ' + str(self._tipTiltStepSize_urad) + 'urad')
+        # term.printMessage('Tip/Tilt Step size: ' + str(self._tipTiltStepSize_urad) + 'urad')
         self.resetTipTiltStepSizeButtons()
         btn = self.ids['_1urad_btn']
         btn.background_color = (0,1,0,1)
@@ -184,7 +144,7 @@ class PMC_GUI(GridLayout):
     def _10uradButtonPushed(self):
         self._tipTiltStepSize_urad = 10
         # term = self.ids['app_term']
-        # term.addMessage('Tip/Tilt Step size: ' + str(self._tipTiltStepSize_urad) + 'urad') 
+        # term.printMessage('Tip/Tilt Step size: ' + str(self._tipTiltStepSize_urad) + 'urad') 
         self.resetTipTiltStepSizeButtons()
         btn = self.ids['_10urad_btn']
         btn.background_color = (0,1,0,1)
@@ -192,7 +152,7 @@ class PMC_GUI(GridLayout):
     def _100uradButtonPushed(self):
         self._tipTiltStepSize_urad = 100
         # term = self.ids['app_term']
-        # term.addMessage('Tip/Tilt Step size: ' + str(self._tipTiltStepSize_urad) + 'urad')
+        # term.printMessage('Tip/Tilt Step size: ' + str(self._tipTiltStepSize_urad) + 'urad')
         self.resetTipTiltStepSizeButtons()
         btn = self.ids['_100urad_btn']
         btn.background_color = (0,1,0,1)
@@ -200,7 +160,7 @@ class PMC_GUI(GridLayout):
     def _1000uradButtonPushed(self):
         self._tipTiltStepSize_urad = 1000
         # term = self.ids['app_term']
-        # term.addMessage('Tip/Tilt Step size: ' + str(self._tipTiltStepSize_urad) + 'urad') 
+        # term.printMessage('Tip/Tilt Step size: ' + str(self._tipTiltStepSize_urad) + 'urad') 
         self.resetTipTiltStepSizeButtons()
         btn = self.ids['_1000urad_btn']
         btn.background_color = (0,1,0,1)
@@ -208,7 +168,7 @@ class PMC_GUI(GridLayout):
     def _1umButtonPushed(self):
         self._focusStepSize_um = 1
         # term = self.ids['app_term']
-        # term.addMessage('Focus Step size: ' + str(self._focusStepSize_um) + 'um')
+        # term.printMessage('Focus Step size: ' + str(self._focusStepSize_um) + 'um')
         self.resetFocusStepSizeButtons()
         btn = self.ids['_1um_btn']
         btn.background_color = (0,1,0,1)
@@ -216,7 +176,7 @@ class PMC_GUI(GridLayout):
     def _10umButtonPushed(self):
         self._focusStepSize_um = 10
         # term = self.ids['app_term']
-        # term.addMessage('Focus Step size: ' + str(self._focusStepSize_um) + 'um') 
+        # term.printMessage('Focus Step size: ' + str(self._focusStepSize_um) + 'um') 
         self.resetFocusStepSizeButtons()
         btn = self.ids['_10um_btn']
         btn.background_color = (0,1,0,1)
@@ -224,7 +184,7 @@ class PMC_GUI(GridLayout):
     def _100umButtonPushed(self):
         self._focusStepSize_um = 100
         # term = self.ids['app_term']
-        # term.addMessage('Focus Step size: ' + str(self._focusStepSize_um) + 'um')
+        # term.printMessage('Focus Step size: ' + str(self._focusStepSize_um) + 'um')
         self.resetFocusStepSizeButtons()
         btn = self.ids['_100um_btn']
         btn.background_color = (0,1,0,1)
@@ -232,7 +192,7 @@ class PMC_GUI(GridLayout):
     def _1000umButtonPushed(self):
         self._focusStepSize_um = 1000
         # term = self.ids['app_term']
-        # term.addMessage('Focus Step size: ' + str(self._focusStepSize_um) + 'um')   
+        # term.printMessage('Focus Step size: ' + str(self._focusStepSize_um) + 'um')   
         self.resetFocusStepSizeButtons()
         btn = self.ids['_1000um_btn']
         btn.background_color = (0,1,0,1) 
@@ -242,7 +202,7 @@ class PMC_GUI(GridLayout):
         tipAbsTI = self.ids['tip_abs']
         if len(tipAbsTI.text) > 0:
             self._currentTip = float(tipAbsTI.text)
-            term.addMessage('Mirror Tip set to : ' + str(self._currentTip))
+            term.printMessage('Mirror Tip set to : ' + str(self._currentTip))
             pmc.TipAbsolute(self._currentTip)
             self.updateOutputFields()
         
@@ -251,7 +211,7 @@ class PMC_GUI(GridLayout):
         tiltAbsTI = self.ids['tilt_abs']
         if len(tiltAbsTI.text) > 0:
             self._currentTilt = float(tiltAbsTI.text)        
-            term.addMessage('Mirror Tilt set to : ' + str(self._currentTilt))
+            term.printMessage('Mirror Tilt set to : ' + str(self._currentTilt))
             pmc.TiltAbsolute(self._currentTilt)
             self.updateOutputFields()
         
@@ -260,7 +220,7 @@ class PMC_GUI(GridLayout):
         focusAbsTI = self.ids['focus_abs']
         if len(focusAbsTI.text) > 0:
             self._currentFocus = float(focusAbsTI.text)        
-            term.addMessage('Mirror Focus set to : ' + str(self._currentFocus))
+            term.printMessage('Mirror Focus set to : ' + str(self._currentFocus))
             pmc.FocusAbsolute(self._currentFocus)
             self.updateOutputFields()
  
@@ -268,17 +228,17 @@ class PMC_GUI(GridLayout):
         term = self.ids['app_term']
         conBtn = self.ids['connect_btn']
         if not self._isConnected:
-            term.addMessage('Connecting...')
+            term.printMessage('Connecting...')
             self._isConnected = pmc.Connect()
             if self._isConnected:
-                term.addMessage('Connected!')
+                term.printMessage('Connected!')
                 self.enableRelativeControls()
                 if pmc.isHomed():
                     self.enableAbsoluteControls()
                 conBtn.background_color = (0,1,0,1)
                 conBtn.text = 'Connected'
         else:
-            term.addMessage('Disconnecting...')
+            term.printMessage('Disconnecting...')
             pmc.Disonnect()
             self._isConnected = False
             self.disableControls()
@@ -287,7 +247,7 @@ class PMC_GUI(GridLayout):
 
     def homingButtonPushed(self):
         term = self.ids['app_term']
-        term.addMessage('Homing Button Pushed!')
+        term.printMessage('Homing Button Pushed!')
         self._currentTip = 0.0
         self._currentTilt = 0.0
         self._currentFocus = 0.0
@@ -299,11 +259,15 @@ class PMC_GUI(GridLayout):
         self.open_config_window()
         # pmc_config_app.editConfig()
         # term = self.ids['app_term']
-        # term.addMessage('Button not assigned yet!')
-                       
+        # term.printMessage('Button not assigned yet!')
+        
+    def stopButtonPushed(self):
+        term = self.ids['app_term']
+        term.printMessage('Button not assigned yet!')
+                 
     def defaultButtonPushed(self):
         term = self.ids['app_term']
-        term.addMessage('Button not assigned yet!')
+        term.printMessage('Stop Button Pushed')
         
     @staticmethod
     def open_config_window():

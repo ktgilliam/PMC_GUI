@@ -1,8 +1,14 @@
 {
     "PMC_Config": {
-        "FanSpeed": 1.2345,
-        "HomingSpeed": 100,
-        "RelativeMoveSpeed": 100,
-        "AbsoluteMoveSpeed": 100
+        "Connection": {
+            "IP_Address": null,
+            "Port": null
+        },
+        "Speeds": {
+            "Fan": 50,
+            "Homing": 100,
+            "RelativeMove": 100.0,
+            "AbsoluteMove": 100.0
+        }
     }
 }

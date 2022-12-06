@@ -1,5 +1,130 @@
 #:kivy 1.0
 <PMC_Config_GUI>:
-    cols:1
+    cols: 1
+    Label:
+        canvas.before:
+            Color:
+                rgba: 1, 1, 1, 1 
+            Line:
+                width: 1
+                rectangle: self.x, self.y, self.width, self.height
+        text: 'Connection'
+        bold: True
+        size_hint_y: None
+        height: 40
+    GridLayout:
+        cols:2
+        padding: [10, 10, 10, 10]
+        Label:
+            text: 'IP Address: '
+            text_size: self.size
+            halign: 'right'
+            valign: 'middle'
+            size_hint_y: None
+            height: 40
+        TextInput:
+            id: ip_addr_txt
+            multiline: False
+            size_hint_y: None
+            height: 40
+        Label:
+            text: 'Port: '
+            text_size: self.size
+            halign: 'right'
+            valign: 'middle'
+            size_hint_y: None
+            height: 40
+        IntegerInput:
+            id: port_uint
+            num_digits: 5
+            unsigned: True
+            multiline: False
+            size_hint_y: None
+            height: 40
+    Label:
+        canvas.before:
+            Color:
+                rgba: 1, 1, 1, 1 
+            Line:
+                width: 1
+                rectangle: self.x, self.y, self.width, self.height
+        text: 'Speeds'
+        bold: True
+        size_hint_y: None
+        height: 40
+    GridLayout:
+        cols:2
+        padding: [10, 10, 10, 10]
+        Label: 
+            text: 'Fan Speed [%]: '
+            text_size: self.size
+            halign: 'right'
+            valign: 'middle'
+            size_hint_y: None
+            height: 40
+        IntegerInput:
+            id: fan_speed_uint
+            unsigned: True
+            limit_input: True
+            upper_lim: 100
+            lower_lim: 0
+            multiline: False
+            size_hint_y: None
+            height: 40
+        Label: 
+            text: 'Homing Speed [steps/sec]: '
+            text_size: self.size
+            halign: 'right'
+            valign: 'middle'
+            size_hint_y: None
+            height: 40
+        IntegerInput:
+            id: home_speed_uint
+            unsigned: True
+            num_digits: 15
+            multiline: False
+            size_hint_y: None
+            height: 40
+        Label: 
+            text: 'Relative Move Speed ['+u'\N{DEGREE SIGN}' + '/sec]: '
+            text_size: self.size
+            halign: 'right'
+            valign: 'middle'
+            size_hint_y: None
+            height: 40
+        FloatInput:
+            id: rel_mv_speed_flt
+            multiline: False
+            size_hint_y: None
+            height: 40
+        Label: 
+            text: 'Absolute Move Speed ['+u'\N{DEGREE SIGN}' + '/sec]: '
+            text_size: self.size
+            halign: 'right'
+            valign: 'middle'
+            size_hint_y: None
+            height: 40
+        FloatInput:
+            id: abs_mv_speed_flt
+            multiline: False
+            size_hint_y: None
+            height: 40
+
     Button:
-        text: 'tmp'
+        id: reset_default_btn
+        text: 'Reset Defaults'
+        size_hint_y: None
+        height: 40
+        on_press: root.resetDefaultConfig()
+    Button:
+        id: read_cfg_btn
+        text: 'Read Config File'
+        size_hint_y: None
+        height: 40
+        on_press: root.readConfig()
+    Button:
+        id: save_cfg_btn
+        text: 'Save Config'
+        size_hint_y: None
+        height: 40
+        on_press: root.saveConfig()

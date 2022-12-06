@@ -304,6 +304,15 @@
                         size_hint_x: None
                         width:80
                         on_press: root.configButtonPushed()
+                    Button:
+                        text:'STOP'
+                        bold: True
+                        size_hint_y: None
+                        height: 30
+                        size_hint_x: None
+                        width:80
+                        background_color: (1,0,0,1)
+                        on_press: root.stopButtonPushed()
         GridLayout:
             cols: 1
             id: outputs
@@ -360,35 +369,10 @@
                 Label:
             
     TerminalWidget:
-        id: app_term
         label: 'Terminal'
+        id: app_term
             # size_hint :1,1
             # TextInput:
             #     id: app_term
                 # disabled: True
 
-<TerminalWidget>:
-    cols: 1
-    padding: [5, 5, 5, 5]
-    term_id: terminal
-    canvas.before:
-        Color:
-            rgba: 1, 1, 1, 1
-        Line:
-            width: 2
-            rectangle: self.x, self.y, self.width, self.height
-    Label:
-        text: root.label
-        size_hint_y: None
-        height: 20
-    ScrollView:
-        id: scrlv
-        TextInput:
-            id: terminal
-            multiline: True
-            size_hint: 1,None
-            height: max( (len(self._lines)+1) * self.line_height, scrlv.height)
-            readonly: True
-            text: root.text
-            background_color: ( 1, 1, 1, 1)
-            # foreground_color: (0,0,0,1)
