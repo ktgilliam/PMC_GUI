@@ -48,7 +48,7 @@
                         text: 'Read Config File'
                         size_hint_y: None
                         height: 40
-                        on_press: root.readConfig()
+                        on_press: root.readConfigFile()
                     Button:
                         id: save_cfg_btn
                         text: 'Save Config'
@@ -83,7 +83,7 @@
                         height: 40
                     TextInput:
                         id: ip_addr_txt
-                        text: root.ip_addr_prop
+                        text: app.ip_addr_prop
                         multiline: False
                         size_hint_y: None
                         height: 40
@@ -96,7 +96,7 @@
                         height: 40
                     IntegerInput:
                         id: port_uint
-                        text: root.port_prop
+                        text: app.port_prop
                         num_digits: 5
                         unsigned: True
                         multiline: False

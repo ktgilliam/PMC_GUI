@@ -7,7 +7,11 @@ from kivy.properties import BooleanProperty
 
 from kivy.lang import Builder
 from datetime import datetime
-# from threading import Lock
+from enum import Enum
+class MessageType(Enum):
+    INFO = 0
+    WARNING = 1
+    ERROR = 2
 
 Builder.load_file('terminal_widget.kv')
     
@@ -30,10 +34,16 @@ class TerminalWidget(GridLayout):
     #         term_class.registered = True
         
     @staticmethod
-    def addMessage(msg, terminal_id=0):
+    def addMessage(msg, messageType=MessageType.INFO, terminal_id=0):
         if isinstance(TerminalWidget.terminal, TerminalWidget):
         # if TerminalWidget.registered:
-            TerminalWidget.terminal.printMessage(msg)
+            if messageType == MessageType.INFO:
+                printStr = '[color=ffffff]'+msg+'[/color]'
+            elif messageType == MessageType.WARNING:
+                printStr = '[color=ffa500]'+msg+'[/color]'
+            elif messageType == MessageType.ERROR:
+                printStr = '[color=ff0000]'+msg+'[/color]'
+            TerminalWidget.terminal.printMessage(printStr)
             
     def printMessage(self, msg):
         now = datetime.now()

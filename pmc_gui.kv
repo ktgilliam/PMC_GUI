@@ -1,368 +1,380 @@
 #:kivy 1.0
-<PMC_GUI>:
-    text: 'Main'
+PMC_GUI:
     id: id: id.__self__
+    cols: 1
+    ip_addr_prop:  app.config.get('Connection','ip_addr')
+    port_prop: int(app.config.get('Connection','ip_port'))
+    fan_speed_prop: app.config.get('Speeds','fan')
+    home_speed_prop: app.config.get('Speeds','homing')
+    rel_speed_prop: app.config.get('Speeds','rel_move')
+    abs_speed_prop: app.config.get('Speeds','abs_move')
+
+    # Top half is for inputs.
+    Label:
+        id: title_label
+        text: "PRIMARY MIRROR CONTROL [Version 0.1]"
+        font_size: '20sp'
+        bold: True
+        size_hint_y: None
+        height: 30
+        canvas.before:
+            Color:
+                rgba: 1, 1, 1, 1
+            Line:
+                width: 2
+                rectangle: self.x, self.y, self.width, self.height
     GridLayout:
-        cols: 1
-        # Top half is for inputs.
-        Label:
-            id: title_label
-            text: "PRIMARY MIRROR CONTROL [Version 0.1]"
-            font_size: '20sp'
-            bold: True
-            size_hint_y: None
-            height: 30
+        cols: 3
+        size_hint: 1, None
+        size: root.width, root.height/2
+        GridLayout:
+            cols: 1
+            id: rel_ctrl
+            size_hint_x: None
+            width: 400
             canvas.before:
                 Color:
-                    rgba: 1, 1, 1, 1
+                    rgba: 1, 1, 1, 1 
                 Line:
                     width: 2
                     rectangle: self.x, self.y, self.width, self.height
-        GridLayout:
-            cols: 3
+            Label:
+                text: "Tip/Tilt/Focus (Relative)"
+                size_hint_y: None
+                height: 30
             GridLayout:
-                cols: 1
-                id: rel_ctrl
-                size_hint_x: None
-                width: 400
+                cols: 2
                 canvas.before:
                     Color:
                         rgba: 1, 1, 1, 1 
                     Line:
                         width: 2
                         rectangle: self.x, self.y, self.width, self.height
-                Label:
-                    text: "Tip/Tilt/Focus (Relative)"
-                    size_hint_y: None
-                    height: 30
                 GridLayout:
-                    cols: 2
-                    canvas.before:
-                        Color:
-                            rgba: 1, 1, 1, 1 
-                        Line:
-                            width: 2
-                            rectangle: self.x, self.y, self.width, self.height
+                    cols: 1
+                    padding: [10, 10, 10, 10]
                     GridLayout:
-                        cols: 1
-                        padding: [10, 10, 10, 10]
-                        GridLayout:
-                            cols: 3
-                            #______________
-                            Label:
-                            Button:
-                                id: do_pos_tip_btn
-                                text: '+ Tip'
-                                size_hint_y: None
-                                height: 40
-                                size_hint_x: None
-                                width: 50
-                                disabled: True
-                                on_press: root.plusTipButtonPushed()
-                            Label:
-                            #______________
-                            Button:
-                                id: do_neg_tilt_btn
-                                text: '- Tilt'
-                                size_hint_y: None
-                                height: 40
-                                size_hint_x: None
-                                width: 50
-                                disabled: True
-                                on_press: root.minusTiltButtonPushed()
-                            Label: # Would like to put an indicator light here.
-                            Button:
-                                id: do_pos_tilt_btn
-                                text: '+ Tilt'
-                                size_hint_y: None
-                                height: 40
-                                size_hint_x: None
-                                width: 50
-                                disabled: True
-                                on_press: root.plusTiltButtonPushed()
-                            #______________
-                            Label:
-                            Button:
-                                id: do_neg_tip_btn
-                                text: '- Tip'
-                                size_hint_y: None
-                                height: 40
-                                size_hint_x: None
-                                width: 50
-                                disabled: True
-                                on_press: root.minusTipButtonPushed()
-                            Label:
-                            #______________
-                            Label:
-                            Label:
-                            Label:
-                            #______________
+                        cols: 3
+                        ##################
                         Label:
-                            text: "Tip/Tilt Step Size [urad]:"
-                            size_hint_y:None
-                            height: 20
-                        BoxLayout:
-                            orientation: 'horizontal'
+                        Button:
+                            id: do_pos_tip_btn
+                            text: '+ Tip'
                             size_hint_y: None
                             height: 40
-                            Button:
-                                id: _1urad_btn
-                                text: '1'
-                                size_hint_y: None
-                                height: 30
-                                background_color: (0,1,0,1)
-                                on_press: root._1uradButtonPushed()
-                            Button:
-                                id: _10urad_btn
-                                text: '10'
-                                size_hint_y: None
-                                height: 30
-                                on_press: root._10uradButtonPushed()
-                            Button:
-                                id: _100urad_btn
-                                text: '100'
-                                size_hint_y: None
-                                height: 30
-                                on_press: root._100uradButtonPushed()
-                            Button:
-                                id: _1000urad_btn
-                                text: '1000'
-                                size_hint_y: None
-                                height: 30
-                                on_press: root._1000uradButtonPushed()
-                    GridLayout:
-                        cols: 1
-                        padding: [10, 10, 10, 10]
-                        GridLayout:
-                            cols: 3
-                            Label:
-                            Button:
-                                id: do_pos_focus_btn
-                                text: '+Focus'
-                                size_hint_y: None
-                                height: 40
-                                disabled: True
-                                on_press: root.plusFocusButtonPushed()
-                            Label:
-                            Label:
-                            Button:
-                                id: do_neg_focus_btn
-                                text: '-Focus'
-                                size_hint_y: None
-                                height: 40
-                                disabled: True
-                                on_press: root.minusFocusButtonPushed()
-                            Label:
-                            Label:
-                            Label:
-                            Label:
-                        Label:
-                            text: "Focus Step Size [um]:"
-                            size_hint_y:None
-                            height: 20
-                        BoxLayout:
-                            orientation: 'horizontal'
-                            size_hint_y: None
-                            height: 40
-                            Button:
-                                id: _1um_btn
-                                text: '1'
-                                size_hint_y: None
-                                height: 30
-                                background_color: (0,1,0,1)
-                                on_press: root._1umButtonPushed()
-                            Button:
-                                id: _10um_btn
-                                text: '10'
-                                size_hint_y: None
-                                height: 30
-                                on_press: root._10umButtonPushed()
-                            Button:
-                                id: _100um_btn
-                                text: '100'
-                                size_hint_y: None
-                                height: 30
-                                on_press: root._100umButtonPushed()
-                            Button:
-                                id: _1000um_btn
-                                text: '1000'
-                                size_hint_y: None
-                                height: 30
-                                on_press: root._1000umButtonPushed()
-                        #_________________
-            GridLayout:
-                cols: 1
-                canvas.before:
-                    Color:
-                        rgba: 1, 1, 1, 1 
-                    Line:
-                        width: 2
-                        rectangle: self.x, self.y, self.width, self.height
-                Label:
-                    text: 'Tip/Tilt/Focus Absolute'
-                    size_hint_y: None
-                    height: 30
-
-                GridLayout:
-                    cols: 3
-                    padding: [15, 10, 10, 10]
-                    id: abs_ctrl
-                    canvas.before:
-                        Color:
-                            rgba: 1, 1, 1, 1
-                        Line:
-                            width: 2
-                            rectangle: self.x, self.y, self.width, self.height
-                    Label: 
-                        text: 'Tip [urad]: '
-                        size_hint_y: None
-                        height: 30
-                        size_hint_x: None
-                        width: 90
-                    FloatInput:
-                        id: tip_abs
-                        text: '0.0'
-                        size_hint_y: None
-                        height: 30
-                    Button:
-                        id: go_abs_tip_btn
-                        text:'Go'
-                        size_hint_y: None
-                        height: 30
-                        size_hint_x: None
-                        width:30
-                        disabled: True
-                        on_press: root.tipAbsGoButtonPushed()
-                    Label: 
-                        text: 'Tilt [urad]: '
-                        size_hint_y: None
-                        height: 30
-                        size_hint_x: None
-                        width: 90
-                    FloatInput:
-                        id: tilt_abs
-                        text: '0.0'
-                        size_hint_y: None
-                        height: 30
-                    Button:
-                        id: go_abs_tilt_btn
-                        text:'Go'
-                        size_hint_y: None
-                        height: 30
-                        size_hint_x: None
-                        width:30
-                        disabled: True
-                        on_press: root.tiltAbsGoButtonPushed()
-                    Label: 
-                        text: 'Focus [um]: '
-                        size_hint_y: None
-                        height: 30
-                        size_hint_x: None
-                        width: 90
-                    FloatInput:
-                        id: focus_abs
-                        text: '0.0'
-                        size_hint_y: None
-                        height: 30
-                    Button:
-                        id: go_abs_focus_btn
-                        text:'Go'
-                        size_hint_y: None
-                        height: 30
-                        size_hint_x: None
-                        width:30
-                        disabled: True
-                        on_press: root.focusAbsGoButtonPushed()
-                GridLayout:
-                    cols:1
-                    Label:
-                        text: 'Other Controls'
-                        size_hint_y : None
-                        height:30
-                    StackLayout:
-                        padding: [15, 10, 10, 10]
-                        Button:
-                            id: connect_btn
-                            text:'Connect'
-                            size_hint_y: None
-                            height: 30
                             size_hint_x: None
-                            width:90
-                            background_color: (1,0,0,1)
-                            on_release: root.connectButtonPushed()
-                        Button:
-                            id: do_home_all_btn
-                            text:'Home All'
-                            size_hint_y: None
-                            height: 30
-                            size_hint_x: None
-                            width:70
+                            width: 50
                             disabled: True
-                            on_release: root.homingButtonPushed()
+                            on_press: root.plusTipButtonPushed()
+                        Label:
+                        ##################
                         Button:
-                            text:'STOP'
-                            bold: True
+                            id: do_neg_tilt_btn
+                            text: '- Tilt'
+                            size_hint_y: None
+                            height: 40
+                            size_hint_x: None
+                            width: 50
+                            disabled: True
+                            on_press: root.minusTiltButtonPushed()
+                        Label: # Would like to put an indicator light here.
+                        Button:
+                            id: do_pos_tilt_btn
+                            text: '+ Tilt'
+                            size_hint_y: None
+                            height: 40
+                            size_hint_x: None
+                            width: 50
+                            disabled: True
+                            on_press: root.plusTiltButtonPushed()
+                        ##################
+                        Label:
+                        Button:
+                            id: do_neg_tip_btn
+                            text: '- Tip'
+                            size_hint_y: None
+                            height: 40
+                            size_hint_x: None
+                            width: 50
+                            disabled: True
+                            on_press: root.minusTipButtonPushed()
+                        Label:
+                        ##################
+                        Label:
+                        Label:
+                        Label:
+                        ##################
+                    Label:
+                        text: "Tip/Tilt Step Size [urad]:"
+                        size_hint_y:None
+                        height: 20
+                    BoxLayout:
+                        orientation: 'horizontal'
+                        size_hint_y: None
+                        height: 40
+                        Button:
+                            id: _1urad_btn
+                            text: '1'
                             size_hint_y: None
                             height: 30
-                            size_hint_x: None
-                            width:80
-                            background_color: (1,0,0,1)
-                            on_release: root.stopButtonPushed()
+                            background_color: (0,1,0,1)
+                            on_press: root._1uradButtonPushed()
+                        Button:
+                            id: _10urad_btn
+                            text: '10'
+                            size_hint_y: None
+                            height: 30
+                            on_press: root._10uradButtonPushed()
+                        Button:
+                            id: _100urad_btn
+                            text: '100'
+                            size_hint_y: None
+                            height: 30
+                            on_press: root._100uradButtonPushed()
+                        Button:
+                            id: _1000urad_btn
+                            text: '1000'
+                            size_hint_y: None
+                            height: 30
+                            on_press: root._1000uradButtonPushed()
+                GridLayout:
+                    cols: 1
+                    padding: [10, 10, 10, 10]
+                    GridLayout:
+                        cols: 3
+                        Label:
+                        Button:
+                            id: do_pos_focus_btn
+                            text: '+Focus'
+                            size_hint_y: None
+                            height: 40
+                            disabled: True
+                            on_press: root.plusFocusButtonPushed()
+                        Label:
+                        Label:
+                        Button:
+                            id: do_neg_focus_btn
+                            text: '-Focus'
+                            size_hint_y: None
+                            height: 40
+                            disabled: True
+                            on_press: root.minusFocusButtonPushed()
+                        Label:
+                        Label:
+                        Label:
+                        Label:
+                    Label:
+                        text: "Focus Step Size [um]:"
+                        size_hint_y:None
+                        height: 20
+                    BoxLayout:
+                        orientation: 'horizontal'
+                        size_hint_y: None
+                        height: 40
+                        Button:
+                            id: _1um_btn
+                            text: '1'
+                            size_hint_y: None
+                            height: 30
+                            background_color: (0,1,0,1)
+                            on_press: root._1umButtonPushed()
+                        Button:
+                            id: _10um_btn
+                            text: '10'
+                            size_hint_y: None
+                            height: 30
+                            on_press: root._10umButtonPushed()
+                        Button:
+                            id: _100um_btn
+                            text: '100'
+                            size_hint_y: None
+                            height: 30
+                            on_press: root._100umButtonPushed()
+                        Button:
+                            id: _1000um_btn
+                            text: '1000'
+                            size_hint_y: None
+                            height: 30
+                            on_press: root._1000umButtonPushed()
+                    #_________________
+        GridLayout:
+            cols: 1
+            canvas.before:
+                Color:
+                    rgba: 1, 1, 1, 1 
+                Line:
+                    width: 2
+                    rectangle: self.x, self.y, self.width, self.height
+            Label:
+                text: 'Tip/Tilt/Focus Absolute'
+                size_hint_y: None
+                height: 30
+
             GridLayout:
-                cols: 1
-                id: outputs
+                cols: 3
+                padding: [15, 10, 10, 10]
+                id: abs_ctrl
                 canvas.before:
                     Color:
                         rgba: 1, 1, 1, 1
                     Line:
                         width: 2
                         rectangle: self.x, self.y, self.width, self.height
-                Label:
-                    text: "Output (Read-Only)"
+                Label: 
+                    text: 'Tip [urad]: '
                     size_hint_y: None
                     height: 30
+                    size_hint_x: None
+                    width: 90
+                FloatInput:
+                    id: tip_abs
+                    text: '0.0'
+                    size_hint_y: None
+                    height: 30
+                Button:
+                    id: go_abs_tip_btn
+                    text:'Go'
+                    size_hint_y: None
+                    height: 30
+                    size_hint_x: None
+                    width:30
+                    disabled: True
+                    on_press: root.tipAbsGoButtonPushed()
+                Label: 
+                    text: 'Tilt [urad]: '
+                    size_hint_y: None
+                    height: 30
+                    size_hint_x: None
+                    width: 90
+                FloatInput:
+                    id: tilt_abs
+                    text: '0.0'
+                    size_hint_y: None
+                    height: 30
+                Button:
+                    id: go_abs_tilt_btn
+                    text:'Go'
+                    size_hint_y: None
+                    height: 30
+                    size_hint_x: None
+                    width:30
+                    disabled: True
+                    on_press: root.tiltAbsGoButtonPushed()
+                Label: 
+                    text: 'Focus [um]: '
+                    size_hint_y: None
+                    height: 30
+                    size_hint_x: None
+                    width: 90
+                FloatInput:
+                    id: focus_abs
+                    text: '0.0'
+                    size_hint_y: None
+                    height: 30
+                Button:
+                    id: go_abs_focus_btn
+                    text:'Go'
+                    size_hint_y: None
+                    height: 30
+                    size_hint_x: None
+                    width:30
+                    disabled: True
+                    on_press: root.focusAbsGoButtonPushed()
+            GridLayout:
+                cols:1
+                Label:
+                    text: 'Other Controls'
+                    size_hint_y : None
+                    height:30
+                StackLayout:
+                    padding: [15, 10, 10, 10]
+                    Button:
+                        id: connect_btn
+                        text:'Connect'
+                        size_hint_y: None
+                        height: 30
+                        size_hint_x: None
+                        width:90
+                        background_color: (1,0,0,1)
+                        # on_release: root.connectButtonPushed(app.ip_addr_prop, int(app.port_prop))
+                        on_release: root.connectButtonPushed(root.ip_addr_prop, root.port_prop)
+                    Button:
+                        id: do_home_all_btn
+                        text:'Home All'
+                        size_hint_y: None
+                        height: 30
+                        size_hint_x: None
+                        width:70
+                        disabled: True
+                        on_release: root.homingButtonPushed()
+                    Button:
+                        text:'STOP'
+                        bold: True
+                        size_hint_y: None
+                        height: 30
+                        size_hint_x: None
+                        width:80
+                        background_color: (1,0,0,1)
+                        on_release: root.stopButtonPushed()
+        GridLayout:
+            cols: 1
+            id: outputs
+            canvas.before:
+                Color:
+                    rgba: 1, 1, 1, 1
+                Line:
+                    width: 2
+                    rectangle: self.x, self.y, self.width, self.height
+            Label:
+                text: "Output (Read-Only)"
+                size_hint_y: None
+                height: 30
+            GridLayout:
+                cols: 1
+                canvas.before:
+                    Color:
+                        rgba: 1, 1, 1, 1 
+                    Line:
+                        width: 2
+                        rectangle: self.x, self.y, self.width, self.height
                 GridLayout:
-                    cols: 1
-                    canvas.before:
-                        Color:
-                            rgba: 1, 1, 1, 1 
-                        Line:
-                            width: 2
-                            rectangle: self.x, self.y, self.width, self.height
-                    GridLayout:
-                        cols: 2
-                        row_force_default: True
-                        row_default_height: 30
-                        padding: [10, 10, 10, 10]
-                        Label:
-                            text: "Tip [urad]: "
-                            size_hint_x: None
-                            width: 90
-                        FloatInput:
-                            id: tip_val
-                            multiline: 'false'
-                            readonly: True
-                            text: '0.0'
-                        Label:
-                            text: "Tilt [urad]: "
-                            size_hint_x: None
-                            width: 90
-                        FloatInput:
-                            id: tilt_val
-                            multiline: 'false'
-                            readonly: True
-                            text: '0.0'
-                        Label:
-                            text: "Focus [um]: "
-                            size_hint_x: None
-                            width: 90
-                        FloatInput:
-                            id: focus_val
-                            multiline: 'false'
-                            readonly: True
-                            text: '0.0'
+                    cols: 2
+                    row_force_default: True
+                    row_default_height: 30
+                    padding: [10, 10, 10, 10]
                     Label:
-                
+                        text: "Tip [urad]: "
+                        size_hint_x: None
+                        width: 90
+                    FloatInput:
+                        id: tip_val
+                        multiline: 'false'
+                        readonly: True
+                        text: '0.0'
+                    Label:
+                        text: "Tilt [urad]: "
+                        size_hint_x: None
+                        width: 90
+                    FloatInput:
+                        id: tilt_val
+                        multiline: 'false'
+                        readonly: True
+                        text: '0.0'
+                    Label:
+                        text: "Focus [um]: "
+                        size_hint_x: None
+                        width: 90
+                    FloatInput:
+                        id: focus_val
+                        multiline: 'false'
+                        readonly: True
+                        text: '0.0'
+    TerminalWidget:
+        label: 'Terminal'
+        id: id: id.__self__
+        size_hint: 1, None
+        size: root.width, root.height/2
+            
 
 
 

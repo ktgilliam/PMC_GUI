@@ -1,10 +1,7 @@
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.textinput import TextInput
-from kivy.properties import ObjectProperty
-from kivy.properties import StringProperty
-from kivy.properties import BooleanProperty
-from kivy.properties import BoundedNumericProperty
-from kivy.properties import NumericProperty
+from kivy.properties import BoundedNumericProperty, NumericProperty, BooleanProperty, StringProperty, ObjectProperty
+
 import re
 
 #  Support functions
@@ -16,7 +13,6 @@ def isSignChar(s):
         return False
     
 #  Widgets
-
 class FloatInput(TextInput):
     pat = re.compile('[^0-9]') 
     def on_focus(self, instance, value):
