@@ -19,6 +19,7 @@ Window.minimum_width, Window.minimum_height = Window.size
 # import logging
 # Logger.setLevel(logging.TRACE)
 
+# for integrated settings panel: https://kivy.org/doc/stable/api-kivy.app.html?highlight=resize
 
 from pmc_config_gui import PMC_Config_GUI
 from pmc_gui import PMC_GUI
