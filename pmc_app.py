@@ -102,35 +102,30 @@ class PMC_GUI(GridLayout):
         self.updateOutputFields()
         
     def minusTipButtonPushed(self):
-        #term = self.ids['app_term']
         TerminalWidget.addMessage(' Tip [-' + str(self._tipTiltStepSize_urad) + ' urad]')
         pmc.TipRelative(-1*self._tipTiltStepSize_urad)
         self._currentTip = self._currentTip - self._tipTiltStepSize_urad
         self.updateOutputFields()
         
     def plusTiltButtonPushed(self):
-        #term = self.ids['app_term']
         TerminalWidget.addMessage(' Tilt [+' + str(self._tipTiltStepSize_urad) + ' urad]')
         pmc.TiltRelative(self._tipTiltStepSize_urad)
         self._currentTilt = self._currentTilt + self._tipTiltStepSize_urad
         self.updateOutputFields()
 
     def minusTiltButtonPushed(self):
-        #term = self.ids['app_term']
         TerminalWidget.addMessage(' Tilt [-' + str(self._tipTiltStepSize_urad) + ' urad]')
         pmc.TiltRelative(-1*self._tipTiltStepSize_urad)
         self._currentTilt = self._currentTilt - self._tipTiltStepSize_urad
         self.updateOutputFields()
         
     def plusFocusButtonPushed(self):
-        #term = self.ids['app_term']
         TerminalWidget.addMessage(' Focus [+' + str(self._focusStepSize_um) + ' urad]')
         pmc.FocusRelative(self._focusStepSize_um)
         self._currentFocus = self._currentFocus + self._focusStepSize_um
         self.updateOutputFields()
         
     def minusFocusButtonPushed(self):
-        #term = self.ids['app_term']
         TerminalWidget.addMessage(' Focus [-' + str(self._focusStepSize_um) + ' urad]')
         pmc.FocusRelative(-1*self._focusStepSize_um)
         self._currentFocus = self._currentFocus - self._focusStepSize_um
@@ -140,7 +135,6 @@ class PMC_GUI(GridLayout):
             
     def _1uradButtonPushed(self):
         self._tipTiltStepSize_urad = 1
-        # #term = self.ids['app_term']
         # TerminalWidget.addMessage('Tip/Tilt Step size: ' + str(self._tipTiltStepSize_urad) + 'urad')
         self.resetTipTiltStepSizeButtons()
         btn = self.ids['_1urad_btn']
@@ -148,7 +142,6 @@ class PMC_GUI(GridLayout):
         
     def _10uradButtonPushed(self):
         self._tipTiltStepSize_urad = 10
-        # #term = self.ids['app_term']
         # TerminalWidget.addMessage('Tip/Tilt Step size: ' + str(self._tipTiltStepSize_urad) + 'urad') 
         self.resetTipTiltStepSizeButtons()
         btn = self.ids['_10urad_btn']
@@ -156,7 +149,6 @@ class PMC_GUI(GridLayout):
         
     def _100uradButtonPushed(self):
         self._tipTiltStepSize_urad = 100
-        # #term = self.ids['app_term']
         # TerminalWidget.addMessage('Tip/Tilt Step size: ' + str(self._tipTiltStepSize_urad) + 'urad')
         self.resetTipTiltStepSizeButtons()
         btn = self.ids['_100urad_btn']
@@ -164,7 +156,6 @@ class PMC_GUI(GridLayout):
         
     def _1000uradButtonPushed(self):
         self._tipTiltStepSize_urad = 1000
-        # #term = self.ids['app_term']
         # TerminalWidget.addMessage('Tip/Tilt Step size: ' + str(self._tipTiltStepSize_urad) + 'urad') 
         self.resetTipTiltStepSizeButtons()
         btn = self.ids['_1000urad_btn']
@@ -172,7 +163,6 @@ class PMC_GUI(GridLayout):
         
     def _1umButtonPushed(self):
         self._focusStepSize_um = 1
-        # #term = self.ids['app_term']
         # TerminalWidget.addMessage('Focus Step size: ' + str(self._focusStepSize_um) + 'um')
         self.resetFocusStepSizeButtons()
         btn = self.ids['_1um_btn']
@@ -180,7 +170,6 @@ class PMC_GUI(GridLayout):
 
     def _10umButtonPushed(self):
         self._focusStepSize_um = 10
-        # #term = self.ids['app_term']
         # TerminalWidget.addMessage('Focus Step size: ' + str(self._focusStepSize_um) + 'um') 
         self.resetFocusStepSizeButtons()
         btn = self.ids['_10um_btn']
@@ -188,7 +177,6 @@ class PMC_GUI(GridLayout):
         
     def _100umButtonPushed(self):
         self._focusStepSize_um = 100
-        # #term = self.ids['app_term']
         # TerminalWidget.addMessage('Focus Step size: ' + str(self._focusStepSize_um) + 'um')
         self.resetFocusStepSizeButtons()
         btn = self.ids['_100um_btn']
@@ -196,14 +184,12 @@ class PMC_GUI(GridLayout):
 
     def _1000umButtonPushed(self):
         self._focusStepSize_um = 1000
-        # #term = self.ids['app_term']
         # TerminalWidget.addMessage('Focus Step size: ' + str(self._focusStepSize_um) + 'um')   
         self.resetFocusStepSizeButtons()
         btn = self.ids['_1000um_btn']
         btn.background_color = (0,1,0,1) 
              
     def tipAbsGoButtonPushed(self):
-        #term = self.ids['app_term']
         tipAbsTI = self.ids['tip_abs']
         if len(tipAbsTI.text) > 0:
             self._currentTip = float(tipAbsTI.text)
@@ -212,7 +198,6 @@ class PMC_GUI(GridLayout):
             self.updateOutputFields()
         
     def tiltAbsGoButtonPushed(self):
-        #term = self.ids['app_term']
         tiltAbsTI = self.ids['tilt_abs']
         if len(tiltAbsTI.text) > 0:
             self._currentTilt = float(tiltAbsTI.text)        
@@ -221,7 +206,6 @@ class PMC_GUI(GridLayout):
             self.updateOutputFields()
         
     def focusAbsGoButtonPushed(self):
-        #term = self.ids['app_term']
         focusAbsTI = self.ids['focus_abs']
         if len(focusAbsTI.text) > 0:
             self._currentFocus = float(focusAbsTI.text)        
@@ -230,7 +214,6 @@ class PMC_GUI(GridLayout):
             self.updateOutputFields()
  
     def connectButtonPushed(self, _ip, _port):
-        #term = self.ids['app_term']
         conBtn = self.ids['connect_btn']
         if not self._isConnected:
             self._isConnected = pmc.Connect(_ip, _port)
@@ -248,7 +231,6 @@ class PMC_GUI(GridLayout):
             conBtn.text = 'Connect'
 
     def homingButtonPushed(self):
-        #term = self.ids['app_term']
         TerminalWidget.addMessage('Homing Button Pushed!')
         self._currentTip = 0.0
         self._currentTilt = 0.0
@@ -259,14 +241,10 @@ class PMC_GUI(GridLayout):
 
         
     def stopButtonPushed(self):
-        pass
-        #term = self.ids['app_term']
-        TerminalWidget.addMessage('Button not assigned yet!')
+        TerminalWidget.addMessage('Stop Button Pushed')
                  
     def defaultButtonPushed(self):
-        pass
-        #term = self.ids['app_term']
-        TerminalWidget.addMessage('Stop Button Pushed')
+        TerminalWidget.addMessage('Button not assigned yet!')
         
 
 class PMC_APP(App):

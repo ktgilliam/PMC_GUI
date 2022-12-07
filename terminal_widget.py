@@ -42,7 +42,8 @@ class TerminalWidget(GridLayout):
         if isinstance(TerminalWidget.terminal, TerminalWidget):
         # if TerminalWidget.registered:
             if messageType == MessageType.INFO:
-                printStr = '[color=ffffff]'+msg+'[/color]'
+                printStr = msg
+                # printStr = '[color=ffffff]'+msg+'[/color]'
             elif messageType == MessageType.WARNING:
                 printStr = '[color=ffa500]'+msg+'[/color]'
             elif messageType == MessageType.ERROR:
