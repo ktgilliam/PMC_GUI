@@ -2,20 +2,20 @@ from kivy.app import App
 from kivy.uix.settings import SettingsWithSidebar
 from kivy.lang import Builder
 from kivy.uix.gridlayout import GridLayout
-from kivy.properties import ObjectProperty, StringProperty, NumericProperty, ConfigParser
+from kivy.properties import ObjectProperty, StringProperty, NumericProperty, BooleanProperty
 from kivy.core.window import Window
 
 Window.size = (900, 650)
 Window.minimum_width, Window.minimum_height = Window.size
 
 
-from json_settings import json_connection_settings, json_speed_settings
+from json_settings import *
 import re
 import pmc_iface
 import numeric_widgets
 from terminal_widget import TerminalWidget
 
-pmc = pmc_iface.PrimaryMirrorControlInterface()
+pmc = pmc_iface.PrimaryMirrorControl()
 
 # Uncomment these lines to see all the messages
 # from kivy.logger import Logger
@@ -43,7 +43,7 @@ class PMC_GUI(GridLayout):
     home_speed_prop = StringProperty()
     rel_speed_prop = StringProperty()
     abs_speed_prop = StringProperty()
-    
+    debug_mode_prop = BooleanProperty()
     
     # def build(self):
     #     return Builder.load_file('pmc_gui.kv')
@@ -216,7 +216,11 @@ class PMC_GUI(GridLayout):
     def connectButtonPushed(self, _ip, _port):
         conBtn = self.ids['connect_btn']
         if not self._isConnected:
-            self._isConnected = pmc.Connect(_ip, _port)
+            if self.debug_mode_prop:
+               self._isConnected = True
+               TerminalWidget.addMessage("Connected! (debug mode so not really)")
+            else:
+                self._isConnected = pmc.Connect(_ip, _port)
             if self._isConnected:
                 self.enableRelativeControls()
                 if pmc.isHomed():
@@ -235,7 +239,7 @@ class PMC_GUI(GridLayout):
         self._currentTip = 0.0
         self._currentTilt = 0.0
         self._currentFocus = 0.0
-        pmc.HomeAll()
+        pmc.HomeAll(self.home_speed_prop)
         self.enableAbsoluteControls()
         self.updateOutputFields()
 
@@ -252,21 +256,28 @@ class PMC_APP(App):
     def build(self):
         self.settings_cls = SettingsWithSidebar
         self.use_kivy_settings = False
-        return Builder.load_file('pmc_gui.kv')
+        app_build = Builder.load_file('pmc_gui.kv')
+        TerminalWidget.addMessage('Welcome. Press F1 for settings.')
+        return app_build
 
     def build_config(self, config):
-        config.setdefaults("Connection", {"ip_addr": "localhost", "ip_port": 1883})
+        config.setdefaults("General", {"dbg_mode":False})
+        config.setdefaults("Connection", {"ip_addr": "localhost", "ip_port": 4400})
         config.setdefaults("Speeds", {"fan": 50, "homing": 100, "rel_move": 100, "abs_move": 100})
         return super().build_config(config)
     
     def build_settings(self, settings):
+        settings.add_json_panel("General", self.config, data=json_general_settings)
         settings.add_json_panel("Connection", self.config, data=json_connection_settings)
         settings.add_json_panel("Speeds", self.config, data=json_speed_settings)
         return super().build_settings(settings)
 
 
     def on_config_change(self, config, section, key, value):
-        if section == "Connection":
+        if section == "General":
+            if key == "dbg_mode":
+                self.root.debug_mode_prop = bool(int(value))
+        elif section == "Connection":
             if key == "ip_addr":
                 self.root.ip_addr_prop = value
             elif key == "ip_port":

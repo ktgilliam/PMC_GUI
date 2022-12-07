@@ -1,5 +1,15 @@
 import json
 
+json_general_settings = json.dumps([
+    {
+        "type":"bool",
+        "title":"Debug Mode",
+        "desc":"Debug Mode",
+        "section":"General",
+        "key": "dbg_mode"
+    }
+])
+
 json_connection_settings = json.dumps([
     {
         "type":"string",

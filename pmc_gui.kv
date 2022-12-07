@@ -8,7 +8,7 @@ PMC_GUI:
     home_speed_prop: app.config.get('Speeds','homing')
     rel_speed_prop: app.config.get('Speeds','rel_move')
     abs_speed_prop: app.config.get('Speeds','abs_move')
-
+    debug_mode_prop: app.config.get('General', 'dbg_mode')=='True'
     # Top half is for inputs.
     Label:
         id: title_label
@@ -287,7 +287,12 @@ PMC_GUI:
                     size_hint_y : None
                     height:30
                 StackLayout:
-                    padding: [15, 10, 10, 10]
+                    # cols: 2
+                    padding: [10, 10, 10, 10]
+                    # Label: 
+                    #     text: 'Debug Mode'
+                    #     size_hint_y: None
+                    #     height: 30
                     Button:
                         id: connect_btn
                         text:'Connect'
@@ -316,6 +321,7 @@ PMC_GUI:
                         width:80
                         background_color: (1,0,0,1)
                         on_release: root.stopButtonPushed()
+
         GridLayout:
             cols: 1
             id: outputs
