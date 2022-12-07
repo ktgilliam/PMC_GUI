@@ -3,19 +3,23 @@ import numeric_widgets
 from os.path import exists
 from kivy.app import App
 from kivy.lang import Builder
-from kivy.uix.gridlayout import GridLayout
-
-from kivy.core.window import Window
-Window.size = (450, 600)
-Window.minimum_width, Window.minimum_height = Window.size
+from kivy.uix.screenmanager import Screen
+from kivy.properties import StringProperty
 
 from terminal_widget import TerminalWidget
 
+
 Builder.load_file('pmc_config_gui.kv')
 
-
-class PMC_Config_GUI(GridLayout):
+class PMC_Config_GUI(Screen):
     # pass
+    ip_addr_prop = StringProperty()
+    port_prop = StringProperty()
+    fan_speed_prop = StringProperty()
+    home_speed_prop = StringProperty()
+    rel_speed_prop = StringProperty()
+    abs_speed_prop = StringProperty()
+    
     def __init__(self, **kwargs): 
         super().__init__(**kwargs)
         file_exists = exists("config.json")
@@ -28,24 +32,21 @@ class PMC_Config_GUI(GridLayout):
         self.readConfig()
         
     def writeDefaultConfig(self):
-        print('Writing default config file')
         f = open("config.json", "w")
         configJson = {}
         configJson['PMC_Config'] = {}
         configJson['PMC_Config']['Connection'] = {}
         configJson['PMC_Config']['Connection']['IP_Address'] = None
         configJson['PMC_Config']['Connection']['Port'] = None
-        
         configJson['PMC_Config']['Speeds'] = {}
         configJson['PMC_Config']['Speeds']['Fan'] = 50
         configJson['PMC_Config']['Speeds']['Homing'] = 100
         configJson['PMC_Config']['Speeds']['RelativeMove'] = 100.0
         configJson['PMC_Config']['Speeds']['AbsoluteMove'] = 100.0
-        
         configJsonObject = json.dumps(configJson, indent=4)
         f.write(configJsonObject)
         f.close()
-        TerminalWidget.addMessage('Wrote default config file.')
+        TerminalWidget.addMessage('Wrote default config file')
         
     def readConfig(self):
         file_exists = exists("config.json")
@@ -57,34 +58,22 @@ class PMC_Config_GUI(GridLayout):
         configJson = json.loads(configStr)
         
         # try:
-        ipField = self.ids['ip_addr_txt']
         ipString = configJson['PMC_Config']['Connection']['IP_Address']
         if ipString == None:
             ipString = ''
-        ipField.text = ipString
+        self.ip_addr_prop = ipString
         
-        portField = self.ids['port_uint']
         portNoInt = configJson['PMC_Config']['Connection']['Port']
         if portNoInt == None:
-            portNoStr = ''
+            self.port_prop = ''
         else:
-            portNoStr = str(portNoInt)
-        portField.text = portNoStr
+            self.port_prop = str(portNoInt)
         
-        fanSpeedField = self.ids['fan_speed_uint']
-        fanSpeedField.text = str(configJson['PMC_Config']['Speeds']['Fan'])
-        
-        homeSpeedField = self.ids['home_speed_uint']
-        homeSpeedField.text = str(configJson['PMC_Config']['Speeds']['Homing'])
-        
-        relativeSpeedField = self.ids['rel_mv_speed_flt']
-        relativeSpeedField.text = str(configJson['PMC_Config']['Speeds']['RelativeMove'])
-        
-        absoluteSpeedField = self.ids['abs_mv_speed_flt']
-        absoluteSpeedField.text = str(configJson['PMC_Config']['Speeds']['AbsoluteMove'])
-            
-        # except:
-        #     print('Invalid Config File')
+        self.fan_speed_prop = str(configJson['PMC_Config']['Speeds']['Fan'])
+        self.home_speed_prop = str(configJson['PMC_Config']['Speeds']['Homing'])
+        self.rel_speed_prop = str(configJson['PMC_Config']['Speeds']['RelativeMove'])
+        self.abs_speed_prop = str(configJson['PMC_Config']['Speeds']['AbsoluteMove'])
+
     
     def saveConfig(self):
         f = open("config.json", "w")
@@ -94,7 +83,7 @@ class PMC_Config_GUI(GridLayout):
         configJson['PMC_Config']['Speeds'] = {}
         
         ipField = self.ids['ip_addr_txt']
-        configJson['PMC_Config']['Connection']['IP_Address'] = ipField.text
+        configJson['PMC_Config']['Connection']['IP_Address'] = self.ip_addr_prop
         
         portField = self.ids['port_uint']
         configJson['PMC_Config']['Connection']['Port'] = portField.text
@@ -114,12 +103,13 @@ class PMC_Config_GUI(GridLayout):
         configJsonObject = json.dumps(configJson, indent=4)
         f.write(configJsonObject)
         f.close()
+        TerminalWidget.addMessage('Saved config file')
+
         
-        print('Saved config file')
-class PMC_Config_App(App):
-    def build(self):
-        return PMC_Config_GUI()
+# class PMC_Config_App(App):
+#     def build(self):
+#         return PMC_Config_GUI()
 
 
-if __name__ == "__main__":
-    PMC_Config_App().run()
+# if __name__ == "__main__":
+#     PMC_Config_App().run()
