@@ -17,11 +17,41 @@
         background_color: (0,0,0,0)
     ScrollView:
         id: scrlv
-        TextInput:
-            # id: self.term_id
-            multiline: True
-            size_hint: 1,None
-            height: max( (len(self._lines)+1) * self.line_height, scrlv.height)
-            readonly: True
-            text: root.text
-            background_color: ( 1, 1, 1, 1)
+        # canvas.before:
+        #     Color:
+        #         rgba: 1, 0, 0, 1
+        #     Line:
+        #         width: 2
+        #         rectangle: self.x, self.y, self.width, self.height
+        # padding: [5, 5, 5, 5]
+        AnchorLayout:
+            anchor_x: 'center'
+            anchor_y: 'top'
+            padding: [10, 10, 10, 10]
+            canvas.before:
+                Color:
+                    rgba: 0, 1, 0, 1
+                Line:
+                    width: 2
+                    rectangle: self.x, self.y, self.width, self.height
+            Label:
+                canvas.before:
+                    Color:
+                        rgba: 0, 0, 1, 1
+                    Line:
+                        width: 2
+                        rectangle: self.x, self.y, self.width, self.height
+                markup: True
+                # id: self.term_id
+                halign: 'left'
+                valign: 'top'
+                multiline: True
+                size_hint: 1,None
+                # height:scrlv.height
+                # height: max( (len(root._lines)+1) * self.line_height, scrlv.height)
+                # height: max( (root._lines+1) * 30, scrlv.height)
+                height: max(self.texture_size(1), scrlv.height)
+                # size: self.texture_size
+                readonly: True
+                text: root.text
+                background_color: ( 1, 0, 1, 1)
