@@ -1,12 +1,12 @@
 #:kivy 1.0
 <PMC_Config_GUI>:
-    name: 'config'
+    text: 'Configuration'
     AnchorLayout:
         # size: parent.layout_top_width, parent.layout_top_height
         anchor_y: "top"
         ScrollView:
             id: cfg_scrlv
-
+            padding: [10, 10, 10, 10]
             canvas.after:
                 Color:
                     rgba: self.bar_color[:3] + [self.bar_color[3] * 1 if self.do_scroll_y else 0]
@@ -23,18 +23,37 @@
             do_scroll_y: True
             scroll_type: ['bars']
             bar_width: 13
-            size_hint: 1, None
-            height: 500
-            canvas.before:
-                Color:
-                    rgba: 1, 0, 1, 1
-                Line:
-                    width: 2
-                    rectangle: self.x, self.y, self.width, self.height
+
             GridLayout:
                 cols: 1
                 size_hint_y: None
                 height: self.minimum_height
+                GridLayout:
+                    cols:1
+                    size_hint_y: None
+                    height: self.minimum_height
+                    row_default_height: 40
+                    row_force_default: True
+                    spacing: 0, 0
+                    padding: [10, 10, 10, 10]
+                    Button:
+                        id: reset_default_btn
+                        text: 'Reset Defaults'
+                        size_hint_y: None
+                        height: 40
+                        on_press: root.resetDefaultConfig()
+                    Button:
+                        id: read_cfg_btn
+                        text: 'Read Config File'
+                        size_hint_y: None
+                        height: 40
+                        on_press: root.readConfig()
+                    Button:
+                        id: save_cfg_btn
+                        text: 'Save Config'
+                        size_hint_y: None
+                        height: 40
+                        on_press: root.saveConfig()
                 Label:
                     canvas.before:
                         Color:
@@ -159,29 +178,3 @@
                         multiline: False
                         size_hint_y: None
                         height: 40
-                GridLayout:
-                    cols:1
-                    size_hint_y: None
-                    height: max(self.minimum_height, cfg_scrlv.height)
-                    row_default_height: 40
-                    row_force_default: True
-                    spacing: 0, 0
-                    padding: [10, 10, 10, 10]
-                    Button:
-                        id: reset_default_btn
-                        text: 'Reset Defaults'
-                        size_hint_y: None
-                        height: 40
-                        on_press: root.resetDefaultConfig()
-                    Button:
-                        id: read_cfg_btn
-                        text: 'Read Config File'
-                        size_hint_y: None
-                        height: 40
-                        on_press: root.readConfig()
-                    Button:
-                        id: save_cfg_btn
-                        text: 'Save Config'
-                        size_hint_y: None
-                        height: 40
-                        on_press: root.saveConfig()

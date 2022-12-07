@@ -3,35 +3,39 @@ TopLayout:
     cols: 1
 
     # sm_id: 'sm'
-    ScreenManager:
-        id: sm
+    TabbedPanel:
+        id: id.__self__
+        do_default_tab: False
+        size_hint: 1, None
+        size: root.width, root.height/2
         PMC_GUI:
         PMC_Config_GUI:
 
     TerminalWidget:
         label: 'Terminal'
-        id: app_term
+        id: id: id.__self__
         size_hint: 1, None
-        size: root.width, root.height/2.5
+        size: root.width, root.height/2
 
-    StackLayout:
-        padding: [15, 10, 10, 10]
-        size_hint_y: None
-        height: 45
-        Button:
-            text:'Main'
-            size_hint_y: None
-            height: 30
-            size_hint_x: None
-            width:80
-            on_release: sm.current = 'main'
-        Button:
-            text:'Config'
-            size_hint_y: None
-            height: 30
-            size_hint_x: None
-            width:80
-            on_release: sm.current = 'config'
-            # on_release: root.switchScreen(sm_id)
+    on_resize: print(self.size)
+    # StackLayout:
+    #     padding: [15, 10, 10, 10]
+    #     size_hint_y: None
+    #     height: 45
+    #     Button:
+    #         text:'Main'
+    #         size_hint_y: None
+    #         height: 30
+    #         size_hint_x: None
+    #         width:80
+    #         on_release: sm.current = 'main'
+    #     Button:
+    #         text:'Config'
+    #         size_hint_y: None
+    #         height: 30
+    #         size_hint_x: None
+    #         width:80
+    #         on_release: sm.current = 'config'
+    #         # on_release: root.switchScreen(sm_id)
 
 

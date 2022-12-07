@@ -3,7 +3,7 @@ import numeric_widgets
 from os.path import exists
 from kivy.app import App
 from kivy.lang import Builder
-from kivy.uix.screenmanager import Screen
+from kivy.uix.tabbedpanel import TabbedPanelItem
 from kivy.properties import StringProperty
 
 from terminal_widget import TerminalWidget
@@ -11,7 +11,7 @@ from terminal_widget import TerminalWidget
 
 Builder.load_file('pmc_config_gui.kv')
 
-class PMC_Config_GUI(Screen):
+class PMC_Config_GUI(TabbedPanelItem):
     # pass
     ip_addr_prop = StringProperty()
     port_prop = StringProperty()

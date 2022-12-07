@@ -1,6 +1,6 @@
 from kivy.app import App
 from kivy.lang import Builder
-from kivy.uix.screenmanager import ScreenManager, Screen
+from kivy.uix.tabbedpanel import TabbedPanel
 from kivy.uix.gridlayout import GridLayout
 from kivy.properties import ObjectProperty
 from kivy.properties import StringProperty
@@ -9,7 +9,7 @@ from kivy.core.window import Window
 
 from terminal_widget import TerminalWidget#, TerminalInterface
 
-Window.size = (900, 720)
+Window.size = (900, 650)
 Window.minimum_width, Window.minimum_height = Window.size
 
 

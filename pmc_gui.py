@@ -5,7 +5,7 @@
 # from kivy.app import App
 from kivy.lang import Builder
 # from kivy.uix.gridlayout import GridLayout
-from kivy.uix.screenmanager import Screen
+from kivy.uix.tabbedpanel import TabbedPanelItem
 from kivy.uix.widget import Widget
 
 import re
@@ -22,7 +22,7 @@ pmc = pmc_iface.PrimaryMirrorControlInterface()
 Builder.load_file('pmc_gui.kv')
 
     
-class PMC_GUI(Screen):
+class PMC_GUI(TabbedPanelItem):
     
     _tipTiltStepSize_urad = 1
     _focusStepSize_um = 1
