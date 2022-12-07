@@ -1,8 +1,41 @@
 #:kivy 1.0
 
+# Define your background color Template
+<BackgroundColor@Widget>
+    background_color: 1, 1, 1, 1
+    canvas.before:
+        Color:
+            rgba: root.background_color
+        Rectangle:
+            size: self.size
+            pos: self.pos
+
+<BorderColor@Widget>
+    border_width: 2
+    border_color: 1, 1, 1, 1
+    canvas.before:
+        Color:
+            rgba: root.border_color
+        Line:
+            width: root.border_width
+            rectangle: self.x, self.y, self.width, self.height
+
+# Now you can simply Mix the `BackgroundColor` class with almost
+# any other widget... to give it a background.
+<BackgroundLabel@Label+BackgroundColor>
+    background_color: 0, 0, 0, 0
+    # Default the background color for this label
+    # to r 0, g 0, b 0, a 0
+# Use the BackgroundLabel any where in your kv code like below
+<BackgroundGridLayout@GridLayout+BackgroundColor>
+    background_color: 0, 0, 0, 0
+
+<BorderGridLayout@GridLayout+BorderColor>
+    border_color: 0,0,0,0
+
 <TerminalWidget>:
     cols: 1
-    padding: [5, 5, 5, 5]
+    # padding: [5, 5, 5, 5]
     # term_id: root.id
     canvas.before:
         Color:
@@ -10,18 +43,35 @@
         Line:
             width: 2
             rectangle: self.x, self.y, self.width, self.height
-    Label:
+    BackgroundLabel:
+        id: title_label
         text: root.label
         size_hint_y: None
         height: 20
         background_color: (0,0,0,0)
-    ScrollView:
-        id: scrlv
-        TextInput:
-            # id: self.term_id
-            multiline: True
-            size_hint: 1,None
-            height: max( (len(self._lines)+1) * self.line_height, scrlv.height)
-            readonly: True
-            text: root.text
-            background_color: ( 1, 1, 1, 1)
+        canvas.before:
+            Color:
+                rgba: 1, 1, 1, 1
+            Line:
+                width: 2
+                rectangle: self.x, self.y, self.width, self.height
+
+    BorderGridLayout:
+        border_color: 1,0,0,0
+        border_width: 3
+        cols: 1
+        padding: [10, 10, 10, 10]
+        size_hint: 1, None
+        height: root.height-title_label.height
+        # background_color: ( 0.1, 0.1, 0.1, 1)
+        ScrollView:
+            id: scrlv
+            BackgroundLabel:
+                markup: True
+                halign: 'left'
+                valign: 'top'
+                size_hint: None,None
+                size: self.texture_size
+                readonly: True
+                text: root.text
+                background_color: ( 0, 0, 0, 0)

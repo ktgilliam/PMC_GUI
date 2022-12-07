@@ -11,11 +11,7 @@ class ControlMode(Enum):
     STOP = 0
     RELATIVE = 1
     ABSOLUTE = 2
-    
-# print_lock = threading.Lock()
-handshakeJson = {}
-handshakeJson["PMCMessage"] = {}
-handshakeJson["PMCMessage"]["Handshake"]=0xDEAD
+
 
 def sendMessage(conn, message):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
@@ -40,29 +36,37 @@ class PrimaryMirrorControlInterface:
     _connected = False
     
     def TipRelative(self,steps):
-        TerminalWidget.addMessage('Tip Relative: ' + str(steps))
+        pass
+        # TerminalWidget.addMessage('Tip Relative: ' + str(steps))
         
     def TiltRelative(self,steps):
-        TerminalWidget.addMessage('Tilt Relative: ' + str(steps))
+        pass
+        # TerminalWidget.addMessage('Tilt Relative: ' + str(steps))
         
     def FocusRelative(self,steps):
-        TerminalWidget.addMessage('Focus Relative: ' + str(steps))
+        pass
+        # TerminalWidget.addMessage('Focus Relative: ' + str(steps))
         
     def TipAbsolute(self,steps):
-        TerminalWidget.addMessage('Tip Absolute: ' + str(steps))
+        pass
+        # TerminalWidget.addMessage('Tip Absolute: ' + str(steps))
         
     def TiltAbsolute(self,steps):
-        TerminalWidget.addMessage('Tilt Absolute: ' + str(steps))
+        pass
+        # TerminalWidget.addMessage('Tilt Absolute: ' + str(steps))
         
     def FocusAbsolute(self,steps):
-        TerminalWidget.addMessage('Focus Absolute: ' + str(steps))
+        pass
+        # TerminalWidget.addMessage('Focus Absolute: ' + str(steps))
         
     def Connect(self, _ip, _port):
         TerminalWidget.addMessage('Connecting...')
         conn = (_ip, _port)
-        handshakeMsgStr = json.dumps(handshakeJson)
-        replyStr = sendMessage(conn, handshakeMsgStr)
-        if replyStr != None:
+        handshakeJson = {}
+        handshakeJson["PMCMessage"] = {}
+        handshakeJson["PMCMessage"]["Handshake"] = 0xDEAD
+        replyStr = sendMessage(conn, json.dumps(handshakeJson))
+        if replyStr != None and len(replyStr) > 0:
             replyJson = json.loads(replyStr)
             if replyJson["PMCMessage"]["Handshake"] == 0xBEEF:
                 self._connected = True
