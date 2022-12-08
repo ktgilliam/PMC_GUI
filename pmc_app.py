@@ -44,10 +44,7 @@ class PMC_GUI(GridLayout):
     rel_speed_prop = StringProperty()
     abs_speed_prop = StringProperty()
     debug_mode_prop = BooleanProperty()
-    
-    # def build(self):
-    #     return Builder.load_file('pmc_gui.kv')
-        
+          
     def updateOutputFields(self):
         tipValField = self.ids['tip_val']
         tipValField.text = str(round(self._currentTip, 4))

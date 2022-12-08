@@ -4,7 +4,7 @@ json_general_settings = json.dumps([
     {
         "type":"bool",
         "title":"Debug Mode",
-        "desc":"Debug Mode",
+        "desc":"Debug mode just allows the buttons and exceptions to be tested when no actual connection is present",
         "section":"General",
         "key": "dbg_mode"
     }
