@@ -302,7 +302,7 @@ PMC_GUI:
                         width:90
                         background_color: (1,0,0,1)
                         # on_release: root.connectButtonPushed(app.ip_addr_prop, int(app.port_prop))
-                        on_release: root.connectButtonPushed(root.ip_addr_prop, root.port_prop)
+                        on_release: terminal.addMessage('Connecting...'), root.connectButtonPushed(root.ip_addr_prop, root.port_prop)
                     Button:
                         id: do_home_all_btn
                         text:'Home All'
@@ -377,7 +377,7 @@ PMC_GUI:
                         text: '0.0'
     TerminalWidget:
         label: 'Terminal'
-        id: id: id.__self__
+        id: terminal
         # size_hint: 1, None
         # size: root.width, root.height/2
             

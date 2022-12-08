@@ -1,6 +1,8 @@
 import socket
-# from _thread import *
-# import threading
+import time
+from _thread import *
+import threading
+from collections import deque
 
 import json
 from enum import IntEnum
@@ -34,13 +36,20 @@ class PrimaryMirrorControl:
     _isHomed = False
     _connected = False
     _connection = (0,0)
+    replyStrings = deque([])
+    replyLock = threading.Lock()
     
     def sendMessage(self, message):
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             try:
+                # self.replyLock.acquire()
                 err = s.connect(self._connection)
+                # time.sleep(1)
                 s.sendall(message.encode('utf-8')) 
+                time.sleep(1)
                 data = s.recv(1024)
+                replyStr = data.decode()
+                print(f"Received {replyStr!r}")
                 s.close()
             except socket.error as e:
                 TerminalWidget.addMessage(e.strerror, MessageType.ERROR)
@@ -49,9 +58,8 @@ class PrimaryMirrorControl:
                 TerminalWidget.addMessage(f"Unexpected {e=}, {type(e)=}", MessageType.ERROR)
                 return
             
-            replyStr = data.decode()
-            # print(f"Received {replyStr!r}")
-            return replyStr
+            self.replyStrings.append(replyStr[0:-1])
+            # self.replyLock.release()
         
     def SetMoveSpeed(self, moveSpeed, units=UNIT_TYPES.ENGINEERING):
         moveSpeedJson = {}
@@ -105,17 +113,32 @@ class PrimaryMirrorControl:
         TerminalWidget.addMessage('Homing...')
         
     def Connect(self, _ip, _port):
-        TerminalWidget.addMessage('Connecting...')
+        
         self._connection = (_ip, _port)
         handshakeJson = {}
         handshakeJson["PMCMessage"] = {}
         handshakeJson["PMCMessage"]["Handshake"] = 0xDEAD
-        replyStr = self.sendMessage(json.dumps(handshakeJson))
-        if replyStr != None and len(replyStr) > 0:
-            replyJson = json.loads(replyStr)
-            if replyJson["PMCMessage"]["Handshake"] == 0xBEEF:
-                self._connected = True
-                TerminalWidget.addMessage('Connected!')
+        
+        TerminalWidget.addMessage('Connecting...')
+        # t = threading.Thread(target=self.sendMessage, args=(json.dumps(handshakeJson),))
+        # t.start()
+        # t.join()
+        self.sendMessage(json.dumps(handshakeJson))
+        
+        if len(self.replyStrings) > 0:
+            replyStr = self.replyStrings.popleft()
+            if len(replyStr) > 0:
+                try:
+                    replyJson = json.loads(replyStr)
+                    if replyJson["Handshake"] == 0xBEEF:
+                        TerminalWidget.addMessage('Connected!')
+                        self._connected = True
+                    else:
+                        self._connected = False
+                        TerminalWidget.addMessage('Connection failed - handshake mismatch')
+                except Exception as e:
+                    self._connected = False
+                    TerminalWidget.addMessage('Handshake decode failed: ['+replyStr+']')
         return self._connected
     
     def Disonnect(self):

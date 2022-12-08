@@ -13,7 +13,7 @@ from json_settings import *
 import re
 import pmc_iface
 import numeric_widgets
-from terminal_widget import TerminalWidget
+from terminal_widget import TerminalWidget, MessageType
 
 pmc = pmc_iface.PrimaryMirrorControl()
 
@@ -211,6 +211,7 @@ class PMC_GUI(GridLayout):
             self.updateOutputFields()
  
     def connectButtonPushed(self, _ip, _port):
+        
         conBtn = self.ids['connect_btn']
         if not self._isConnected:
             if self.debug_mode_prop:
@@ -254,7 +255,7 @@ class PMC_APP(App):
         self.settings_cls = SettingsWithSidebar
         self.use_kivy_settings = False
         app_build = Builder.load_file('pmc_gui.kv')
-        TerminalWidget.addMessage('Welcome. Press F1 for settings.')
+        TerminalWidget.addMessage('Welcome. Press F1 for settings.', MessageType.IMPORTANT)
         return app_build
 
     def build_config(self, config):
@@ -281,13 +282,13 @@ class PMC_APP(App):
                 self.root.port_prop = int(value)
         elif section == "Speeds":
             if key == "fan":
-                self.root.fan_speed_prop = value    
+                self.root.fan_speed_prop = value
             elif key == "homing":
                 self.root.home_speed_prop = value
             elif key == "rel_move":
-                self.root.rel_speed_prop = value 
+                self.root.rel_speed_prop = value
             elif key == "abs_move":
-                self.root.abs_speed_prop = value  
+                self.root.abs_speed_prop = value
         return super().on_config_change(config, section, key, value)
     
     # def load_config(self):

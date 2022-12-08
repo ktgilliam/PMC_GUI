@@ -13,6 +13,8 @@ class MessageType(Enum):
     INFO = 0
     WARNING = 1
     ERROR = 2
+    IMPORTANT = 3
+    GOOD_NEWS = 4
 
 Builder.load_file('terminal_widget.kv')
 
@@ -48,6 +50,11 @@ class TerminalWidget(GridLayout):
                 printStr = '[color=ffa500]'+msg+'[/color]'
             elif messageType == MessageType.ERROR:
                 printStr = '[color=ff0000]'+msg+'[/color]'
+            elif messageType == MessageType.IMPORTANT:
+                printStr = '[b][u]'+msg+'[/u][/b]'
+            elif messageType == MessageType.GOOD_NEWS:
+                printStr = '[color=00ff00]'+msg+'[/color]'
+                
             TerminalWidget.terminal.printMessage(printStr)
             
     def printMessage(self, msg):
