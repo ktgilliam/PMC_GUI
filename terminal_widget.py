@@ -12,8 +12,7 @@ from enum import Enum
 
 from collections import deque
 
-# import trio
-import threading
+import trio
 class MessageType(Enum):
     INFO = 0
     WARNING = 1
@@ -23,33 +22,45 @@ class MessageType(Enum):
 
 Builder.load_file('terminal_widget.kv')
 
+
 class TerminalWidget(GridLayout):
-    _lines = NumericProperty(0)
+    # _lines = NumericProperty(0)
     term_no = NumericProperty()
     label = StringProperty('')
     text = StringProperty('')
     registered = BooleanProperty(False)
     terminal = None #TerminalWidget()
-    printing_lock = threading.Lock()
-    
-    messagesToPrint = deque([])
+    # _printing_lock = trio.Lock()
     
     def __init__(self, **kwargs): 
         super().__init__(**kwargs)
         TerminalWidget.terminal = self
         
-    # @classmethod
-    # def registerTerminal(term_class, t):
-    #     if not term_class.registered:
-    #         term_class.terminal = t
-    #         term_class.registered = True
+            
+    async def printMessages(self, printReceiveChannel):
+        # if len(self.messagesToPrint) > 0:
+        if printReceiveChannel != None:
+            textToAppend = ''
+            # async with printReceiveChannel:
+            async for msg in printReceiveChannel:
+                textToAppend += msg + '\n'
+            self.text = textToAppend + self.text
+
         
-    @staticmethod
-    def addMessage(msg, messageType=MessageType.INFO, terminal_id=0):
-        print( type(msg))
+class TerminalManager():
+    
+    # messagesToPrint = deque([])
+    
+    def __init__(self, terminal, nursery, **kwargs): 
+        self.terminal = terminal
+        self.nursery = nursery
+            # nursery.start_soon(producer, send_channel)
+            # nursery.start_soon(consumer, receive_channel)
+        
+    async def addMessage(self, msg, messageType=MessageType.INFO):
         if len(msg) == 0:
             raise Exception("Empty Message.")
-        if isinstance(TerminalWidget.terminal, TerminalWidget):
+        if isinstance(self.terminal, TerminalWidget):
         # if TerminalWidget.registered:
             if messageType == MessageType.INFO:
                 printStr = msg
@@ -63,25 +74,16 @@ class TerminalWidget(GridLayout):
             elif messageType == MessageType.GOOD_NEWS:
                 printStr = '[color=00ff00]'+msg+'[/color]'
                
-            terminal = TerminalWidget.terminal
-            terminal.printing_lock.acquire()
-            terminal._lines += 1
             now = datetime.now()
             current_time = now.strftime("%H:%M:%S")
-            newMsgString = current_time + ':  ' + msg
-            terminal.messagesToPrint.appendleft(newMsgString)
-            terminal.printing_lock.release()
+            newMsgString = current_time + ':  ' + printStr
             
-    def printMessages(self):
-        # try:
-        self.printing_lock.acquire()
-        textToAppend = ''
-        while len(self.messagesToPrint) > 0:
-            textToAppend += self.messagesToPrint.pop() + '\n'
-        self.text = textToAppend + self.text
-        self.printing_lock.release()
-        # except trio.Cancelled as e:
-        #     print('Terminal printing was canceled', e)
-        # finally:
-        #     # when canceled, print that it finished
-        #     print('Done wasting time')
+            self.printSendChannel, self.printReceiveChannel = trio.open_memory_channel(0)
+            self.nursery.start_soon(self.sendToTerminalWidget, newMsgString)
+            
+    async def sendToTerminalWidget(self, string):
+        async with self.printSendChannel:
+            await self.printSendChannel.send(string)
+            
+    async def updateTerminalWidget(self):
+        self.nursery.start_soon(self.terminal.printMessages, self.printReceiveChannel)

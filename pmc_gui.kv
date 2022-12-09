@@ -302,7 +302,7 @@ PMC_GUI:
                         width:90
                         background_color: (1,0,0,1)
                         # on_release: app.connectButtonPushed(app.ip_addr_prop, int(app.port_prop))
-                        on_release: terminal.addMessage('Connecting...'), app.connectButtonPushed(root.ip_addr_prop, root.port_prop)
+                        on_release: app.connectButtonPushed()
                     Button:
                         id: do_home_all_btn
                         text:'Home All'
