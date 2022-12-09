@@ -1,13 +1,12 @@
 import socket
 import time
-from _thread import *
-import threading
+# from _thread import *
+# import threading
 from collections import deque
 
 import json
 from enum import IntEnum
 from terminal_widget import TerminalWidget, MessageType
-
 
 class ControlMode(IntEnum):
     STOP = 0
@@ -37,12 +36,13 @@ class PrimaryMirrorControl:
     _connected = False
     _connection = (0,0)
     replyStrings = deque([])
-    replyLock = threading.Lock()
+    # replyLock = threading.Lock()
     
     def sendMessage(self, message):
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             try:
                 # self.replyLock.acquire()
+                s.settimeout(3)
                 err = s.connect(self._connection)
                 # time.sleep(1)
                 s.sendall(message.encode('utf-8')) 
@@ -52,7 +52,8 @@ class PrimaryMirrorControl:
                 print(f"Received {replyStr!r}")
                 s.close()
             except socket.error as e:
-                TerminalWidget.addMessage(e.strerror, MessageType.ERROR)
+                # TerminalWidget.addMessage(e.strerror, MessageType.ERROR)
+                TerminalWidget.addMessage(f"Socket {e=}, {type(e)=}", MessageType.ERROR)
                 return
             except Exception as e:
                 TerminalWidget.addMessage(f"Unexpected {e=}, {type(e)=}", MessageType.ERROR)
@@ -112,14 +113,13 @@ class PrimaryMirrorControl:
         self._isHomed = True
         TerminalWidget.addMessage('Homing...')
         
-    def Connect(self, _ip, _port):
+    async def Connect(self, _ip, _port):
         
         self._connection = (_ip, _port)
         handshakeJson = {}
         handshakeJson["PMCMessage"] = {}
         handshakeJson["PMCMessage"]["Handshake"] = 0xDEAD
-        
-        TerminalWidget.addMessage('Connecting...')
+    
         # t = threading.Thread(target=self.sendMessage, args=(json.dumps(handshakeJson),))
         # t.start()
         # t.join()
@@ -139,14 +139,17 @@ class PrimaryMirrorControl:
                 except Exception as e:
                     self._connected = False
                     TerminalWidget.addMessage('Handshake decode failed: ['+replyStr+']')
-        return self._connected
     
     def Disonnect(self):
         TerminalWidget.addMessage('Disconnecting...')
         self._connection = (0,0)
         self._connected = False
     
-
+    def isConnected(self):
+        return self._connected
+    
+    # def isConnected(self, connected):
+    #     self._connected = connected
         
     def isHomed(self):
         return self._isHomed

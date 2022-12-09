@@ -9,6 +9,11 @@ from kivy.properties import BooleanProperty
 from kivy.lang import Builder
 from datetime import datetime
 from enum import Enum
+
+from collections import deque
+
+# import trio
+import threading
 class MessageType(Enum):
     INFO = 0
     WARNING = 1
@@ -25,7 +30,9 @@ class TerminalWidget(GridLayout):
     text = StringProperty('')
     registered = BooleanProperty(False)
     terminal = None #TerminalWidget()
-    # printing_lock = Lock()
+    printing_lock = threading.Lock()
+    
+    messagesToPrint = deque([])
     
     def __init__(self, **kwargs): 
         super().__init__(**kwargs)
@@ -39,6 +46,7 @@ class TerminalWidget(GridLayout):
         
     @staticmethod
     def addMessage(msg, messageType=MessageType.INFO, terminal_id=0):
+        print( type(msg))
         if len(msg) == 0:
             raise Exception("Empty Message.")
         if isinstance(TerminalWidget.terminal, TerminalWidget):
@@ -54,12 +62,26 @@ class TerminalWidget(GridLayout):
                 printStr = '[b][u]'+msg+'[/u][/b]'
             elif messageType == MessageType.GOOD_NEWS:
                 printStr = '[color=00ff00]'+msg+'[/color]'
-                
-            TerminalWidget.terminal.printMessage(printStr)
+               
+            terminal = TerminalWidget.terminal
+            terminal.printing_lock.acquire()
+            terminal._lines += 1
+            now = datetime.now()
+            current_time = now.strftime("%H:%M:%S")
+            newMsgString = current_time + ':  ' + msg
+            terminal.messagesToPrint.appendleft(newMsgString)
+            terminal.printing_lock.release()
             
-    def printMessage(self, msg):
-        self._lines += 1
-        now = datetime.now()
-        current_time = now.strftime("%H:%M:%S")
-        printMsg = current_time + ':  ' + msg + '\n' + self.text
-        self.text = printMsg
+    def printMessages(self):
+        # try:
+        self.printing_lock.acquire()
+        textToAppend = ''
+        while len(self.messagesToPrint) > 0:
+            textToAppend += self.messagesToPrint.pop() + '\n'
+        self.text = textToAppend + self.text
+        self.printing_lock.release()
+        # except trio.Cancelled as e:
+        #     print('Terminal printing was canceled', e)
+        # finally:
+        #     # when canceled, print that it finished
+        #     print('Done wasting time')

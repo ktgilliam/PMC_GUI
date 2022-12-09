@@ -65,7 +65,7 @@ PMC_GUI:
                             size_hint_x: None
                             width: 50
                             disabled: True
-                            on_press: root.plusTipButtonPushed()
+                            on_press: app.plusTipButtonPushed()
                         Label:
                         ##################
                         Button:
@@ -76,7 +76,7 @@ PMC_GUI:
                             size_hint_x: None
                             width: 50
                             disabled: True
-                            on_press: root.minusTiltButtonPushed()
+                            on_press: app.minusTiltButtonPushed()
                         Label: # Would like to put an indicator light here.
                         Button:
                             id: do_pos_tilt_btn
@@ -86,7 +86,7 @@ PMC_GUI:
                             size_hint_x: None
                             width: 50
                             disabled: True
-                            on_press: root.plusTiltButtonPushed()
+                            on_press: app.plusTiltButtonPushed()
                         ##################
                         Label:
                         Button:
@@ -97,7 +97,7 @@ PMC_GUI:
                             size_hint_x: None
                             width: 50
                             disabled: True
-                            on_press: root.minusTipButtonPushed()
+                            on_press: app.minusTipButtonPushed()
                         Label:
                         ##################
                         Label:
@@ -118,25 +118,25 @@ PMC_GUI:
                             size_hint_y: None
                             height: 30
                             background_color: (0,1,0,1)
-                            on_press: root._1uradButtonPushed()
+                            on_press: app._1uradButtonPushed()
                         Button:
                             id: _10urad_btn
                             text: '10'
                             size_hint_y: None
                             height: 30
-                            on_press: root._10uradButtonPushed()
+                            on_press: app._10uradButtonPushed()
                         Button:
                             id: _100urad_btn
                             text: '100'
                             size_hint_y: None
                             height: 30
-                            on_press: root._100uradButtonPushed()
+                            on_press: app._100uradButtonPushed()
                         Button:
                             id: _1000urad_btn
                             text: '1000'
                             size_hint_y: None
                             height: 30
-                            on_press: root._1000uradButtonPushed()
+                            on_press: app._1000uradButtonPushed()
                 GridLayout:
                     cols: 1
                     padding: [10, 10, 10, 10]
@@ -149,7 +149,7 @@ PMC_GUI:
                             size_hint_y: None
                             height: 40
                             disabled: True
-                            on_press: root.plusFocusButtonPushed()
+                            on_press: app.plusFocusButtonPushed()
                         Label:
                         Label:
                         Button:
@@ -158,7 +158,7 @@ PMC_GUI:
                             size_hint_y: None
                             height: 40
                             disabled: True
-                            on_press: root.minusFocusButtonPushed()
+                            on_press: app.minusFocusButtonPushed()
                         Label:
                         Label:
                         Label:
@@ -177,25 +177,25 @@ PMC_GUI:
                             size_hint_y: None
                             height: 30
                             background_color: (0,1,0,1)
-                            on_press: root._1umButtonPushed()
+                            on_press: app._1umButtonPushed()
                         Button:
                             id: _10um_btn
                             text: '10'
                             size_hint_y: None
                             height: 30
-                            on_press: root._10umButtonPushed()
+                            on_press: app._10umButtonPushed()
                         Button:
                             id: _100um_btn
                             text: '100'
                             size_hint_y: None
                             height: 30
-                            on_press: root._100umButtonPushed()
+                            on_press: app._100umButtonPushed()
                         Button:
                             id: _1000um_btn
                             text: '1000'
                             size_hint_y: None
                             height: 30
-                            on_press: root._1000umButtonPushed()
+                            on_press: app._1000umButtonPushed()
                     #_________________
         GridLayout:
             cols: 1
@@ -239,7 +239,7 @@ PMC_GUI:
                     size_hint_x: None
                     width:30
                     disabled: True
-                    on_press: root.tipAbsGoButtonPushed()
+                    on_press: app.tipAbsGoButtonPushed()
                 Label: 
                     text: 'Tilt [urad]: '
                     size_hint_y: None
@@ -259,7 +259,7 @@ PMC_GUI:
                     size_hint_x: None
                     width:30
                     disabled: True
-                    on_press: root.tiltAbsGoButtonPushed()
+                    on_press: app.tiltAbsGoButtonPushed()
                 Label: 
                     text: 'Focus [um]: '
                     size_hint_y: None
@@ -279,7 +279,7 @@ PMC_GUI:
                     size_hint_x: None
                     width:30
                     disabled: True
-                    on_press: root.focusAbsGoButtonPushed()
+                    on_press: app.focusAbsGoButtonPushed()
             GridLayout:
                 cols:1
                 Label:
@@ -301,8 +301,8 @@ PMC_GUI:
                         size_hint_x: None
                         width:90
                         background_color: (1,0,0,1)
-                        # on_release: root.connectButtonPushed(app.ip_addr_prop, int(app.port_prop))
-                        on_release: terminal.addMessage('Connecting...'), root.connectButtonPushed(root.ip_addr_prop, root.port_prop)
+                        # on_release: app.connectButtonPushed(app.ip_addr_prop, int(app.port_prop))
+                        on_release: terminal.addMessage('Connecting...'), app.connectButtonPushed(root.ip_addr_prop, root.port_prop)
                     Button:
                         id: do_home_all_btn
                         text:'Home All'
@@ -311,7 +311,7 @@ PMC_GUI:
                         size_hint_x: None
                         width:70
                         disabled: True
-                        on_release: root.homingButtonPushed()
+                        on_release: app.homingButtonPushed()
                     Button:
                         text:'STOP'
                         bold: True
@@ -320,7 +320,7 @@ PMC_GUI:
                         size_hint_x: None
                         width:80
                         background_color: (1,0,0,1)
-                        on_release: root.stopButtonPushed()
+                        on_release: app.stopButtonPushed()
 
         GridLayout:
             cols: 1
