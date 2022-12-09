@@ -36,15 +36,15 @@ class TerminalWidget(GridLayout):
         super().__init__(**kwargs)
         TerminalWidget.terminal = self
         
-            
     async def printMessages(self, printReceiveChannel):
         # if len(self.messagesToPrint) > 0:
+        
         if printReceiveChannel != None:
             textToAppend = ''
-            # async with printReceiveChannel:
-            async for msg in printReceiveChannel:
-                textToAppend += msg + '\n'
-            self.text = textToAppend + self.text
+            async with printReceiveChannel:
+                async for msg in printReceiveChannel:
+                    textToAppend += msg + '\n'
+                self.text = textToAppend + self.text
 
         
 class TerminalManager():
@@ -78,12 +78,14 @@ class TerminalManager():
             current_time = now.strftime("%H:%M:%S")
             newMsgString = current_time + ':  ' + printStr
             
-            self.printSendChannel, self.printReceiveChannel = trio.open_memory_channel(0)
-            self.nursery.start_soon(self.sendToTerminalWidget, newMsgString)
+            printSendChannel, printReceiveChannel = trio.open_memory_channel(0)
+            self.nursery.start_soon(self.sendToTerminalWidget, newMsgString, printSendChannel)
+            self.nursery.start_soon(self.terminal.printMessages, printReceiveChannel)
+        await trio.sleep(0)
+        
+    async def sendToTerminalWidget(self, string, printSendChannel):
+        async with printSendChannel:
+            await printSendChannel.send(string)
             
-    async def sendToTerminalWidget(self, string):
-        async with self.printSendChannel:
-            await self.printSendChannel.send(string)
-            
-    async def updateTerminalWidget(self):
-        self.nursery.start_soon(self.terminal.printMessages, self.printReceiveChannel)
+    # async def updateTerminalWidget(self):
+    #     self.nursery.start_soon(self.terminal.printMessages, self.printReceiveChannel)

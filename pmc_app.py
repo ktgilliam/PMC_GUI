@@ -12,7 +12,7 @@ kivy.require('2.1.0')
 import trio
 import time
 
-from enum import Enum
+from enum import IntEnum
 # from functools import partial
 from json_settings import *
 import re
@@ -20,12 +20,12 @@ import pmc_iface
 import numeric_widgets
 from terminal_widget import *
 
-class AppRequest(Enum):
+class AppRequest(IntEnum):
     NO_REQUESTS = 0
     CONNECT_REQUESTED=1
-    DISCONNECT_REQUESTED=12
-    
-class AppState(Enum):
+    DISCONNECT_REQUESTED=2
+    GO_HOME_REQUESTED=3
+class AppState(IntEnum):
     INIT=0
     DISCONNECTED=1
     CONNECT_IN_PROGRESS = 2
@@ -34,9 +34,6 @@ class AppState(Enum):
     
 Window.size = (900, 650)
 Window.minimum_width, Window.minimum_height = Window.size
-
-
-
 
 pmc = pmc_iface.PrimaryMirrorControl()
 
@@ -174,10 +171,16 @@ class PMC_APP(App):
         self.debug_mode_prop: config.get('General', 'dbg_mode')=='True'
         return config
     
-    def setAppState(self, state):
-        self.appStateLock.acquire()
+    async def setAppState(self, state):
+        await self.appStateLock.acquire()
         self.appState = state
         self.appStateLock.release()
+        
+    async def getAppState(self):
+        await self.appStateLock.acquire()
+        state = self.appState
+        self.appStateLock.release()
+        return state
         
     async def app_func(self):
         '''trio needs to run a function, so this is it. '''
@@ -206,8 +209,8 @@ class PMC_APP(App):
             # time.sleep(0.5)
             await trio.sleep(0.1)
             nursery.start_soon(self.initializeTerminal)
-            # await trio.sleep(0.1)
-            # nursery.start_soon(self.updateControls)
+            await trio.sleep(0.1)
+            nursery.start_soon(self.updateControls)
             self.appState = AppState.INIT
             return False
         
@@ -220,9 +223,9 @@ class PMC_APP(App):
         self.terminalManager = TerminalManager(TerminalWidget.terminal, self.nursery)
         # await self.terminalManager.initialize(self.nursery)
         await self.terminalManager.addMessage('Welcome. Press F1 for settings.', MessageType.IMPORTANT)
-        while 1:
-            self.nursery.start_soon(self.terminalManager.updateTerminalWidget)
-            await trio.sleep(0) 
+        # while 1:
+        #     self.nursery.start_soon(self.terminalManager.updateTerminalWidget)
+        #     await trio.sleep(0) 
             
     async def updateControls(self):
         gui = None
@@ -231,94 +234,108 @@ class PMC_APP(App):
             await trio.sleep(0)
             
         conBtn = gui.ids['connect_btn']
+        disconBtn = gui.ids['disconnect_btn']
+        
         while 1:
-            if self.appState == AppState.INIT:
-                self.setAppState(AppState.DISCONNECTED)
+            currentState = await self.getAppState()
+            if currentState == AppState.INIT:
+                await self.setAppState(AppState.DISCONNECTED)
                 # Do whatever else needs doing here
-            elif self.appState == AppState.DISCONNECTED:
+            elif currentState == AppState.DISCONNECTED:
                 if len(self.appRequestList) > 0:
                     await trio.sleep(0)
-                    request =   self.appRequestList.pop()
+                    request = self.appRequestList.pop()
                     if request == AppRequest.CONNECT_REQUESTED:
-                        self.setAppState(AppState.CONNECT_IN_PROGRESS)
+                        await self.setAppState(AppState.CONNECT_IN_PROGRESS)
+                        await self.terminalManager.addMessage('Connecting...')
+                        conBtn.disabled = True
                         await trio.sleep(0)
-                        await pmc.sendHandshake(self.ip_addr_prop, self.port_prop)
-                        await pmc.checkMessages()
-                        # self.nursery.start_soon(pmc.sendHandshake, self.ip_addr_prop, self.port_prop,)
-                        
-                        # pmc.Connect(self.ip_addr_prop, self.port_prop)
-                        # await pmc.Connect(self.ip_addr_prop, self.port_prop)
+                        if self.debug_mode_prop:
+                            await trio.sleep(0)
+                            pmc._connected = True #overriding the pmc connection flag (bad)
+                            await self.terminalManager.addMessage('Connecting... (debug mode so not really)')
+                            await trio.sleep(0)
+                        else:
+                            self.nursery.start_soon( pmc.establishTcpComms, self.ip_addr_prop, self.port_prop)
+                            await trio.sleep(0)
+                            await pmc.sendHandshake()
+                            
                     elif request == AppRequest.DISCONNECT_REQUESTED:
-                        self.terminalManager.addMessage("Disconnect requested from disconnected state", MessageType.WARNING)
+                        await self.terminalManager.addMessage("Disconnect requested from disconnected state", MessageType.WARNING)
                         
-            elif self.appState == AppState.CONNECT_IN_PROGRESS:
+            elif currentState == AppState.CONNECT_IN_PROGRESS:
+                try:
+                    # self.nursery.start_soon(pmc.establishTcpComms)
+                    
+                    await trio.sleep(0)
+                    await pmc.waitForHandshakeReply()
+                    
+                except TimeoutError as e:
+                    await self.terminalManager.addMessage(str(e), MessageType.ERROR)
+                    await self.setAppState(AppState.DISCONNECTED)
+                    conBtn.disabled = False
+                # except Exception as e:
+                #     await self.terminalManager.addMessage(str(e))
                 if pmc.isConnected():
                     gui.enableRelativeControls()
-                    self.setAppState(AppState.CONNECTED)
+                    await self.setAppState(AppState.CONNECTED)
                     conBtn.background_color = (0,1,0,1)
+                    disconBtn.background_color = (1,0,0,1)
                     conBtn.text = 'Connected'
+                    await self.terminalManager.addMessage('Connected!', MessageType.GOOD_NEWS)
                     
-            elif self.appState == AppState.CONNECTED:
-                    # if pmc.isHomed():
-                    #     self.enableAbsoluteControls()
-                    if len(self.appRequestList) > 0:
-                        request =   self.appRequestList.pop()
-                        if request == AppRequest.CONNECT_REQUESTED:
-                            self.terminalManager.addMessage("Connect requested from connected state", MessageType.WARNING)
-                        elif request == AppRequest.DISCONNECT_REQUESTED:
-                            self.setAppState(AppState.DISCONNECTED)
-                            gui.disableControls()
-                            pmc.reset()
+            elif currentState == AppState.CONNECTED:
+                if not self.debug_mode_prop:
+                    await pmc.checkMessages()
+                # if pmc.isHomed():
+                #     self.enableAbsoluteControls()
+                if len(self.appRequestList) > 0:
+                    request =   self.appRequestList.pop()
+                    if request == AppRequest.CONNECT_REQUESTED:
+                        self.terminalManager.addMessage("Connect requested from connected state", MessageType.WARNING)
+                    elif request == AppRequest.DISCONNECT_REQUESTED:
+                        await self.setAppState(AppState.DISCONNECTED)
+                        await self.terminalManager.addMessage('Disconnecting...')
+                        pmc.Disonnect()
+                        gui.disableControls()
+                        pmc.reset()
+                        conBtn.background_color = (1,1,1,1)
+                        disconBtn.background_color = (1,1,1,1)
+                        disconBtn.disabled = False
+                        conBtn.text = 'Connect'
+                    elif request == AppRequest.GO_HOME_REQUESTED:
+                        await self.terminalManager.addMessage('Homing...')
+                        pmc.HomeAll()
+                        gui.enableAbsoluteControls()
+                        
             await trio.sleep(0)
-            
-    def connectButtonPushed(self):
-        gui =  self.root
-        conBtn = gui.ids['connect_btn']
-        if self.appState == AppState.INIT or self.appState == AppState.DISCONNECTED:
-            if self.debug_mode_prop:
-                pmc._connected = True #overriding the pmc connection flag (bad)
-            #    self.terminalManager.addMessage("Connected! (debug mode so not really)")
-                self.nursery.start_soon(self.terminalManager.addMessage, 'Connected! (debug mode so not really)',)
-            else:
-                self.nursery.start_soon(self.terminalManager.addMessage, 'Connecting...',)
-                # self.terminalManager.addMessage('Connecting...')
-                self.appRequestList.append(AppRequest.CONNECT_REQUESTED)
-        elif self.appState == AppState.CONNECTED:
-            pmc.Disonnect()
-            gui.disableControls()
-            self.setAppState(AppState.DISCONNECTED)
-            conBtn.background_color = (1,0,0,1)
-            conBtn.text = 'Connect'
-        else:
-            pass
-        
-                    
+                      
     def plusTipButtonPushed(self):
         gui = self.root
-        self.terminalManager.addMessage(' Tip [+' + str(gui._tipTiltStepSize_urad) + ' urad]')
-        pmc.TipRelative(gui._tipTiltStepSize_urad)
-        gui._currentTip = gui._currentTip + gui._tipTiltStepSize_urad
+        self.terminalManager.addMessage(' Tip [+' + str(pmc._tipTiltStepSize_urad) + ' urad]')
+        pmc.TipRelative(pmc._tipTiltStepSize_urad)
+        gui._currentTip = gui._currentTip + pmc._tipTiltStepSize_urad
         gui.updateOutputFields()
         
     def minusTipButtonPushed(self):
         gui = self.root
-        self.terminalManager.addMessage(' Tip [-' + str(gui._tipTiltStepSize_urad) + ' urad]')
-        pmc.TipRelative(-1*gui._tipTiltStepSize_urad)
-        gui._currentTip = gui._currentTip - gui._tipTiltStepSize_urad
+        self.terminalManager.addMessage(' Tip [-' + str(pmc._tipTiltStepSize_urad) + ' urad]')
+        pmc.TipRelative(-1*pmc._tipTiltStepSize_urad)
+        gui._currentTip = gui._currentTip - pmc._tipTiltStepSize_urad
         gui.updateOutputFields()
         
     def plusTiltButtonPushed(self):
         gui = self.root
-        self.terminalManager.addMessage(' Tilt [+' + str(gui._tipTiltStepSize_urad) + ' urad]')
-        pmc.TiltRelative(gui._tipTiltStepSize_urad)
-        gui._currentTilt = gui._currentTilt + gui._tipTiltStepSize_urad
+        self.terminalManager.addMessage(' Tilt [+' + str(pmc._tipTiltStepSize_urad) + ' urad]')
+        pmc.TiltRelative(pmc._tipTiltStepSize_urad)
+        gui._currentTilt = gui._currentTilt + pmc._tipTiltStepSize_urad
         self.updateOutputFields()
 
     def minusTiltButtonPushed(self):
         gui = self.root
-        self.terminalManager.addMessage(' Tilt [-' + str(gui._tipTiltStepSize_urad) + ' urad]')
-        pmc.TiltRelative(-1*gui._tipTiltStepSize_urad)
-        gui._currentTilt = gui._currentTilt - gui._tipTiltStepSize_urad
+        self.terminalManager.addMessage(' Tilt [-' + str(pmc._tipTiltStepSize_urad) + ' urad]')
+        pmc.TiltRelative(-1*pmc._tipTiltStepSize_urad)
+        gui._currentTilt = gui._currentTilt - pmc._tipTiltStepSize_urad
         gui.updateOutputFields()
         
     def plusFocusButtonPushed(self):
@@ -339,7 +356,7 @@ class PMC_APP(App):
             
     def _1uradButtonPushed(self):
         gui = self.root
-        gui._tipTiltStepSize_urad = 1
+        pmc._tipTiltStepSize_urad = 1
         # self.terminalManager.addMessage('Tip/Tilt Step size: ' + str(self._tipTiltStepSize_urad) + 'urad')
         gui.resetTipTiltStepSizeButtons()
         btn = gui.ids['_1urad_btn']
@@ -347,7 +364,7 @@ class PMC_APP(App):
         
     def _10uradButtonPushed(self):
         gui = self.root
-        gui._tipTiltStepSize_urad = 10
+        pmc._tipTiltStepSize_urad = 10
         # self.terminalManager.addMessage('Tip/Tilt Step size: ' + str(self._tipTiltStepSize_urad) + 'urad') 
         gui.resetTipTiltStepSizeButtons()
         btn = gui.ids['_10urad_btn']
@@ -355,7 +372,7 @@ class PMC_APP(App):
         
     def _100uradButtonPushed(self):
         gui = self.root
-        gui._tipTiltStepSize_urad = 100
+        pmc._tipTiltStepSize_urad = 100
         # self.terminalManager.addMessage('Tip/Tilt Step size: ' + str(self._tipTiltStepSize_urad) + 'urad')
         gui.resetTipTiltStepSizeButtons()
         btn = gui.ids['_100urad_btn']
@@ -363,7 +380,7 @@ class PMC_APP(App):
         
     def _1000uradButtonPushed(self):
         gui = self.root
-        gui._tipTiltStepSize_urad = 1000
+        pmc._tipTiltStepSize_urad = 1000
         # self.terminalManager.addMessage('Tip/Tilt Step size: ' + str(self._tipTiltStepSize_urad) + 'urad') 
         gui.resetTipTiltStepSizeButtons()
         btn = gui.ids['_1000urad_btn']
@@ -433,12 +450,7 @@ class PMC_APP(App):
     def homingButtonPushed(self):
         gui =  self.root
         self.terminalManager.addMessage('Homing Button Pushed!')
-        gui._currentTip = 0.0
-        gui._currentTilt = 0.0
-        gui._currentFocus = 0.0
-        pmc.HomeAll(self.home_speed_prop)
-        self.enableAbsoluteControls()
-        self.updateOutputFields()
+
 
         
     def stopButtonPushed(self):

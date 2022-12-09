@@ -1,4 +1,5 @@
-#:kivy 1.0
+#:kivy 2.1.0
+#:import AppRequest pmc_app.AppRequest
 PMC_GUI:
     id: id: id.__self__
     cols: 1
@@ -300,9 +301,18 @@ PMC_GUI:
                         height: 30
                         size_hint_x: None
                         width:90
-                        background_color: (1,0,0,1)
                         # on_release: app.connectButtonPushed(app.ip_addr_prop, int(app.port_prop))
-                        on_release: app.connectButtonPushed()
+                        on_release: app.appRequestList.append(AppRequest.CONNECT_REQUESTED)
+                    Button:
+                        id: disconnect_btn
+                        text:'Disconnect'
+                        size_hint_y: None
+                        height: 30
+                        size_hint_x: None
+                        width:90
+                        # disabled: True
+                        # on_release: app.connectButtonPushed(app.ip_addr_prop, int(app.port_prop))
+                        on_release: app.appRequestList.append(AppRequest.DISCONNECT_REQUESTED)
                     Button:
                         id: do_home_all_btn
                         text:'Home All'
@@ -311,9 +321,10 @@ PMC_GUI:
                         size_hint_x: None
                         width:70
                         disabled: True
-                        on_release: app.homingButtonPushed()
+                        on_release: app.appRequestList.append(AppRequest.GO_HOME_REQUESTED)
                     Button:
                         text:'STOP'
+                        id: do_stop_btn
                         bold: True
                         size_hint_y: None
                         height: 30
@@ -321,6 +332,7 @@ PMC_GUI:
                         width:80
                         background_color: (1,0,0,1)
                         on_release: app.stopButtonPushed()
+                        disabled: True
 
         GridLayout:
             cols: 1
