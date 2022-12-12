@@ -9,7 +9,7 @@
             "type": "python",
             "request": "launch",
             "module": "pmc_app",
-            "justMyCode": true
+            "justMyCode": false
         },
         {
             "name": "Python: Current File",
@@ -17,7 +17,7 @@
             "request": "launch",
             "program": "${file}",
             "console": "integratedTerminal",
-            "justMyCode": true
+            "justMyCode": false
         }
     ]
 }

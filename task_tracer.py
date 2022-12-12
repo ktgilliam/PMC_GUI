@@ -1,22 +1,46 @@
 import trio
 import re
+from enum import IntEnum
 
+class FilterType(IntEnum):
+    NO_FILTERS=0
+    EXCLUDE=1
+    INCLUDE=2
+    
 class Tracer(trio.abc.Instrument):
     
     filters = []
+    filterType = FilterType.NO_FILTERS
     
-    def addFilter(self, taskName):
+    def addFilters(self, filterType, *filtStr):
         # filterRegex = re.compile(r"<Task \'\\S{3,}" + taskName + r"\' at 0x\\S{3,}>")
-        filterRegex = re.compile(taskName)
-        self.filters.append(filterRegex)
+        self.filterType = filterType
+        for s in filtStr:
+            filterRegex = re.compile(s)
+            self.filters.append(filterRegex)
     
     def taskFilter(self, task):
-        for filt in self.filters:
-            if re.search(filt, repr(task)):
-                return None
-            else:
+        matchFound = False
+        if self.filterType != FilterType.NO_FILTERS:
+            for filt in self.filters:
+                if re.search(filt, repr(task)):
+                    # Positive Match
+                    if self.filterType == FilterType.EXCLUDE:
+                        return None
+                    elif self.filterType == FilterType.INCLUDE:
+                        return task
+                else:
+                    # Negative Match
+                    continue
+
+            if self.filterType == FilterType.EXCLUDE:
                 return task
-            
+            elif  self.filterType == FilterType.INCLUDE:
+                return None
+                
+        else:
+            return task
+        
     def before_run(self):
         print("!!! run started")
 

@@ -86,6 +86,9 @@ class TerminalManager():
     async def sendToTerminalWidget(self, string, printSendChannel):
         async with printSendChannel:
             await printSendChannel.send(string)
-            
+
+    def queueMessage(self, msg, messageType=MessageType.INFO):
+        self.nursery.start_soon(self.addMessage, msg, messageType)
+        
     # async def updateTerminalWidget(self):
     #     self.nursery.start_soon(self.terminal.printMessages, self.printReceiveChannel)

@@ -25,8 +25,24 @@ class AXIS(IntEnum):
     TILT = 1
     FOCUS = 2
 
+class DIRECTION(IntEnum):
+    REVERSE=-1
+    FORWARD=1
+    
+    
+# class PrimaryMirrorActionRequest():
+#     def __init__(self, type, axis, value, units, unit_type=UNIT_TYPES.ENGINEERING, **kwargs): 
+#         self._type = type
+#         self._axis = axis
+#         self._value = value
+#         self._units = units
+#         self.unit_type = unit_type
+#         super().__init__(**kwargs)
+    
+    
 default_timeout = 5
 rx_buff_size = 1024
+
 class PrimaryMirrorControl:
     
     _tipTiltStepSize_urad = 1
@@ -41,21 +57,28 @@ class PrimaryMirrorControl:
     _connection = (0,0)
     _client_stream = None
     _streamReady = False
-    receiveBuffer = b'' # bytearray([])
-    # receiveStrings = deque([])
-    # transmitStrings = deque([])
-    # replyLock = threading.Lock()
-    # _controlLock = threading.Lock()
-    outgoingDataTxChannel, outgoingDataRxChannel = trio.open_memory_channel(0)
-    incomingDataTxChannel, incomingDataRxChannel = trio.open_memory_channel(0)
+    _receiveBuffer = b''
     
-    _newMessageCount = 0
+    _outgoingDataTxChannel, _outgoingDataRxChannel = trio.open_memory_channel(0)
+    _incomingDataTxChannel, _incomingDataRxChannel = trio.open_memory_channel(0)
+    
+    _disconnectCommandEvent = trio.Event()
+    _newCommandDataEvent = trio.Event()
+    
+    _outgoingJsonMessage = {}
+    
     def reset(self):
         self._currentTip = 0.0
         self._currentTilt = 0.0
         self._currentFocus = 0.0 
-        self.isHomed = False
+        self._isHomed = False
+        self._disconnectCommandEvent = trio.Event()
         
+    @staticmethod
+    def handleDisconnectErrors(excgroup):
+        for exc in excgroup.exceptions:
+            print(exc)
+            
     def setTipTiltStepSize(self, val):
         self._tipTiltStepSize_urad = val
         
@@ -70,129 +93,156 @@ class PrimaryMirrorControl:
     
     def getCurrentFocus(self):
         return self._currentFocus
-            
+    
+    async def startNewMessage(self):
+        self._outgoingJsonMessage["PMCMessage"] = {}
+        self._newCommandDataEvent = trio.Event()
+        
+    async def addKvCommandPairs(self, **kwargs):
+        for key, val in kwargs.items():
+            kvp = {key: val}
+            self._outgoingJsonMessage["PMCMessage"].update(kvp)
+        self._newCommandDataEvent.set()
+        
     async def SetMoveSpeed(self, moveSpeed, units=UNIT_TYPES.ENGINEERING):
-        moveSpeedJson = {}
-        moveSpeedJson["PMCMessage"] = {}
-        moveSpeedJson["PMCMessage"]["VelUnits"] = units
-        moveSpeedJson["PMCMessage"]["SetVelocity"] = moveSpeed
-        with self._transmitLock:
-            self.transmitStrings.append(json.dumps(moveSpeedJson))
-        
+        await self.addKvCommandPairs(VelUnits=units, SetVelocity=moveSpeed)
+            
     async def SendMoveCommand(self, size, axis, move_type):
-        moveMsgJson = {}
-        moveMsgJson["PMCMessage"] = {}
         if axis == AXIS.TIP:
-            moveMsgJson["PMCMessage"]["SetTip"] = size
+            await self.addKvCommandPairs(SetTip=size, MoveType=move_type)
         elif axis == AXIS.TILT:
-            moveMsgJson["PMCMessage"]["SetTilt"] = size
+            await self.addKvCommandPairs(SetTilt=size, MoveType=move_type)
         elif axis == AXIS.FOCUS:
-            moveMsgJson["PMCMessage"]["SetFocus"] = size
-        moveMsgJson["PMCMessage"]["MoveType"] = move_type
-        with self._transmitLock:
-            self.transmitStrings.append(json.dumps(moveMsgJson))
-        
-    async def TipRelative(self,deltaPos):
+            await self.addKvCommandPairs(SetFocus=size, MoveType=move_type)
+
+            
+    async def TipRelative(self,dir):
         if self._connected:
-            self.SendMoveCommand(deltaPos, AXIS.TIP, MoveTypes.RELATIVE)
-        
-    async def TiltRelative(self,deltaPos):
+            self._currentTip += dir*self._tipTiltStepSize_urad
+            await self.SendMoveCommand(dir*self._tipTiltStepSize_urad, AXIS.TIP, MoveTypes.RELATIVE)
+
+    async def TiltRelative(self,dir):
         if self._connected:
-            self.SendMoveCommand(deltaPos, AXIS.TILT, MoveTypes.RELATIVE)
+            self._currentTilt += dir*self._tipTiltStepSize_urad
+            await self.SendMoveCommand(dir*self._tipTiltStepSize_urad, AXIS.TILT, MoveTypes.RELATIVE)
         
-    async def FocusRelative(self,deltaPos):
+    async def FocusRelative(self,dir):
         if self._connected:
-            self.SendMoveCommand(deltaPos, AXIS.FOCUS, MoveTypes.RELATIVE)
+            self._currentFocus += dir*self._focusStepSize_um
+            await self.SendMoveCommand(dir*self._focusStepSize_um, AXIS.FOCUS, MoveTypes.RELATIVE)
         
     async def TipAbsolute(self,pos):
         if self._connected:
-            self.SendMoveCommand(pos, AXIS.TIP, MoveTypes.ABSOLUTE)
+            self._currentTip = pos
+            await self.SendMoveCommand(pos, AXIS.TIP, MoveTypes.ABSOLUTE)
         
     async def TiltAbsolute(self,pos):
         if self._connected:
-            self.SendMoveCommand(pos, AXIS.TILT, MoveTypes.ABSOLUTE)
+            self._currentTilt = pos
+            await self.SendMoveCommand(pos, AXIS.TILT, MoveTypes.ABSOLUTE)
         
     async def FocusAbsolute(self,pos):
         if self._connected:
-            self.SendMoveCommand(pos, AXIS.FOCUS, MoveTypes.ABSOLUTE)
+            self._currentFocus = pos
+            await self.SendMoveCommand(pos, AXIS.FOCUS, MoveTypes.ABSOLUTE)
             
     async def HomeAll(self, homeSpeed):       
-        homeMsgJson = {}
-        homeMsgJson["PMCMessage"] = {}
-        homeMsgJson["PMCMessage"]["FindHome"] = int(homeSpeed)
-        replyStr = self.sendMessage(json.dumps(homeMsgJson))
+        await self.startNewMessage()
+        await self.addKvCommandPairs(FindHome=int(homeSpeed))
+        
         self._currentTip = 0.0
         self._currentTilt = 0.0
         self._currentFocus = 0.0 
         self._isHomed = True
         
-
-    async def aSendMessages(self, client_stream, outgoingDataRxChannel):
-        async with outgoingDataRxChannel:
-            async for message in outgoingDataRxChannel:
+    
+    async def aSendMessages(self, task_status=trio.TASK_STATUS_IGNORED):
+        async with self._outgoingDataRxChannel.clone() as chan:
+            print("inside aSendMessages with")
+            async for message in chan:
+                await self._client_stream.send_all(message.encode('utf-8'))
                 print('Sent: ' + message)
-                await client_stream.send_all(message.encode('utf-8'))
-                await trio.sleep(0)
-                
-    async def aReceiveMessages(self, client_stream, incomingDataTxChannel):
-        async for data in client_stream:
-            # print(data)
-            self.receiveBuffer += data
-            lastByte = self.receiveBuffer[-1:]
-            if lastByte == b'\x00':
-                recvStr = self.receiveBuffer.decode('utf-8')
-                await incomingDataTxChannel.send(recvStr[:-1])
-                self.receiveBuffer = ''.encode('utf-8')
-                self._newMessageCount += 1
-                print('Received: '+ recvStr[:-1])
-        sys.exit()
+                await self.startNewMessage()
+            pass
+        print("transmitter: connection closed")
+        
+            
+    async def aReceiveMessages(self, task_status=trio.TASK_STATUS_IGNORED):
+        if self._client_stream != None:
+            async for data in self._client_stream:
+                # print(data)
+                # if self._disconnectCommandEvent.is_set():
+                print("inside aReceiveMessages with")
+                self._receiveBuffer += data
+                lastByte = self._receiveBuffer[-1:]
+                if lastByte == b'\x00':
+                    recvStr = self._receiveBuffer.decode('utf-8')
+                    async with self._incomingDataTxChannel.clone() as chan:
+                        await chan.send(recvStr[:-1])
+                    self._receiveBuffer = ''.encode('utf-8')
+                    print('Received: '+ recvStr[:-1])
+                    # await self._client_stream.aclose()
+        # print("receiver: connection closed")
+
         # await trio.sleep(0)
         
-    async def connect(self,  _ip, _port, timeout=default_timeout):
+    async def open_connection(self,  _ip, _port, timeout=default_timeout):
         self._connection = (_ip, _port)
         # try:
         with trio.fail_after(timeout):
             self._client_stream = await trio.open_tcp_stream(_ip, _port)
-
-    async def startCommStreams(self):
+            
+    async def startCommsStream(self, onException=handleDisconnectErrors):
         if self._client_stream != None:
             async with self._client_stream:
-                with catch({ConnectionResetError: self.handleDisconnectErrors}):
+                with catch({ \
+                    ConnectionResetError: onException, \
+                        trio.BrokenResourceError: onException}):
                     async with trio.open_nursery() as nursery:
-                        nursery.start_soon(self.aSendMessages, self._client_stream, self.outgoingDataRxChannel.clone())
-                        nursery.start_soon(self.aReceiveMessages, self._client_stream, self.incomingDataTxChannel.clone())
-                        nursery.start_soon(self.checkMessages, self.incomingDataRxChannel.clone())
+                        # nursery.start_soon(self.aSendMessages, self._outgoingDataRxChannel)
+                        # nursery.start_soon(self.aReceiveMessages, self._incomingDataTxChannel)
+                        # nursery.start_soon(self.checkMessages, self._incomingDataRxChannel)
                         
+                        nursery.start_soon(self.aSendMessages)
+                        nursery.start_soon(self.aReceiveMessages)
+                        nursery.start_soon(self.checkMessages)
+                        
+                        # t1 = await nursery.start(self.aSendMessages)
+                        # t2 = await nursery.start(self.aReceiveMessages)
+                        # t3 = await nursery.start(self.checkMessages)
+                        pass
+                    # nursery.start_soon(self.testLoop)
+                    
+    async def testLoop(self):
+        self.count = 0
+        while 1:
+            self.count += 1
+            await trio.sleep(1)
+            
+            
     async def sendHandshake(self):
-        handshakeJson = {}
-        handshakeJson["PMCMessage"] = {}
-        handshakeJson["PMCMessage"]["Handshake"] = 0xDEAD
-        async with self.outgoingDataTxChannel.clone() as outgoing:
-            await outgoing.send(json.dumps(handshakeJson))
-            print("creating handshake flag")
-            self.waitingForHandshake = trio.Event()
-            await trio.sleep(0)
+        await self.startNewMessage()
+        await self.addKvCommandPairs(Handshake=0xDEAD)
+        self.waitingForHandshake = trio.Event()
+        await trio.sleep(0)
             
     async def waitForHandshakeReply(self, secondsToWait=default_timeout):
         with trio.fail_after(secondsToWait):
-            # async with trio.open_nursery() as nursery:
-                # nursery.start_soon(self.checkMessages)
-                
-                print("waiting for handshake")
+                # print("waiting for handshake")
                 await self.waitingForHandshake.wait()
-                print("saw handshake flag")
-            # while not self._connected:
-            #     # await trio.sleep(0)
-            #     await self.checkMessages()
-            #     pause = 1
-
-        if not self._connected:
-            self._client_stream = None
-            raise TimeoutError('Did not receive handshake reply.')
         
-    async def checkMessages(self, incomingDataRxChannel):   
+    async def sendPrimaryMirrorCommands(self):
+        if self._newCommandDataEvent.is_set():
+            async with self._outgoingDataTxChannel.clone() as outgoing:
+                await outgoing.send(json.dumps(self._outgoingJsonMessage))
+            print("sent something")
+            await trio.sleep(0)
+        else:
+            # print("nothing to send")
+            pass
+    async def checkMessages(self):   
         while 1:
-            async with incomingDataRxChannel as incoming:
+            async with self._incomingDataRxChannel.clone() as incoming:
                 async for replyStr in incoming:
                     if len(replyStr) > 0:
                         try:
@@ -204,24 +254,27 @@ class PrimaryMirrorControl:
                             if replyJson["Handshake"] == 0xBEEF:
                                 self._connected = True
                                 self.waitingForHandshake.set()
-                                print("set handshake flag")
+                                # print("set handshake flag")
                                 await trio.sleep(0)
                             else:
                                 self._connected = False
                                 raise Exception('Connection failed - handshake mismatch')
-                    self._newMessageCount -= 1
+                        else:
+                            print(replyStr)
+                            await trio.sleep(0)
                     await trio.sleep(0.1)
         
-    def handleDisconnectErrors(self, excgroup):
-        for exc in excgroup.exceptions:
+
             pause = 1
-            self.Disonnect()
+            # self.Disonnect()
 
             
-    def Disonnect(self):
+    def Disconnect(self):
         self._connection = (0,0)
         self._connected = False
-    
+        self._disconnectCommandEvent.set()
+        self.reset()
+        
     def isConnected(self):
         return self._connected
     
