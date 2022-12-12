@@ -5,12 +5,13 @@ from kivy.uix.gridlayout import GridLayout
 from kivy.properties import ObjectProperty, StringProperty, NumericProperty, BooleanProperty
 from kivy.core.window import Window
 # from kivy.clock import Clock
-
 import kivy
 kivy.require('2.1.0')
 
 import trio
 import time
+
+from task_tracer import Tracer
 
 from enum import IntEnum
 # from functools import partial
@@ -246,7 +247,6 @@ class PMC_APP(App):
                     await trio.sleep(0)
                     request = self.appRequestList.pop()
                     if request == AppRequest.CONNECT_REQUESTED:
-                        await self.setAppState(AppState.CONNECT_IN_PROGRESS)
                         await self.terminalManager.addMessage('Connecting...')
                         conBtn.disabled = True
                         await trio.sleep(0)
@@ -256,7 +256,19 @@ class PMC_APP(App):
                             await self.terminalManager.addMessage('Connecting... (debug mode so not really)')
                             await trio.sleep(0)
                         else:
-                            self.nursery.start_soon( pmc.establishTcpComms, self.ip_addr_prop, self.port_prop)
+                            try:
+                                await pmc.connect(self.ip_addr_prop, self.port_prop)
+                            except trio.TooSlowError as e:
+                                await self.terminalManager.addMessage('Timed out trying to open TCP Stream', MessageType.ERROR)
+                                conBtn.disabled = False
+                                continue
+                            except OSError as e:
+                                await self.terminalManager.addMessage(str(e), MessageType.ERROR)
+                                conBtn.disabled = False
+                                continue
+                            
+                            self.nursery.start_soon(pmc.startCommStreams)
+                            await self.setAppState(AppState.CONNECT_IN_PROGRESS)
                             await trio.sleep(0)
                             await pmc.sendHandshake()
                             
@@ -266,9 +278,8 @@ class PMC_APP(App):
             elif currentState == AppState.CONNECT_IN_PROGRESS:
                 try:
                     # self.nursery.start_soon(pmc.establishTcpComms)
-                    
                     await trio.sleep(0)
-                    await pmc.waitForHandshakeReply()
+                    await pmc.waitForHandshakeReply(10)
                     
                 except TimeoutError as e:
                     await self.terminalManager.addMessage(str(e), MessageType.ERROR)
@@ -285,8 +296,8 @@ class PMC_APP(App):
                     await self.terminalManager.addMessage('Connected!', MessageType.GOOD_NEWS)
                     
             elif currentState == AppState.CONNECTED:
-                if not self.debug_mode_prop:
-                    await pmc.checkMessages()
+                # if not self.debug_mode_prop:
+                #     await pmc.checkMessages()
                 # if pmc.isHomed():
                 #     self.enableAbsoluteControls()
                 if len(self.appRequestList) > 0:
@@ -458,10 +469,16 @@ class PMC_APP(App):
                  
     def defaultButtonPushed(self):
         self.terminalManager.addMessage('Button not assigned yet!')
-            
+
+
+
+
 if __name__ == "__main__":
-    # PMC_APP().run()
     trio.run(PMC_APP().app_func)
+    
+    # debugTracer = Tracer()
+    # debugTracer.addFilter('run_wrapper')
+    # trio.run(PMC_APP().app_func, instruments=[debugTracer])
     
     
                 #     # 

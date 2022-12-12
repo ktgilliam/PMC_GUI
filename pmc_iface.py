@@ -4,6 +4,7 @@ from collections import deque
 import trio
 import json
 from enum import IntEnum
+from exceptiongroup import catch
 import sys
 
 class ControlMode(IntEnum):
@@ -38,7 +39,8 @@ class PrimaryMirrorControl:
     _isHomed = False
     _connected = False
     _connection = (0,0)
-    
+    _client_stream = None
+    _streamReady = False
     receiveBuffer = b'' # bytearray([])
     # receiveStrings = deque([])
     # transmitStrings = deque([])
@@ -130,7 +132,7 @@ class PrimaryMirrorControl:
             async for message in outgoingDataRxChannel:
                 print('Sent: ' + message)
                 await client_stream.send_all(message.encode('utf-8'))
-                await trio.sleep(0.1)
+                await trio.sleep(0)
                 
     async def aReceiveMessages(self, client_stream, incomingDataTxChannel):
         async for data in client_stream:
@@ -142,66 +144,80 @@ class PrimaryMirrorControl:
                 await incomingDataTxChannel.send(recvStr[:-1])
                 self.receiveBuffer = ''.encode('utf-8')
                 self._newMessageCount += 1
-                print('Got the whole message: '+ recvStr[:-1])
-        await trio.sleep(0.1)
+                print('Received: '+ recvStr[:-1])
+        sys.exit()
+        # await trio.sleep(0)
         
-    async def establishTcpComms(self,  _ip, _port):
+    async def connect(self,  _ip, _port, timeout=default_timeout):
         self._connection = (_ip, _port)
-        streamReady = False
-        with trio.move_on_after(default_timeout):
-            # try:
-            client_stream = await trio.open_tcp_stream(_ip, _port)
-            streamReady = True
-            # except Exception as e:
-            #     raise Exception(str(e))
-        if not streamReady:
-            raise TimeoutError('Timed out trying to open TCP Stream')
-        
-        async with client_stream:
-            async with trio.open_nursery() as nursery:
-                self.nursery = nursery
-                # async with nursery:
-                nursery.start_soon(self.aSendMessages, client_stream, self.outgoingDataRxChannel)
-                nursery.start_soon(self.aReceiveMessages, client_stream, self.incomingDataTxChannel)
-            await trio.sleep(0)
-        
+        # try:
+        with trio.fail_after(timeout):
+            self._client_stream = await trio.open_tcp_stream(_ip, _port)
+
+    async def startCommStreams(self):
+        if self._client_stream != None:
+            async with self._client_stream:
+                with catch({ConnectionResetError: self.handleDisconnectErrors}):
+                    async with trio.open_nursery() as nursery:
+                        nursery.start_soon(self.aSendMessages, self._client_stream, self.outgoingDataRxChannel.clone())
+                        nursery.start_soon(self.aReceiveMessages, self._client_stream, self.incomingDataTxChannel.clone())
+                        nursery.start_soon(self.checkMessages, self.incomingDataRxChannel.clone())
+                        
     async def sendHandshake(self):
         handshakeJson = {}
         handshakeJson["PMCMessage"] = {}
         handshakeJson["PMCMessage"]["Handshake"] = 0xDEAD
         async with self.outgoingDataTxChannel.clone() as outgoing:
             await outgoing.send(json.dumps(handshakeJson))
+            print("creating handshake flag")
+            self.waitingForHandshake = trio.Event()
             await trio.sleep(0)
             
-    async def waitForHandshakeReply(self):
-        with trio.move_on_after(default_timeout):
-            while not self._connected:
-                await self.checkMessages()
-                await trio.sleep(0)
+    async def waitForHandshakeReply(self, secondsToWait=default_timeout):
+        with trio.fail_after(secondsToWait):
+            # async with trio.open_nursery() as nursery:
+                # nursery.start_soon(self.checkMessages)
+                
+                print("waiting for handshake")
+                await self.waitingForHandshake.wait()
+                print("saw handshake flag")
+            # while not self._connected:
+            #     # await trio.sleep(0)
+            #     await self.checkMessages()
+            #     pause = 1
+
         if not self._connected:
-            raise TimeoutError('TCP connection timed out.')
+            self._client_stream = None
+            raise TimeoutError('Did not receive handshake reply.')
         
-    async def checkMessages(self):   
-        incoming = self.incomingDataRxChannel.clone()
-        async with incoming:
-            async for replyStr in incoming:
-                if len(replyStr) > 0:
-                    try:
-                        replyJson = json.loads(replyStr)
-                        if replyJson["Handshake"] == 0xBEEF:
-                            self._connected = True
-                        else:
+    async def checkMessages(self, incomingDataRxChannel):   
+        while 1:
+            async with incomingDataRxChannel as incoming:
+                async for replyStr in incoming:
+                    if len(replyStr) > 0:
+                        try:
+                            replyJson = json.loads(replyStr)
+                        except Exception as e:
                             self._connected = False
-                            raise Exception('Connection failed - handshake mismatch')
-                    except Exception as e:
-                        self._connected = False
-                        raise Exception('Handshake decode failed: ['+replyStr+']')
-                    finally:
-                        pass
-                self._newMessageCount -= 1
-        await trio.sleep(0)
+                            raise Exception('Handshake decode failed: ['+replyStr+']')
+                        if "Handshake" in replyJson:
+                            if replyJson["Handshake"] == 0xBEEF:
+                                self._connected = True
+                                self.waitingForHandshake.set()
+                                print("set handshake flag")
+                                await trio.sleep(0)
+                            else:
+                                self._connected = False
+                                raise Exception('Connection failed - handshake mismatch')
+                    self._newMessageCount -= 1
+                    await trio.sleep(0.1)
         
-        
+    def handleDisconnectErrors(self, excgroup):
+        for exc in excgroup.exceptions:
+            pause = 1
+            self.Disonnect()
+
+            
     def Disonnect(self):
         self._connection = (0,0)
         self._connected = False
