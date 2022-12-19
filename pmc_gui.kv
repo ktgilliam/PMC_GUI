@@ -233,7 +233,7 @@ PMC_GUI:
                         text: '0.0'
                         size_hint_y: None
                         height: 30
-                        disabled: True
+                        # disabled: True
                     Label: 
                         text: 'Tilt [urad]: '
                         size_hint_y: None
@@ -245,7 +245,7 @@ PMC_GUI:
                         text: '0.0'
                         size_hint_y: None
                         height: 30
-                        disabled: True
+                        # disabled: True
                     Label: 
                         text: 'Focus [um]: '
                         size_hint_y: None
@@ -369,6 +369,15 @@ PMC_GUI:
                         width: 90
                     FloatInput:
                         id: focus_val
+                        multiline: 'false'
+                        readonly: True
+                        text: '0.0'
+                    Label:
+                        text: "Fan Speed [%]: "
+                        size_hint_x: None
+                        width: 90
+                    FloatInput:
+                        id: fan_val
                         multiline: 'false'
                         readonly: True
                         text: '0.0'

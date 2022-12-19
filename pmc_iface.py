@@ -44,6 +44,12 @@ class DIRECTION(IntEnum):
 default_timeout = 5
 rx_buff_size = 1024
 
+# def handleDisconnectErrors(excgroup):
+#     print("INSIDE handleDisconnectErrors")
+#     for exc in excgroup.exceptions:
+#         pause = 1
+#         print(exc)
+        
 class PrimaryMirrorControl:
     
     _tipTiltStepSize_urad = 1
@@ -78,8 +84,12 @@ class PrimaryMirrorControl:
     @staticmethod
     def handleDisconnectErrors(excgroup):
         for exc in excgroup.exceptions:
-            pause = 1
-            print(exc)
+            if isinstance(exc, trio.BrokenResourceError) or \
+                isinstance(exc, trio.ClosedResourceError):
+                    pass #Everything is fine, do nothing
+            else:
+                breakpoint()
+                print(exc)
             
     def setTipTiltStepSize(self, val):
         self._tipTiltStepSize_urad = val
@@ -109,44 +119,37 @@ class PrimaryMirrorControl:
     async def SetMoveSpeed(self, moveSpeed, units=UNIT_TYPES.ENGINEERING):
         await self.addKvCommandPairs(VelUnits=units, SetVelocity=moveSpeed)
             
-    async def SendMoveCommand(self, size, axis, move_type):
+    async def SendRelativeMoveCommand(self, size, axis):
         if axis == AXIS.TIP:
-            await self.addKvCommandPairs(SetTip=size, MoveType=move_type)
+            await self.addKvCommandPairs(MoveType=MoveTypes.RELATIVE, SetTip=size)
         elif axis == AXIS.TILT:
-            await self.addKvCommandPairs(SetTilt=size, MoveType=move_type)
+            await self.addKvCommandPairs(MoveType=MoveTypes.RELATIVE, SetTilt=size)
         elif axis == AXIS.FOCUS:
-            await self.addKvCommandPairs(SetFocus=size, MoveType=move_type)
+            await self.addKvCommandPairs(MoveType=MoveTypes.RELATIVE, SetFocus=size)
 
             
     async def TipRelative(self,dir):
         if self._connected:
             self._currentTip += dir*self._tipTiltStepSize_urad
-            await self.SendMoveCommand(dir*self._tipTiltStepSize_urad, AXIS.TIP, MoveTypes.RELATIVE)
+            await self.SendRelativeMoveCommand(dir*self._tipTiltStepSize_urad, AXIS.TIP)
 
     async def TiltRelative(self,dir):
         if self._connected:
             self._currentTilt += dir*self._tipTiltStepSize_urad
-            await self.SendMoveCommand(dir*self._tipTiltStepSize_urad, AXIS.TILT, MoveTypes.RELATIVE)
+            await self.SendRelativeMoveCommand(dir*self._tipTiltStepSize_urad, AXIS.TILT)
         
     async def FocusRelative(self,dir):
         if self._connected:
             self._currentFocus += dir*self._focusStepSize_um
-            await self.SendMoveCommand(dir*self._focusStepSize_um, AXIS.FOCUS, MoveTypes.RELATIVE)
-        
-    async def TipAbsolute(self,pos):
+            await self.SendRelativeMoveCommand(dir*self._focusStepSize_um, AXIS.FOCUS)
+    
+    async def MoveAbsolute(self,tip, tilt, focus):
         if self._connected:
-            self._currentTip = pos
-            await self.SendMoveCommand(pos, AXIS.TIP, MoveTypes.ABSOLUTE)
-        
-    async def TiltAbsolute(self,pos):
-        if self._connected:
-            self._currentTilt = pos
-            await self.SendMoveCommand(pos, AXIS.TILT, MoveTypes.ABSOLUTE)
-        
-    async def FocusAbsolute(self,pos):
-        if self._connected:
-            self._currentFocus = pos
-            await self.SendMoveCommand(pos, AXIS.FOCUS, MoveTypes.ABSOLUTE)
+            await self.startNewMessage()
+            self._currentTip = tip
+            self._currentTilt = tilt
+            self._currentFocus = focus
+            await self.addKvCommandPairs(MoveType=MoveTypes.ABSOLUTE, SetTip=tip, SetTilt=tilt, SetFocus=focus)
             
     async def HomeAll(self, homeSpeed):       
         await self.startNewMessage()
@@ -156,7 +159,6 @@ class PrimaryMirrorControl:
         self._currentTilt = 0.0
         self._currentFocus = 0.0 
         self._isHomed = True
-        
     
     async def aSendMessages(self, task_status=trio.TASK_STATUS_IGNORED):
         async with self._outgoingDataRxChannel.clone() as chan:
@@ -182,8 +184,7 @@ class PrimaryMirrorControl:
                     async with self._incomingDataTxChannel.clone() as chan:
                         await chan.send(recvStr[:-1])
                     self._receiveBuffer = ''.encode('utf-8')
-                    print('Received: '+ recvStr[:-1])
-                    # await self._client_stream.aclose()
+                    print('Received: '+ recvStr[:-1])                
         # print("receiver: connection closed")
 
         # await trio.sleep(0)
@@ -193,18 +194,23 @@ class PrimaryMirrorControl:
         # try:
         with trio.fail_after(timeout):
             self._client_stream = await trio.open_tcp_stream(_ip, _port)
+
             
     async def startCommsStream(self, onException=handleDisconnectErrors):
         if self._client_stream != None:
             async with self._client_stream:
                 with catch({ \
                     ConnectionResetError: onException, \
-                        trio.BrokenResourceError: onException}):
+                        trio.BrokenResourceError: onException, \
+                            trio.ClosedResourceError: onException}):
                     async with trio.open_nursery() as nursery:
                         nursery.start_soon(self.aSendMessages)
                         nursery.start_soon(self.aReceiveMessages)
                         nursery.start_soon(self.checkMessages)
-                        pass
+                    pass
+                self._client_stream = None
+        #     pass
+        # pass
                     # nursery.start_soon(self.testLoop)
                     
     async def testLoop(self):
@@ -271,10 +277,12 @@ class PrimaryMirrorControl:
             # self.Disonnect()
 
             
-    def Disconnect(self):
+    async def Disconnect(self):
         self._connection = (0,0)
         self._connected = False
         self._disconnectCommandEvent.set()
+        if self._client_stream != None:
+            await self._client_stream.aclose()
         self.reset()
         
     def isConnected(self):

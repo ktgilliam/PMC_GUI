@@ -14,7 +14,7 @@ azVal = 0.0
 # HOST = "192.168.190.101"
 HOST = "localhost"
 # HOST = "192.168.121.177"
-PORT = 4500  # The port used by the server
+PORT = 4400  # The port used by the server
 
 print("Attempting to connect.")
 
@@ -72,98 +72,4 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server:
                 # ResponseJson = json.loads(dataStr)
                 client_socket.sendall(dataStr.encode('utf-8')+b'\x00')
                 # for key in msgJson["PMCMessage"].keys():
-                #     print(key)
-                #     ### Alt Az Request
-                #     if key == "RequestAltAz":
-                #         doPrint = False
-                #         doSend = True
-                #         altVal = altVal + 0.01
-                #         azVal = azVal + 0.02
-                #         ResponseJson["AltPosition"] = altVal
-                #         ResponseJson["AzPosition"] = azVal
-                #     ### Park Status Request
-                #     elif key=="IsParked":
-                #         doPrint = True
-                #         doSend = True
-                #         timeSinceParkCommand = now-parkCommandTime
-                #         # print("###Time since park Command: "+str(timeSinceParkCommand))
-                #         if mountIsParking :
-                #             mountParked = (timeSinceParkCommand>3)
-                #             print("Mount parked: "+str(timeSinceParkCommand>15))
-                #             if mountParked:
-                #                 mountIsParking = False
-                #                 timeSinceParkCommand = 0
-                #         ResponseJson["IsParked"] = mountParked
-                #     ### Park Command
-                #     elif key=="Park":
-                #         doPrint = True
-                #         doSend = True
-                #         # mountParked = True
-                #         if not mountIsParking:
-                #             parkCommandTime = time.time()                     
-                #             mountIsParking = True
-                #         ResponseJson["Park"] = "$OK^"
-                #         ResponseJson["NoDisconnect"] = "$OK^"
-                #         # print(json.dumps(ResponseJson))
-                #     ### Unpark Command
-                #     elif key=="Unpark":
-                #         doPrint = True
-                #         doSend = True
-                #         mountParked = False
-                #         ResponseJson["Unpark"] = "$OK^"
-                #     ### Tracking Status Request
-                #     elif key=="TrackRate":
-                #         doPrint = True
-                #         doSend = True
-                #         ResponseJson["TrackRate"] = 0.0
-                #     ### FindHome Command
-                #     elif key=="FindHome":
-                #         doPrint = True
-                #         doSend = True
-                #         print("Homing...\n")
-                #         time.sleep(2)
-                #         ResponseJson["FindHome"] = "$OK^"
-                #     ### slewToAltPosn Command
-                #     elif key=="slewToAltPosn":
-                #         doPrint = True
-                #         doSend = True
-                #         ResponseJson["slewToAltPosn"] = "$OK^"
-                #     ### slewToAzPosn Command
-                #     elif key=="slewToAzPosn":
-                #         doPrint = True
-                #         doSend = True
-                #         ResponseJson["slewToAzPosn"] = "$OK^"
-                #     ### syncAltPosn Command
-                #     elif key=="syncAltPosn":
-                #         doPrint = True
-                #         doSend = True
-                #         ResponseJson["syncAltPosn"] = "$OK^"
-                #     ### syncAzPosn Command
-                #     elif key=="syncAzPosn":
-                #         doPrint = True
-                #         doSend = True
-                #         ResponseJson["syncAzPosn"] = "$OK^"
-                #     elif key=="getTrackRate":
-                #         doPrint = True
-                #         doSend = True
-                #         ResponseJson["TrackRate"] = 0.0
-                #     elif key=="NoDisconnect":
-                #         doPrint = True
-                #         doSend = True
-                #         ResponseJson["NoDisconnect"] = "$OK^"
-                #     else:
-                #         doPrint = True
-                #         print("Unrecognized argument: "+key)
-                # if doPrint:
-                #     print("Received: "+dataStr)
-
-                # if doSend:
-                #     txStr=json.dumps(ResponseJson)
-                #     txStr = txStr+"\0"
-                #     client_socket.sendall(txStr.encode('utf-8'))
-                #     if doPrint:
-                #         print("Sent: "+txStr)
-                # if doPrint:
-                #     print("\n")
-            # del data
-            # print("\n")
+            

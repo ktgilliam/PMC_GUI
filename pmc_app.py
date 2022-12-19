@@ -286,7 +286,9 @@ class PMC_APP(App):
             self.connectionFailedEvent.set()
             return
         
-        self.nursery.start_soon(pmc.startCommsStream, self.printErrorCallbacks)
+        # self.nursery.start_soon(pmc.startCommsStream, self.printErrorCallbacks)
+        self.nursery.start_soon(pmc.startCommsStream)
+        
         await pmc.sendHandshake()
         await pmc.sendPrimaryMirrorCommands()
         await trio.sleep(0)
@@ -305,7 +307,7 @@ class PMC_APP(App):
         gui =  self.root
         conBtn = gui.ids['connect_btn']
         conBtn.disabled = False
-        pmc.Disconnect()
+        await pmc.Disconnect()
         await self.setAppState(AppState.DISCONNECTED)
         
     async def connectionSucceededHandler(self):
@@ -330,8 +332,8 @@ class PMC_APP(App):
                 await self.terminalManager.addMessage("Connect requested from connected state", MessageType.WARNING)
             elif request == AppRequest.DISCONNECT_REQUESTED:
                 await self.setAppState(AppState.DISCONNECTED)
-                await self.terminalManager.addMessage('Disconnecting.')
                 await self.resetConnection()
+                await self.terminalManager.addMessage('Disconnected.')
                 gui.disableControls()
                 conBtn.background_color = (1,1,1,1)
                 disconBtn.background_color = (1,1,1,1)
@@ -375,7 +377,6 @@ class PMC_APP(App):
     def _1uradButtonPushed(self):
         gui = self.root
         pmc._tipTiltStepSize_urad = 1
-        # self.terminalManager.queueMessage('Tip/Tilt Step size: ' + str(self._tipTiltStepSize_urad) + 'urad')
         gui.resetTipTiltStepSizeButtons()
         btn = gui.ids['_1urad_btn']
         btn.background_color = (0,1,0,1)
@@ -383,7 +384,6 @@ class PMC_APP(App):
     def _10uradButtonPushed(self):
         gui = self.root
         pmc._tipTiltStepSize_urad = 10
-        # self.terminalManager.queueMessage('Tip/Tilt Step size: ' + str(self._tipTiltStepSize_urad) + 'urad') 
         gui.resetTipTiltStepSizeButtons()
         btn = gui.ids['_10urad_btn']
         btn.background_color = (0,1,0,1)
@@ -391,7 +391,6 @@ class PMC_APP(App):
     def _100uradButtonPushed(self):
         gui = self.root
         pmc._tipTiltStepSize_urad = 100
-        # self.terminalManager.queueMessage('Tip/Tilt Step size: ' + str(self._tipTiltStepSize_urad) + 'urad')
         gui.resetTipTiltStepSizeButtons()
         btn = gui.ids['_100urad_btn']
         btn.background_color = (0,1,0,1)
@@ -399,7 +398,6 @@ class PMC_APP(App):
     def _1000uradButtonPushed(self):
         gui = self.root
         pmc._tipTiltStepSize_urad = 1000
-        # self.terminalManager.queueMessage('Tip/Tilt Step size: ' + str(self._tipTiltStepSize_urad) + 'urad') 
         gui.resetTipTiltStepSizeButtons()
         btn = gui.ids['_1000urad_btn']
         btn.background_color = (0,1,0,1)
@@ -407,7 +405,6 @@ class PMC_APP(App):
     def _1umButtonPushed(self):
         gui = self.root
         pmc._focusStepSize_um = 1
-        # self.terminalManager.queueMessage('Focus Step size: ' + str(self._focusStepSize_um) + 'um')
         gui.resetFocusStepSizeButtons()
         btn = gui.ids['_1um_btn']
         btn.background_color = (0,1,0,1)
@@ -415,7 +412,6 @@ class PMC_APP(App):
     def _10umButtonPushed(self):
         gui = self.root
         pmc._focusStepSize_um = 10
-        # self.terminalManager.queueMessage('Focus Step size: ' + str(self._focusStepSize_um) + 'um') 
         gui.resetFocusStepSizeButtons()
         btn = gui.ids['_10um_btn']
         btn.background_color = (0,1,0,1)
@@ -423,7 +419,6 @@ class PMC_APP(App):
     def _100umButtonPushed(self):
         gui = self.root
         pmc._focusStepSize_um = 100
-        # self.terminalManager.queueMessage('Focus Step size: ' + str(self._focusStepSize_um) + 'um')
         gui.resetFocusStepSizeButtons()
         btn = gui.ids['_100um_btn']
         btn.background_color = (0,1,0,1)
@@ -431,29 +426,26 @@ class PMC_APP(App):
     def _1000umButtonPushed(self):
         gui = self.root
         pmc._focusStepSize_um = 1000
-        # self.terminalManager.queueMessage('Focus Step size: ' + str(self._focusStepSize_um) + 'um')   
         gui.resetFocusStepSizeButtons()
         btn = gui.ids['_1000um_btn']
         btn.background_color = (0,1,0,1) 
             
     def AbsGoButtonPushed(self):
         gui = self.root
+        tipAbsTI = gui.ids['tip_abs']
+        tiltAbsTI = gui.ids['tilt_abs']
         focusAbsTI = gui.ids['focus_abs']
         if len(focusAbsTI.text) > 0: 
-            # self.terminalManager.queueMessage('Mirror Focus set to : ' + str(pmc._currentFocus))
-            # pmc.FocusAbsolute(float(focusAbsTI.text)  )
-            self.nursery.start_soon(pmc.FocusAbsolute,float(focusAbsTI.text))
+            self.nursery.start_soon(pmc.MoveAbsolute,float(tipAbsTI.text), float(tiltAbsTI.text), float(focusAbsTI.text))
  
 
         
     def homingButtonPushed(self):
         gui =  self.root
-        # self.terminalManager.addMessage('Homing Button Pushed!')
 
 
         
     def stopButtonPushed(self):
-        # self.terminalManager.queueMessage('Stop Button (Not yet implemented))')
         self.nursery.start_soon(pmc.sendStopCommand,)
                  
     def defaultButtonPushed(self):

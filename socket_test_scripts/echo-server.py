@@ -15,17 +15,6 @@ PORT = 4400  # The port used by the server
 
 print("Attempting to connect.")
 
-# import socket
-# server = socket.socket() 
-# server.bind((HOST, PORT)) 
-# server.listen(4) 
-# client_socket, client_address = server.accept()
-# print(client_address, "has connected")
-
-# while True:
-#     recvieved_data = client_socket.recv(1024)
-#     print(recvieved_data)
-
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server:
     # server.close()
     # server.bind((HOST, PORT))
@@ -39,7 +28,6 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server:
             if not data:
                 break
             print(data)
-            client_socket.sendall(data)
-            
+            # client_socket.sendall(data)
             del data
             print("\n")
