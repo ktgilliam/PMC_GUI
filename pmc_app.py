@@ -68,12 +68,6 @@ class PMC_GUI(GridLayout):
             btn = self.ids[b]
             btn.disabled = False
             
-    def enableAbsoluteControls(self):
-        buttonFilt = re.compile('go_[a-z\_]+_btn')
-        buttonList = [b for b in self.ids if buttonFilt.match(b)]
-        for b in buttonList:
-            btn = self.ids[b]
-            btn.disabled = False
             
     def disableControls(self):
         buttonFilt = re.compile('[d|g]o_[a-z\_]+_btn')
@@ -329,8 +323,9 @@ class PMC_APP(App):
         gui =  self.root
         conBtn = gui.ids['connect_btn']
         disconBtn = gui.ids['disconnect_btn']
+        goBtn = gui.ids['go_abs_btn']
         if len(self.appRequestList) > 0:
-            request =   self.appRequestList.pop()
+            request = self.appRequestList.pop()
             if request == AppRequest.CONNECT_REQUESTED:
                 await self.terminalManager.addMessage("Connect requested from connected state", MessageType.WARNING)
             elif request == AppRequest.DISCONNECT_REQUESTED:
@@ -344,8 +339,9 @@ class PMC_APP(App):
                 conBtn.text = 'Connect'
             elif request == AppRequest.GO_HOME_REQUESTED:
                 await self.terminalManager.addMessage('Homing...')
-                pmc.HomeAll()
-                gui.enableAbsoluteControls()
+                await pmc.HomeAll()
+                goBtn.disabled = False
+                
         await pmc.sendPrimaryMirrorCommands()
      
     def printErrorCallbacks(self, excgroup):
@@ -439,27 +435,14 @@ class PMC_APP(App):
         gui.resetFocusStepSizeButtons()
         btn = gui.ids['_1000um_btn']
         btn.background_color = (0,1,0,1) 
-             
-    def tipAbsGoButtonPushed(self):
-        gui = self.root
-        tipAbsTI = gui.ids['tip_abs']
-        if len(tipAbsTI.text) > 0:
-            # self.terminalManager.queueMessage('Mirror Tip set to : ' + str(pmc._currentTip))
-            pmc.TipAbsolute(float(tipAbsTI.text))
-        
-    def tiltAbsGoButtonPushed(self):
-        gui = self.root
-        tiltAbsTI = gui.ids['tilt_abs']
-        if len(tiltAbsTI.text) > 0:  
-            # self.terminalManager.queueMessage('Mirror Tilt set to : ' + str(pmc._currentTilt))
-            pmc.TiltAbsolute(float(tiltAbsTI.text)  )
-        
-    def focusAbsGoButtonPushed(self):
+            
+    def AbsGoButtonPushed(self):
         gui = self.root
         focusAbsTI = gui.ids['focus_abs']
         if len(focusAbsTI.text) > 0: 
             # self.terminalManager.queueMessage('Mirror Focus set to : ' + str(pmc._currentFocus))
-            pmc.FocusAbsolute(float(focusAbsTI.text)  )
+            # pmc.FocusAbsolute(float(focusAbsTI.text)  )
+            self.nursery.start_soon(pmc.FocusAbsolute,float(focusAbsTI.text))
  
 
         
@@ -470,10 +453,11 @@ class PMC_APP(App):
 
         
     def stopButtonPushed(self):
-        self.terminalManager.addMessage('Stop Button Pushed')
+        # self.terminalManager.queueMessage('Stop Button (Not yet implemented))')
+        self.nursery.start_soon(pmc.sendStopCommand,)
                  
     def defaultButtonPushed(self):
-        self.terminalManager.addMessage('Button not assigned yet!')
+        self.terminalManager.queueMessage('Button not assigned yet!')
 
 
 

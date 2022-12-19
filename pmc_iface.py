@@ -13,8 +13,9 @@ class ControlMode(IntEnum):
     ABSOLUTE = 2
 
 class MoveTypes(IntEnum):
-    ABSOLUTE = 0
+    STOPPED = 0
     RELATIVE = 1
+    ABSOLUTE = 2
 
 class UNIT_TYPES(IntEnum):
     ENGINEERING = 0
@@ -77,6 +78,7 @@ class PrimaryMirrorControl:
     @staticmethod
     def handleDisconnectErrors(excgroup):
         for exc in excgroup.exceptions:
+            pause = 1
             print(exc)
             
     def setTipTiltStepSize(self, val):
@@ -199,17 +201,9 @@ class PrimaryMirrorControl:
                     ConnectionResetError: onException, \
                         trio.BrokenResourceError: onException}):
                     async with trio.open_nursery() as nursery:
-                        # nursery.start_soon(self.aSendMessages, self._outgoingDataRxChannel)
-                        # nursery.start_soon(self.aReceiveMessages, self._incomingDataTxChannel)
-                        # nursery.start_soon(self.checkMessages, self._incomingDataRxChannel)
-                        
                         nursery.start_soon(self.aSendMessages)
                         nursery.start_soon(self.aReceiveMessages)
                         nursery.start_soon(self.checkMessages)
-                        
-                        # t1 = await nursery.start(self.aSendMessages)
-                        # t2 = await nursery.start(self.aReceiveMessages)
-                        # t3 = await nursery.start(self.checkMessages)
                         pass
                     # nursery.start_soon(self.testLoop)
                     
@@ -235,11 +229,19 @@ class PrimaryMirrorControl:
         if self._newCommandDataEvent.is_set():
             async with self._outgoingDataTxChannel.clone() as outgoing:
                 await outgoing.send(json.dumps(self._outgoingJsonMessage))
+
             print("sent something")
             await trio.sleep(0)
         else:
             # print("nothing to send")
             pass
+        
+    async def sendStopCommand(self):
+        await self.startNewMessage()
+        await self.addKvCommandPairs(Stop=0)
+        async with self._outgoingDataTxChannel.clone() as outgoing:
+                await outgoing.send(json.dumps(self._outgoingJsonMessage))
+                
     async def checkMessages(self):   
         while 1:
             async with self._incomingDataRxChannel.clone() as incoming:

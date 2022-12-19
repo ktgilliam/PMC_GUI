@@ -210,9 +210,8 @@ PMC_GUI:
                 text: 'Tip/Tilt/Focus Absolute'
                 size_hint_y: None
                 height: 30
-
             GridLayout:
-                cols: 3
+                cols: 1
                 padding: [15, 10, 10, 10]
                 id: abs_ctrl
                 canvas.before:
@@ -221,66 +220,52 @@ PMC_GUI:
                     Line:
                         width: 2
                         rectangle: self.x, self.y, self.width, self.height
-                Label: 
-                    text: 'Tip [urad]: '
-                    size_hint_y: None
-                    height: 30
-                    size_hint_x: None
-                    width: 90
-                FloatInput:
-                    id: tip_abs
-                    text: '0.0'
-                    size_hint_y: None
-                    height: 30
+                GridLayout:
+                    cols: 2
+                    Label: 
+                        text: 'Tip [urad]: '
+                        size_hint_y: None
+                        height: 30
+                        size_hint_x: None
+                        width: 90
+                    FloatInput:
+                        id: tip_abs
+                        text: '0.0'
+                        size_hint_y: None
+                        height: 30
+                        disabled: True
+                    Label: 
+                        text: 'Tilt [urad]: '
+                        size_hint_y: None
+                        height: 30
+                        size_hint_x: None
+                        width: 90
+                    FloatInput:
+                        id: tilt_abs
+                        text: '0.0'
+                        size_hint_y: None
+                        height: 30
+                        disabled: True
+                    Label: 
+                        text: 'Focus [um]: '
+                        size_hint_y: None
+                        height: 30
+                        size_hint_x: None
+                        width: 90
+                    FloatInput:
+                        id: focus_abs
+                        text: '0.0'
+                        size_hint_y: None
+                        height: 30
                 Button:
-                    id: go_abs_tip_btn
+                    id: go_abs_btn
                     text:'Go'
                     size_hint_y: None
                     height: 30
-                    size_hint_x: None
-                    width:30
-                    disabled: True
-                    on_press: app.tipAbsGoButtonPushed()
-                Label: 
-                    text: 'Tilt [urad]: '
-                    size_hint_y: None
-                    height: 30
-                    size_hint_x: None
-                    width: 90
-                FloatInput:
-                    id: tilt_abs
-                    text: '0.0'
-                    size_hint_y: None
-                    height: 30
-                Button:
-                    id: go_abs_tilt_btn
-                    text:'Go'
-                    size_hint_y: None
-                    height: 30
-                    size_hint_x: None
-                    width:30
-                    disabled: True
-                    on_press: app.tiltAbsGoButtonPushed()
-                Label: 
-                    text: 'Focus [um]: '
-                    size_hint_y: None
-                    height: 30
-                    size_hint_x: None
-                    width: 90
-                FloatInput:
-                    id: focus_abs
-                    text: '0.0'
-                    size_hint_y: None
-                    height: 30
-                Button:
-                    id: go_abs_focus_btn
-                    text:'Go'
-                    size_hint_y: None
-                    height: 30
-                    size_hint_x: None
-                    width:30
-                    disabled: True
-                    on_press: app.focusAbsGoButtonPushed()
+                    # size_hint_x: None
+                    # width:30
+                    # disabled: True
+                    on_press: app.AbsGoButtonPushed()
             GridLayout:
                 cols:1
                 Label:
