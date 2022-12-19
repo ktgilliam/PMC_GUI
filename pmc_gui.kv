@@ -27,7 +27,7 @@ PMC_GUI:
     GridLayout:
         cols: 3
         size_hint: 1, None
-        size: root.width, root.height/2
+        size: root.width, root.height * 0.5
         GridLayout:
             cols: 1
             id: rel_ctrl
@@ -266,6 +266,7 @@ PMC_GUI:
                     # width:30
                     # disabled: True
                     on_press: app.AbsGoButtonPushed()
+
             GridLayout:
                 cols:1
                 Label:
@@ -318,6 +319,16 @@ PMC_GUI:
                         background_color: (1,0,0,1)
                         on_release: app.stopButtonPushed()
                         disabled: True
+                    Button:
+                        text:'Enable Steppers'
+                        id: do_enable_steppers_btn
+                        bold: True
+                        size_hint_y: None
+                        height: 30
+                        size_hint_x: None
+                        width:120
+                        on_release: app.defaultButtonPushed()
+                        disabled: True     
 
         GridLayout:
             cols: 1
@@ -372,19 +383,39 @@ PMC_GUI:
                         multiline: 'false'
                         readonly: True
                         text: '0.0'
-                    Label:
-                        text: "Fan Speed [%]: "
-                        size_hint_x: None
-                        width: 90
-                    FloatInput:
-                        id: fan_val
-                        multiline: 'false'
-                        readonly: True
-                        text: '0.0'
+            Label:
+                text: "Fan Control"
+                size_hint_y: None
+                height: 30
+            GridLayout:
+                cols: 2
+                canvas.before:
+                    Color:
+                        rgba: 1, 1, 1, 1 
+                    Line:
+                        width: 2
+                        rectangle: self.x, self.y, self.width, self.height
+                row_force_default: True
+                row_default_height: 30
+                padding: [10, 10, 10, 10]
+                Label:
+                    text: "Fan Speed [%]: "
+                    size_hint_x: None
+                    width: 100
+                    size_hint_y: None
+                    height: 30
+                FloatInput:
+                    id: fan_val
+                    multiline: 'false'
+                    readonly: True
+                    text: '0.0'
+                    size_hint_y: None
+                    height: 30
     TerminalWidget:
         label: 'Terminal'
         id: terminal
         # size_hint: 1, None
+        # height: 
         # size: root.width, root.height/2
             
 

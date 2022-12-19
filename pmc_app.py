@@ -33,7 +33,7 @@ class AppState(IntEnum):
     CONNECTED=3
     
     
-Window.size = (900, 650)
+Window.size = (900, 700)
 Window.minimum_width, Window.minimum_height = Window.size
 
 pmc = PrimaryMirrorControl()
@@ -315,9 +315,14 @@ class PMC_APP(App):
         conBtn = gui.ids['connect_btn']
         disconBtn = gui.ids['disconnect_btn']
         gui.enableRelativeControls()
+        
         conBtn.background_color = (0,1,0,1)
         disconBtn.background_color = (1,0,0,1)
         conBtn.text = 'Connected'
+        # Delete this later?
+        goBtn = gui.ids['go_abs_btn']
+        goBtn.disabled = False
+        # ###########3
         await self.setAppState(AppState.CONNECTED)
         await self.terminalManager.addMessage('Connected!', MessageType.GOOD_NEWS)
         
@@ -341,7 +346,7 @@ class PMC_APP(App):
                 conBtn.text = 'Connect'
             elif request == AppRequest.GO_HOME_REQUESTED:
                 await self.terminalManager.addMessage('Homing...')
-                await pmc.HomeAll()
+                await pmc.HomeAll(self.home_speed_prop)
                 goBtn.disabled = False
                 
         await pmc.sendPrimaryMirrorCommands()

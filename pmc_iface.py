@@ -229,8 +229,8 @@ class PrimaryMirrorControl:
     async def waitForHandshakeReply(self, secondsToWait=default_timeout):
         with trio.fail_after(secondsToWait):
                 # print("waiting for handshake")
-                await self.waitingForHandshake.wait()
-        
+            await self.waitingForHandshake.wait()
+            
     async def sendPrimaryMirrorCommands(self):
         if self._newCommandDataEvent.is_set():
             async with self._outgoingDataTxChannel.clone() as outgoing:
