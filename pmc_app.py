@@ -313,16 +313,14 @@ class PMC_APP(App):
     async def connectionSucceededHandler(self):
         gui =  self.root
         conBtn = gui.ids['connect_btn']
-        disconBtn = gui.ids['disconnect_btn']
-        gui.enableRelativeControls()
-        
         conBtn.background_color = (0,1,0,1)
-        disconBtn.background_color = (1,0,0,1)
         conBtn.text = 'Connected'
-        # Delete this later?
-        goBtn = gui.ids['go_abs_btn']
-        goBtn.disabled = False
-        # ###########3
+        disconBtn = gui.ids['disconnect_btn']
+        disconBtn.background_color = (1,0,0,1)
+        disconBtn.disabled = False
+        enableStepBtn = gui.ids['do_enable_steppers_btn']
+        enableStepBtn.disabled = False
+        
         await self.setAppState(AppState.CONNECTED)
         await self.terminalManager.addMessage('Connected!', MessageType.GOOD_NEWS)
         
@@ -342,7 +340,7 @@ class PMC_APP(App):
                 gui.disableControls()
                 conBtn.background_color = (1,1,1,1)
                 disconBtn.background_color = (1,1,1,1)
-                disconBtn.disabled = False
+                disconBtn.disabled = True
                 conBtn.text = 'Connect'
             elif request == AppRequest.GO_HOME_REQUESTED:
                 await self.terminalManager.addMessage('Homing...')
@@ -443,6 +441,14 @@ class PMC_APP(App):
         if len(focusAbsTI.text) > 0: 
             self.nursery.start_soon(pmc.MoveAbsolute,float(tipAbsTI.text), float(tiltAbsTI.text), float(focusAbsTI.text))
  
+    def enableSteppersButtonPushed(self):
+        gui = self.root
+        # TODO: wait for ack before enabling
+        gui.enableRelativeControls()
+        # TODO: Ask if system is homed and wait for reply before enabling.
+        goBtn = gui.ids['go_abs_btn']
+        goBtn.disabled = False
+        # ###########3
 
         
     def homingButtonPushed(self):

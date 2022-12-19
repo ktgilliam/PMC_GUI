@@ -296,7 +296,7 @@ PMC_GUI:
                         height: 30
                         size_hint_x: None
                         width:90
-                        # disabled: True
+                        disabled: True
                         # on_release: app.connectButtonPushed(app.ip_addr_prop, int(app.port_prop))
                         on_release: app.appRequestList.append(AppRequest.DISCONNECT_REQUESTED)
                     Button:
@@ -327,7 +327,7 @@ PMC_GUI:
                         height: 30
                         size_hint_x: None
                         width:120
-                        on_release: app.defaultButtonPushed()
+                        on_release: app.enableSteppersButtonPushed()
                         disabled: True     
 
         GridLayout:
