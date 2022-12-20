@@ -285,7 +285,6 @@ class PMC_APP(App):
             await self.terminalManager.addMessage(str(e), MessageType.ERROR)
             self.connectionFailedEvent.set()
             return
-        
         # self.nursery.start_soon(pmc.startCommsStream, self.printErrorCallbacks)
         self.nursery.start_soon(pmc.startCommsStream)
         
@@ -343,10 +342,20 @@ class PMC_APP(App):
                 disconBtn.disabled = True
                 conBtn.text = 'Connect'
             elif request == AppRequest.GO_HOME_REQUESTED:
+                homeBtn = gui.ids['do_home_all_btn']
+                homeBtn.text = "Homing..."
+                homeBtn.disabled = True
                 await self.terminalManager.addMessage('Homing...')
-                await pmc.HomeAll(self.home_speed_prop)
+                await pmc.sendHomeAll(self.home_speed_prop)
+                await pmc.sendPrimaryMirrorCommands()
+                try:
+                    await pmc.waitForHomingComplete()
+                    await self.terminalManager.addMessage('Homing Complete.', MessageType.GOOD_NEWS)
+                except trio.TooSlowError as e:
+                     await self.terminalManager.addMessage('Homing timed out.', MessageType.ERROR)
+                homeBtn.disabled = False
+                homeBtn.text = "Home All"
                 goBtn.disabled = False
-                
         await pmc.sendPrimaryMirrorCommands()
      
     def printErrorCallbacks(self, excgroup):

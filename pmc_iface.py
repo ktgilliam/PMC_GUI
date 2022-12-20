@@ -71,7 +71,8 @@ class PrimaryMirrorControl:
     
     _disconnectCommandEvent = trio.Event()
     _newCommandDataEvent = trio.Event()
-    
+    _homingComplete = trio.Event()
+    _handshakeReceived = trio.Event()
     _outgoingJsonMessage = {}
     
     def reset(self):
@@ -151,15 +152,36 @@ class PrimaryMirrorControl:
             self._currentFocus = focus
             await self.addKvCommandPairs(MoveType=MoveTypes.ABSOLUTE, SetTip=tip, SetTilt=tilt, SetFocus=focus)
             
-    async def HomeAll(self, homeSpeed):       
+    async def sendHomeAll(self, homeSpeed):       
         await self.startNewMessage()
         await self.addKvCommandPairs(FindHome=int(homeSpeed))
-        
         self._currentTip = 0.0
         self._currentTilt = 0.0
         self._currentFocus = 0.0 
         self._isHomed = True
-    
+        self._homingComplete = trio.Event()
+        await trio.sleep(0)
+        
+    async def waitForHomingComplete(self, timeout=120):
+        with trio.fail_after(timeout):
+            await self._homingComplete.wait()
+            
+    async def sendHandshake(self):
+        await self.startNewMessage()
+        await self.addKvCommandPairs(Handshake=0xDEAD)
+        self._handshakeReceived = trio.Event()
+        await trio.sleep(0)
+            
+    async def waitForHandshakeReply(self, secondsToWait=default_timeout):
+        with trio.fail_after(secondsToWait):
+                # print("waiting for handshake")
+            await self._handshakeReceived.wait()
+            
+    async def sendPrimaryMirrorCommands(self):
+        if self._newCommandDataEvent.is_set():
+            async with self._outgoingDataTxChannel.clone() as outgoing:
+                await outgoing.send(json.dumps(self._outgoingJsonMessage))
+                
     async def aSendMessages(self, task_status=trio.TASK_STATUS_IGNORED):
         async with self._outgoingDataRxChannel.clone() as chan:
             print("inside aSendMessages with")
@@ -208,33 +230,9 @@ class PrimaryMirrorControl:
                         nursery.start_soon(self.aReceiveMessages)
                         nursery.start_soon(self.checkMessages)
                     pass
-                self._client_stream = None
-        #     pass
-        # pass
-                    # nursery.start_soon(self.testLoop)
-                    
-    async def testLoop(self):
-        self.count = 0
-        while 1:
-            self.count += 1
-            await trio.sleep(1)
+                self._client_stream = None          
             
-            
-    async def sendHandshake(self):
-        await self.startNewMessage()
-        await self.addKvCommandPairs(Handshake=0xDEAD)
-        self.waitingForHandshake = trio.Event()
-        await trio.sleep(0)
-            
-    async def waitForHandshakeReply(self, secondsToWait=default_timeout):
-        with trio.fail_after(secondsToWait):
-                # print("waiting for handshake")
-            await self.waitingForHandshake.wait()
-            
-    async def sendPrimaryMirrorCommands(self):
-        if self._newCommandDataEvent.is_set():
-            async with self._outgoingDataTxChannel.clone() as outgoing:
-                await outgoing.send(json.dumps(self._outgoingJsonMessage))
+
 
             print("sent something")
             await trio.sleep(0)
@@ -261,12 +259,16 @@ class PrimaryMirrorControl:
                         if "Handshake" in replyJson:
                             if replyJson["Handshake"] == 0xBEEF:
                                 self._connected = True
-                                self.waitingForHandshake.set()
+                                self._handshakeReceived.set()
                                 # print("set handshake flag")
                                 await trio.sleep(0)
                             else:
                                 self._connected = False
                                 raise Exception('Connection failed - handshake mismatch')
+                        elif "HomingComplete" in replyJson:
+                            print(replyStr)
+                            if replyJson["HomingComplete"] == True:
+                                self._homingComplete.set()
                         else:
                             print(replyStr)
                             await trio.sleep(0)
