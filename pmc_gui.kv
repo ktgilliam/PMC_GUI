@@ -7,7 +7,7 @@ PMC_GUI:
     port_prop: int(app.config.get('Connection','ip_port'))
     fan_speed_prop: int(app.config.get('Motion','fan_speed'))
     home_speed_prop: int(app.config.get('Motion','homing_speed'))
-    home_timeout_prop: int(app.config.get('Motion','homing_timeout'))
+    homing_timeout_prop: int(app.config.get('Motion','homing_timeout'))
     rel_speed_prop: int(app.config.get('Motion','rel_move'))
     abs_speed_prop: int(app.config.get('Motion','abs_move'))
     debug_mode_prop: app.config.get('General', 'dbg_mode')=='True'

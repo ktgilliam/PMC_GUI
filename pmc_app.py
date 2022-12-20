@@ -104,7 +104,7 @@ class PMC_APP(App):
     port_prop = NumericProperty()
     fan_speed_prop = NumericProperty()
     home_speed_prop = NumericProperty()
-    home_timeout_prop = NumericProperty()
+    homing_timeout_prop = NumericProperty()
     rel_speed_prop = NumericProperty()
     abs_speed_prop = NumericProperty()
     debug_mode_prop = BooleanProperty()
@@ -118,7 +118,7 @@ class PMC_APP(App):
 
     def build_config(self, config):
         config.setdefaults("Connection", {"ip_addr": "localhost", "ip_port": 4400})
-        config.setdefaults("Motion", {"fan_speed":50, "homing_speed":100, "homing_timeout":30, "rel_move": 100, "abs_move": 100})
+        config.setdefaults("Motion", {"fan_speed":50, "homing_speed":100, "homing_timeout":60, "rel_move": 100, "abs_move": 100})
         config.setdefaults("General", {"dbg_mode":False})
         return super().build_config(config)
     
@@ -142,8 +142,8 @@ class PMC_APP(App):
                 self.fan_speed_prop = int(value)
             elif key == "homing_speed":
                 self.home_speed_prop = int(value)
-            elif key == "home_timeout":
-                self.home_timeout_prop = int(value)
+            elif key == "homing_timeout":
+                self.homing_timeout_prop = int(value)
             elif key == "rel_move":
                 self.rel_speed_prop = int(value)
             elif key == "abs_move":
@@ -157,6 +157,7 @@ class PMC_APP(App):
         self.port_prop = int(config.get('Connection','ip_port'))
         self.fan_speed_prop = int(config.get('Motion','fan_speed'))
         self.home_speed_prop = int(config.get('Motion','homing_speed'))
+        self.homing_timeout_prop = int(config.get('Motion','homing_timeout'))
         self.rel_speed_prop: int(config.get('Motion','rel_move'))
         self.abs_speed_prop: int(config.get('Motion','abs_move'))
         self.debug_mode_prop: config.get('General', 'dbg_mode')=='True'
@@ -289,7 +290,7 @@ class PMC_APP(App):
             self.connectionFailedEvent.set()
             return
         # self.nursery.start_soon(pmc.startCommsStream, self.printErrorCallbacks)
-        self.nursery.start_soon(pmc.startCommsStream)
+        self.nursery.start_soon(pmc.startCommsStream, self.printErrorCallbacks)
         await pmc.sendHandshake()
         await trio.sleep(0)
         try:
@@ -352,10 +353,12 @@ class PMC_APP(App):
                 await pmc.sendHomeAll(self.home_speed_prop)
                 await trio.sleep(0)
                 try:
-                    await pmc.waitForHomingComplete(self.home_timeout_prop)
+                    await pmc.waitForHomingComplete(self.homing_timeout_prop)
                     await self.terminalManager.addMessage('Homing Complete.', MessageType.GOOD_NEWS)
                 except trio.TooSlowError as e:
                      await self.terminalManager.addMessage('Homing timed out.', MessageType.ERROR)
+                     await pmc.sendStopCommand()
+                     
                 homeBtn.disabled = False
                 homeBtn.text = "Home All"
                 goBtn.disabled = False
@@ -374,10 +377,20 @@ class PMC_APP(App):
                     enableStepBtn.text = "Disable Steppers"
                     
         await pmc.sendPrimaryMirrorCommands()
-     
+        
     def printErrorCallbacks(self, excgroup):
         for exc in excgroup.exceptions:
-            self.terminalManager.queueMessage(exc)
+            if isinstance(exc, json.JSONDecodeError):
+                self.terminalManager.queueMessage("Failed message decode. [{0}:{1}]. ".format(exc.msg, exc.doc))
+                self.terminalManager.queueMessage("Data stream corrupted, you should probably close/reopen")
+                self.currentState = AppState.INIT
+            elif isinstance(exc, trio.BrokenResourceError) or \
+                isinstance(exc, trio.ClosedResourceError):
+                    pass #Everything is fine, do nothing
+            else:
+                breakpoint()
+
+                self.terminalManager.queueMessage(exc.msg)
             
     def plusTipButtonPushed(self):
         self.terminalManager.queueMessage(' Tip [+' + str(pmc._tipTiltStepSize_urad) + ' urad]')
