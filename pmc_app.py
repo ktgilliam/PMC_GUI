@@ -1,3 +1,6 @@
+import trio
+import kivy
+kivy.require('2.1.0')
 from kivy.app import App #, async_runTouchApp
 from kivy.uix.settings import SettingsWithSidebar
 from kivy.lang import Builder
@@ -5,26 +8,21 @@ from kivy.uix.gridlayout import GridLayout
 from kivy.properties import ObjectProperty, StringProperty, NumericProperty, BooleanProperty
 from kivy.core.window import Window
 # from kivy.clock import Clock
-import kivy
-kivy.require('2.1.0')
-
-import trio
-import time
-
-
+# from kivy.config import Config
+from collections import deque
 from enum import IntEnum
-# from functools import partial
 from json_settings import *
 import re
 from pmc_iface import DIRECTION, PrimaryMirrorControl
-import numeric_widgets
 from terminal_widget import *
+from numeric_widgets import FloatInput
 
 class AppRequest(IntEnum):
     NO_REQUESTS = 0
     CONNECT_REQUESTED=1
     DISCONNECT_REQUESTED=2
     GO_HOME_REQUESTED=3
+    TOGGLE_STEPPER_ENABLE=4
     
 class AppState(IntEnum):
     INIT=0
@@ -61,12 +59,12 @@ class PMC_GUI(GridLayout):
         # focusValField.text = str(pmc._currentFocus)
         focusValField.text = str(round(pmc.getCurrentFocus(), 4))
         
-    def enableRelativeControls(self):
+    def enableRelativeControls(self, doEnable):
         buttonFilt = re.compile('do_[a-z\_]+_btn')
         buttonList = [b for b in self.ids if buttonFilt.match(b)]
         for b in buttonList:
             btn = self.ids[b]
-            btn.disabled = False
+            btn.disabled = not doEnable
             
             
     def disableControls(self):
@@ -75,6 +73,8 @@ class PMC_GUI(GridLayout):
         for b in buttonList:
             btn = self.ids[b]
             btn.disabled = True
+        enableStepBtn = self.ids['enable_steppers_btn']
+        enableStepBtn.disabled = True
              
     def resetTipTiltStepSizeButtons(self):
         buttonFilt = re.compile('_10*urad_btn')
@@ -90,9 +90,7 @@ class PMC_GUI(GridLayout):
             btn = self.ids[b]
             btn.background_color = (1,1,1,1)
             
-from kivy.clock import Clock
-from kivy.config import Config
-from collections import deque
+
 
 class PMC_APP(App):
     nursery = None
@@ -104,10 +102,11 @@ class PMC_APP(App):
     
     ip_addr_prop = StringProperty()
     port_prop = NumericProperty()
-    fan_speed_prop = StringProperty()
-    home_speed_prop = StringProperty()
-    rel_speed_prop = StringProperty()
-    abs_speed_prop = StringProperty()
+    fan_speed_prop = NumericProperty()
+    home_speed_prop = NumericProperty()
+    home_timeout_prop = NumericProperty()
+    rel_speed_prop = NumericProperty()
+    abs_speed_prop = NumericProperty()
     debug_mode_prop = BooleanProperty()
 
     
@@ -115,19 +114,18 @@ class PMC_APP(App):
         self.settings_cls = SettingsWithSidebar
         self.use_kivy_settings = False
         gui = Builder.load_file('pmc_gui.kv')
-        # self.terminalManager.addMessage('Welcome. Press F1 for settings.', MessageType.IMPORTANT)
         return gui
 
     def build_config(self, config):
-        config.setdefaults("General", {"dbg_mode":False})
         config.setdefaults("Connection", {"ip_addr": "localhost", "ip_port": 4400})
-        config.setdefaults("Speeds", {"fan": 50, "homing": 100, "rel_move": 100, "abs_move": 100})
+        config.setdefaults("Motion", {"fan_speed":50, "homing_speed":100, "homing_timeout":30, "rel_move": 100, "abs_move": 100})
+        config.setdefaults("General", {"dbg_mode":False})
         return super().build_config(config)
     
     def build_settings(self, settings):
-        settings.add_json_panel("General", self.config, data=json_general_settings)
         settings.add_json_panel("Connection", self.config, data=json_connection_settings)
-        settings.add_json_panel("Speeds", self.config, data=json_speed_settings)
+        settings.add_json_panel("Motion", self.config, data=json_motion_settings)
+        settings.add_json_panel("General", self.config, data=json_general_settings)
         return super().build_settings(settings)
 
     def on_config_change(self, config, section, key, value):
@@ -139,26 +137,28 @@ class PMC_APP(App):
                 self.ip_addr_prop = value
             elif key == "ip_port":
                 self.port_prop = int(value)
-        elif section == "Speeds":
+        elif section == "Motion":
             if key == "fan":
-                self.fan_speed_prop = value
-            elif key == "homing":
-                self.home_speed_prop = value
+                self.fan_speed_prop = int(value)
+            elif key == "homing_speed":
+                self.home_speed_prop = int(value)
+            elif key == "home_timeout":
+                self.home_timeout_prop = int(value)
             elif key == "rel_move":
-                self.rel_speed_prop = value
+                self.rel_speed_prop = int(value)
             elif key == "abs_move":
-                self.abs_speed_prop = value
+                self.abs_speed_prop = int(value)
         return super().on_config_change(config, section, key, value)
     
     def load_config(self):
         config = super().load_config()
-        self.debug_mode_prop = bool(int(config.get('General','dbg_mode')))
+        self.debug_mode_prop = bool(config.get('General','dbg_mode')=='True')
         self.ip_addr_prop = config.get('Connection','ip_addr')
         self.port_prop = int(config.get('Connection','ip_port'))
-        self.fan_speed_prop = config.get('Speeds','fan')
-        self.home_speed_prop = config.get('Speeds','homing')
-        self.rel_speed_prop: config.get('Speeds','rel_move')
-        self.abs_speed_prop: config.get('Speeds','abs_move')
+        self.fan_speed_prop = int(config.get('Motion','fan_speed'))
+        self.home_speed_prop = int(config.get('Motion','homing_speed'))
+        self.rel_speed_prop: int(config.get('Motion','rel_move'))
+        self.abs_speed_prop: int(config.get('Motion','abs_move'))
         self.debug_mode_prop: config.get('General', 'dbg_mode')=='True'
         return config
     
@@ -175,7 +175,6 @@ class PMC_APP(App):
         
     async def app_func(self):
         '''trio needs to run a function, so this is it. '''
-
         async with trio.open_nursery() as nursery:
             '''In trio you create a nursery, in which you schedule async
             functions to be run by the nursery simultaneously as tasks.
@@ -196,29 +195,31 @@ class PMC_APP(App):
             nursery.start_soon(self.launchTasks)
             
     async def launchTasks(self):
-            nursery = self.nursery
-            # time.sleep(0.5)
-            await trio.sleep(0.1)
-            nursery.start_soon(self.initializeTerminal)
-            await trio.sleep(0.1)
-            nursery.start_soon(self.updateControls)
-            self.appState = AppState.INIT
-            return False
+        """Starts the tasks for the terminal and the main state machine
+        """
+        nursery = self.nursery
+        # time.sleep(0.5)
+        await trio.sleep(0.1)
+        nursery.start_soon(self.initializeTerminal)
+        await trio.sleep(0.1)
+        nursery.start_soon(self.updateControls)
+        self.appState = AppState.INIT
+
         
     async def initializeTerminal(self):
+        """Creates the terminal object and stores it as a variable
+        """
         gui = None
         while (gui == None) or (TerminalWidget.terminal == None):
             gui = self.root
             await trio.sleep(0) 
         #terminal object exists, set up the terminal manager...
         self.terminalManager = TerminalManager(TerminalWidget.terminal, self.nursery)
-        # await self.terminalManager.initialize(self.nursery)
         await self.terminalManager.addMessage('Welcome. Press F1 for settings.', MessageType.IMPORTANT)
-        # while 1:
-        #     self.nursery.start_soon(self.terminalManager.updateTerminalWidget)
-        #     await trio.sleep(0) 
-            
+
     async def updateControls(self):
+        """Main state machine for handling events in the app
+        """
         gui = None
         while gui == None:
             gui =  self.root
@@ -245,23 +246,24 @@ class PMC_APP(App):
                     else:
                         await self.connectionSucceededHandler()
             elif currentState == AppState.CONNECTED:
-                await self.connectedStateHandler()
-                
-
-                
+                await self.connectedStateHandler()                
             gui.updateOutputFields()
             await trio.sleep(0)
 
 
     async def initStateHandler(self):
+        """Performs steps needed to start the state machine correctly
+        """
+        #Forward the SM to the disconnected state
         await self.setAppState(AppState.DISCONNECTED)
     
     async def disconnectedStateHandler(self):
+        """Checks for and deals with events when the SM is in the disconnected state.
+        """
         gui =  self.root
         conBtn = gui.ids['connect_btn']
         disconBtn = gui.ids['disconnect_btn']
         if len(self.appRequestList) > 0:
-            # await trio.sleep(0)
             request = self.appRequestList.pop()
             if request == AppRequest.CONNECT_REQUESTED:
                 self.connectionFailedEvent = trio.Event() #reset the failed connection flag
@@ -269,7 +271,8 @@ class PMC_APP(App):
                 await self.setAppState(AppState.CONNECT_IN_PROGRESS)
                 conBtn.disabled = True
             elif request == AppRequest.DISCONNECT_REQUESTED:
-                await self.terminalManager.addMessage("Disconnect requested from disconnected state", MessageType.WARNING)
+                # await self.terminalManager.addMessage("Disconnect requested from disconnected state", MessageType.WARNING)
+                pass
         await trio.sleep(0)
                 
     async def connectInProgressStateHandler(self):
@@ -287,9 +290,7 @@ class PMC_APP(App):
             return
         # self.nursery.start_soon(pmc.startCommsStream, self.printErrorCallbacks)
         self.nursery.start_soon(pmc.startCommsStream)
-        
         await pmc.sendHandshake()
-        await pmc.sendPrimaryMirrorCommands()
         await trio.sleep(0)
         try:
             await pmc.waitForHandshakeReply(10)
@@ -317,7 +318,7 @@ class PMC_APP(App):
         disconBtn = gui.ids['disconnect_btn']
         disconBtn.background_color = (1,0,0,1)
         disconBtn.disabled = False
-        enableStepBtn = gui.ids['do_enable_steppers_btn']
+        enableStepBtn = gui.ids['enable_steppers_btn']
         enableStepBtn.disabled = False
         
         await self.setAppState(AppState.CONNECTED)
@@ -325,13 +326,15 @@ class PMC_APP(App):
         
     async def connectedStateHandler(self):
         gui =  self.root
+        goBtn = gui.ids['go_abs_btn']
         conBtn = gui.ids['connect_btn']
         disconBtn = gui.ids['disconnect_btn']
-        goBtn = gui.ids['go_abs_btn']
+        enableStepBtn = gui.ids['enable_steppers_btn']
         if len(self.appRequestList) > 0:
             request = self.appRequestList.pop()
             if request == AppRequest.CONNECT_REQUESTED:
-                await self.terminalManager.addMessage("Connect requested from connected state", MessageType.WARNING)
+                # await self.terminalManager.addMessage("Connect requested from connected state", MessageType.WARNING)
+                pass
             elif request == AppRequest.DISCONNECT_REQUESTED:
                 await self.setAppState(AppState.DISCONNECTED)
                 await self.resetConnection()
@@ -347,15 +350,29 @@ class PMC_APP(App):
                 homeBtn.disabled = True
                 await self.terminalManager.addMessage('Homing...')
                 await pmc.sendHomeAll(self.home_speed_prop)
-                await pmc.sendPrimaryMirrorCommands()
+                await trio.sleep(0)
                 try:
-                    await pmc.waitForHomingComplete()
+                    await pmc.waitForHomingComplete(self.home_timeout_prop)
                     await self.terminalManager.addMessage('Homing Complete.', MessageType.GOOD_NEWS)
                 except trio.TooSlowError as e:
                      await self.terminalManager.addMessage('Homing timed out.', MessageType.ERROR)
                 homeBtn.disabled = False
                 homeBtn.text = "Home All"
                 goBtn.disabled = False
+            elif request == AppRequest.TOGGLE_STEPPER_ENABLE:
+                if pmc.steppersEnabled():
+                    await pmc.sendEnableSteppers(False)
+                    # TODO: wait for ack before enabling
+                    gui.enableRelativeControls(False)
+                    # TODO: Ask if system is homed and wait for reply before enabling.
+                    goBtn.disabled = True
+                    enableStepBtn.text = "Enable Steppers"
+                else:
+                    await pmc.sendEnableSteppers(True)
+                    gui.enableRelativeControls(True)
+                    goBtn.disabled = False
+                    enableStepBtn.text = "Disable Steppers"
+                    
         await pmc.sendPrimaryMirrorCommands()
      
     def printErrorCallbacks(self, excgroup):
@@ -450,21 +467,6 @@ class PMC_APP(App):
         if len(focusAbsTI.text) > 0: 
             self.nursery.start_soon(pmc.MoveAbsolute,float(tipAbsTI.text), float(tiltAbsTI.text), float(focusAbsTI.text))
  
-    def enableSteppersButtonPushed(self):
-        gui = self.root
-        # TODO: wait for ack before enabling
-        gui.enableRelativeControls()
-        # TODO: Ask if system is homed and wait for reply before enabling.
-        goBtn = gui.ids['go_abs_btn']
-        goBtn.disabled = False
-        # ###########3
-
-        
-    def homingButtonPushed(self):
-        gui =  self.root
-
-
-        
     def stopButtonPushed(self):
         self.nursery.start_soon(pmc.sendStopCommand,)
                  

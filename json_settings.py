@@ -27,33 +27,40 @@ json_connection_settings = json.dumps([
     },
 ])
 
-json_speed_settings = json.dumps([
+json_motion_settings = json.dumps([
     {
         "type":"numeric",
         "title":"Fan",
         "desc":"Fan Speed [%]",
-        "section":"Speeds",
-        "key": "fan"
+        "section":"Motion",
+        "key": "fan_speed"
     },
     {
         "type":"numeric",
-        "title":"Homing",
+        "title":"Homing Speed",
         "desc":"Homing Speed [steps/sec]",
-        "section":"Speeds",
-        "key": "homing"
+        "section":"Motion",
+        "key": "homing_speed"
+    },
+    {
+        "type":"numeric",
+        "title":"Homing Timeout",
+        "desc":"Homing Timeout Duration [sec]",
+        "section":"Motion",
+        "key": "homing_timeout"
     },
     {
         "type":"numeric",
         "title":"Relative Move",
         "desc":'Relative Move Speed ['+u'\N{DEGREE SIGN}' + '/sec]: ',
-        "section":"Speeds",
+        "section":"Motion",
         "key": "rel_move"
     },
     {
         "type":"numeric",
         "title":"Absolute Move",
         "desc":'Absolute Move Speed ['+u'\N{DEGREE SIGN}' + '/sec]: ',
-        "section":"Speeds",
+        "section":"Motion",
         "key": "abs_move"
     },
 ])

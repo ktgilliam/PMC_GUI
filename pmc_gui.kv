@@ -5,10 +5,11 @@ PMC_GUI:
     cols: 1
     ip_addr_prop:  app.config.get('Connection','ip_addr')
     port_prop: int(app.config.get('Connection','ip_port'))
-    fan_speed_prop: app.config.get('Speeds','fan')
-    home_speed_prop: app.config.get('Speeds','homing')
-    rel_speed_prop: app.config.get('Speeds','rel_move')
-    abs_speed_prop: app.config.get('Speeds','abs_move')
+    fan_speed_prop: int(app.config.get('Motion','fan_speed'))
+    home_speed_prop: int(app.config.get('Motion','homing_speed'))
+    home_timeout_prop: int(app.config.get('Motion','homing_timeout'))
+    rel_speed_prop: int(app.config.get('Motion','rel_move'))
+    abs_speed_prop: int(app.config.get('Motion','abs_move'))
     debug_mode_prop: app.config.get('General', 'dbg_mode')=='True'
     # Top half is for inputs.
     Label:
@@ -300,6 +301,15 @@ PMC_GUI:
                         # on_release: app.connectButtonPushed(app.ip_addr_prop, int(app.port_prop))
                         on_release: app.appRequestList.append(AppRequest.DISCONNECT_REQUESTED)
                     Button:
+                        text:'Enable Steppers'
+                        id: enable_steppers_btn
+                        size_hint_y: None
+                        height: 30
+                        size_hint_x: None
+                        width:120
+                        on_release: app.appRequestList.append(AppRequest.TOGGLE_STEPPER_ENABLE)
+                        disabled: True     
+                    Button:
                         id: do_home_all_btn
                         text:'Home All'
                         size_hint_y: None
@@ -319,16 +329,7 @@ PMC_GUI:
                         background_color: (1,0,0,1)
                         on_release: app.stopButtonPushed()
                         disabled: True
-                    Button:
-                        text:'Enable Steppers'
-                        id: do_enable_steppers_btn
-                        bold: True
-                        size_hint_y: None
-                        height: 30
-                        size_hint_x: None
-                        width:120
-                        on_release: app.enableSteppersButtonPushed()
-                        disabled: True     
+
 
         GridLayout:
             cols: 1

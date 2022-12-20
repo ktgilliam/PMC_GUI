@@ -74,6 +74,7 @@ class PrimaryMirrorControl:
     _homingComplete = trio.Event()
     _handshakeReceived = trio.Event()
     _outgoingJsonMessage = {}
+    _steppersEnabled = False
     
     def reset(self):
         self._currentTip = 0.0
@@ -106,6 +107,9 @@ class PrimaryMirrorControl:
     
     def getCurrentFocus(self):
         return self._currentFocus
+    
+    def steppersEnabled(self):
+        return self._steppersEnabled
     
     async def startNewMessage(self):
         self._outgoingJsonMessage["PMCMessage"] = {}
@@ -161,8 +165,9 @@ class PrimaryMirrorControl:
         self._isHomed = True
         self._homingComplete = trio.Event()
         await trio.sleep(0)
+        await self.sendPrimaryMirrorCommands()
         
-    async def waitForHomingComplete(self, timeout=120):
+    async def waitForHomingComplete(self, timeout=60):
         with trio.fail_after(timeout):
             await self._homingComplete.wait()
             self._currentTip = 0
@@ -174,12 +179,21 @@ class PrimaryMirrorControl:
         await self.addKvCommandPairs(Handshake=0xDEAD)
         self._handshakeReceived = trio.Event()
         await trio.sleep(0)
-            
+        await self.sendPrimaryMirrorCommands()
+        
+        
     async def waitForHandshakeReply(self, secondsToWait=default_timeout):
         with trio.fail_after(secondsToWait):
                 # print("waiting for handshake")
             await self._handshakeReceived.wait()
             
+    async def sendEnableSteppers(self, doEnable):
+        await self.startNewMessage()
+        await self.addKvCommandPairs(EnableSteppers=doEnable)
+        await trio.sleep(0)
+        await self.sendPrimaryMirrorCommands()
+        self._steppersEnabled = doEnable
+        
     async def sendPrimaryMirrorCommands(self):
         if self._newCommandDataEvent.is_set():
             async with self._outgoingDataTxChannel.clone() as outgoing:
