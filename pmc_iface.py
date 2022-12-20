@@ -165,6 +165,9 @@ class PrimaryMirrorControl:
     async def waitForHomingComplete(self, timeout=120):
         with trio.fail_after(timeout):
             await self._homingComplete.wait()
+            self._currentTip = 0
+            self._currentTilt = 0
+            self._currentFocus = 0
             
     async def sendHandshake(self):
         await self.startNewMessage()
@@ -207,9 +210,6 @@ class PrimaryMirrorControl:
                         await chan.send(recvStr[:-1])
                     self._receiveBuffer = ''.encode('utf-8')
                     print('Received: '+ recvStr[:-1])                
-        # print("receiver: connection closed")
-
-        # await trio.sleep(0)
         
     async def open_connection(self,  _ip, _port, timeout=default_timeout):
         self._connection = (_ip, _port)
