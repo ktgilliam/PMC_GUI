@@ -256,9 +256,13 @@ class PrimaryMirrorControl:
         else:
             # print("nothing to send")
             pass
+    def interruptAnything(self):
+        if(self._homingScope != None):
+            self._homingScope.cancel()
+        trio.sleep(0)
         
     async def sendStopCommand(self):
-        await self.startNewMessage()
+        # await self.startNewMessage()
         await self.addKvCommandPairs(Stop=0)
         async with self._outgoingDataTxChannel.clone() as outgoing:
                 await outgoing.send(json.dumps(self._outgoingJsonMessage))

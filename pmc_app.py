@@ -23,7 +23,7 @@ class AppRequest(IntEnum):
     DISCONNECT_REQUESTED=2
     GO_HOME_REQUESTED=3
     TOGGLE_STEPPER_ENABLE=4
-    
+    STOP_REQUESTED=5
 class AppState(IntEnum):
     INIT=0
     DISCONNECTED=1
@@ -375,6 +375,8 @@ class PMC_APP(App):
                     gui.enableRelativeControls(True)
                     goBtn.disabled = False
                     enableStepBtn.text = "Disable Steppers"
+            elif request == AppRequest.STOP_REQUESTED:
+                await pmc.sendStopCommand()
                     
         await pmc.sendPrimaryMirrorCommands()
         
@@ -479,9 +481,9 @@ class PMC_APP(App):
         focusAbsTI = gui.ids['focus_abs']
         if len(focusAbsTI.text) > 0: 
             self.nursery.start_soon(pmc.MoveAbsolute,float(tipAbsTI.text), float(tiltAbsTI.text), float(focusAbsTI.text))
- 
+
     def stopButtonPushed(self):
-        self.nursery.start_soon(pmc.sendStopCommand,)
+        pmc.interruptAnything()
                  
     def defaultButtonPushed(self):
         self.terminalManager.queueMessage('Button not assigned yet!')
