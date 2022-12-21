@@ -44,8 +44,8 @@ class DIRECTION(IntEnum):
 default_timeout = 5
 rx_buff_size = 1024
 
-# def handleDisconnectErrors(excgroup):
-#     print("INSIDE handleDisconnectErrors")
+# def handleCommErrors(excgroup):
+#     print("INSIDE handleCommErrors")
 #     for exc in excgroup.exceptions:
 #         pause = 1
 #         print(exc)
@@ -65,14 +65,16 @@ class PrimaryMirrorControl:
     _client_stream = None
     _streamReady = False
     _receiveBuffer = b''
-    
+    _cancelScope = None
     _outgoingDataTxChannel, _outgoingDataRxChannel = trio.open_memory_channel(0)
     _incomingDataTxChannel, _incomingDataRxChannel = trio.open_memory_channel(0)
     
     _disconnectCommandEvent = trio.Event()
     _newCommandDataEvent = trio.Event()
-    
+    _homingComplete = trio.Event()
+    _handshakeReceived = trio.Event()
     _outgoingJsonMessage = {}
+    _steppersEnabled = False
     
     def reset(self):
         self._currentTip = 0.0
@@ -81,15 +83,15 @@ class PrimaryMirrorControl:
         self._isHomed = False
         self._disconnectCommandEvent = trio.Event()
         
-    @staticmethod
-    def handleDisconnectErrors(excgroup):
-        for exc in excgroup.exceptions:
-            if isinstance(exc, trio.BrokenResourceError) or \
-                isinstance(exc, trio.ClosedResourceError):
-                    pass #Everything is fine, do nothing
-            else:
-                breakpoint()
-                print(exc)
+    # @staticmethod
+    # def handleCommErrors(excgroup):
+    #     for exc in excgroup.exceptions:
+    #         if isinstance(exc, trio.BrokenResourceError) or \
+    #             isinstance(exc, trio.ClosedResourceError):
+    #                 pass #Everything is fine, do nothing
+    #         else:
+    #             breakpoint()
+    #             print(exc)
             
     def setTipTiltStepSize(self, val):
         self._tipTiltStepSize_urad = val
@@ -105,6 +107,9 @@ class PrimaryMirrorControl:
     
     def getCurrentFocus(self):
         return self._currentFocus
+    
+    def steppersEnabled(self):
+        return self._steppersEnabled
     
     async def startNewMessage(self):
         self._outgoingJsonMessage["PMCMessage"] = {}
@@ -151,15 +156,55 @@ class PrimaryMirrorControl:
             self._currentFocus = focus
             await self.addKvCommandPairs(MoveType=MoveTypes.ABSOLUTE, SetTip=tip, SetTilt=tilt, SetFocus=focus)
             
-    async def HomeAll(self, homeSpeed):       
+    async def sendHomeAll(self, homeSpeed):       
         await self.startNewMessage()
         await self.addKvCommandPairs(FindHome=int(homeSpeed))
-        
         self._currentTip = 0.0
         self._currentTilt = 0.0
         self._currentFocus = 0.0 
-        self._isHomed = True
-    
+        self._homingComplete = trio.Event()
+        await trio.sleep(0)
+        await self.sendPrimaryMirrorCommands()
+        
+    async def waitForHomingComplete(self, timeout=60):
+        with trio.fail_after(timeout) as cancelScope:
+            self._cancelScope = cancelScope
+            await self._homingComplete.wait()
+            tmp = 1
+            print(cancelScope.cancel_called)
+            print(cancelScope.cancelled_caught)
+        if self._cancelScope.cancelled_caught:
+            print("homing cancelled")
+        self._currentTip = 0
+        self._currentTilt = 0
+        self._currentFocus = 0
+            
+    async def sendHandshake(self):
+        await self.startNewMessage()
+        await self.addKvCommandPairs(Handshake=0xDEAD)
+        self._handshakeReceived = trio.Event()
+        await trio.sleep(0)
+        await self.sendPrimaryMirrorCommands()
+        
+        
+    async def waitForHandshakeReply(self, secondsToWait=default_timeout):
+        with trio.fail_after(secondsToWait) as cancelScope:
+            self._cancelScope = cancelScope
+                # print("waiting for handshake")
+            await self._handshakeReceived.wait()
+            
+    async def sendEnableSteppers(self, doEnable):
+        await self.startNewMessage()
+        await self.addKvCommandPairs(EnableSteppers=doEnable)
+        await trio.sleep(0)
+        await self.sendPrimaryMirrorCommands()
+        self._steppersEnabled = doEnable
+        
+    async def sendPrimaryMirrorCommands(self):
+        if self._newCommandDataEvent.is_set():
+            async with self._outgoingDataTxChannel.clone() as outgoing:
+                await outgoing.send(json.dumps(self._outgoingJsonMessage))
+                
     async def aSendMessages(self, task_status=trio.TASK_STATUS_IGNORED):
         async with self._outgoingDataRxChannel.clone() as chan:
             print("inside aSendMessages with")
@@ -176,97 +221,81 @@ class PrimaryMirrorControl:
             async for data in self._client_stream:
                 # print(data)
                 # if self._disconnectCommandEvent.is_set():
-                print("inside aReceiveMessages with")
                 self._receiveBuffer += data
-                lastByte = self._receiveBuffer[-1:]
-                if lastByte == b'\x00':
-                    recvStr = self._receiveBuffer.decode('utf-8')
+                try:
+                    termIdx = self._receiveBuffer.index(b'\x00')
+                    recvStr = self._receiveBuffer[0:termIdx].decode('utf-8')
+                    print('Received: '+ recvStr)      
+                    self._receiveBuffer = self._receiveBuffer[termIdx:-1]
                     async with self._incomingDataTxChannel.clone() as chan:
-                        await chan.send(recvStr[:-1])
-                    self._receiveBuffer = ''.encode('utf-8')
-                    print('Received: '+ recvStr[:-1])                
-        # print("receiver: connection closed")
-
-        # await trio.sleep(0)
-        
+                        await chan.send(recvStr)
+                except ValueError:
+                    pass          
+                
     async def open_connection(self,  _ip, _port, timeout=default_timeout):
         self._connection = (_ip, _port)
         # try:
         with trio.fail_after(timeout):
             self._client_stream = await trio.open_tcp_stream(_ip, _port)
-
             
-    async def startCommsStream(self, onException=handleDisconnectErrors):
+            
+    async def startCommsStream(self, handler):
         if self._client_stream != None:
             async with self._client_stream:
                 with catch({ \
-                    ConnectionResetError: onException, \
-                        trio.BrokenResourceError: onException, \
-                            trio.ClosedResourceError: onException}):
+                    ConnectionResetError: handler, \
+                        trio.BrokenResourceError: handler, \
+                            trio.ClosedResourceError: handler, \
+                                json.JSONDecodeError: handler}):
                     async with trio.open_nursery() as nursery:
                         nursery.start_soon(self.aSendMessages)
                         nursery.start_soon(self.aReceiveMessages)
                         nursery.start_soon(self.checkMessages)
                     pass
-                self._client_stream = None
-        #     pass
-        # pass
-                    # nursery.start_soon(self.testLoop)
-                    
-    async def testLoop(self):
-        self.count = 0
-        while 1:
-            self.count += 1
-            await trio.sleep(1)
-            
-            
-    async def sendHandshake(self):
-        await self.startNewMessage()
-        await self.addKvCommandPairs(Handshake=0xDEAD)
-        self.waitingForHandshake = trio.Event()
-        await trio.sleep(0)
-            
-    async def waitForHandshakeReply(self, secondsToWait=default_timeout):
-        with trio.fail_after(secondsToWait):
-                # print("waiting for handshake")
-            await self.waitingForHandshake.wait()
-            
-    async def sendPrimaryMirrorCommands(self):
-        if self._newCommandDataEvent.is_set():
-            async with self._outgoingDataTxChannel.clone() as outgoing:
-                await outgoing.send(json.dumps(self._outgoingJsonMessage))
-
-            print("sent something")
-            await trio.sleep(0)
+                # self._client_stream = None          
+            # await trio.sleep(0)
         else:
             # print("nothing to send")
             pass
+    def interruptAnything(self):
+        if(self._cancelScope != None):
+            self._cancelScope.cancel()
+        trio.sleep(0)
         
     async def sendStopCommand(self):
-        await self.startNewMessage()
+        # await self.startNewMessage()
         await self.addKvCommandPairs(Stop=0)
         async with self._outgoingDataTxChannel.clone() as outgoing:
                 await outgoing.send(json.dumps(self._outgoingJsonMessage))
-                
+        await self.sendPrimaryMirrorCommands()
+        await trio.sleep(0)
+        if(self._cancelScope != None):
+            self._cancelScope.cancel()
+            # self._homingComplete.set()
+        
     async def checkMessages(self):   
         while 1:
             async with self._incomingDataRxChannel.clone() as incoming:
                 async for replyStr in incoming:
                     if len(replyStr) > 0:
-                        try:
-                            replyJson = json.loads(replyStr)
-                        except Exception as e:
-                            self._connected = False
-                            raise Exception('Handshake decode failed: ['+replyStr+']')
+                        replyJson = json.loads(replyStr)
                         if "Handshake" in replyJson:
                             if replyJson["Handshake"] == 0xBEEF:
                                 self._connected = True
-                                self.waitingForHandshake.set()
+                                self._handshakeReceived.set()
                                 # print("set handshake flag")
                                 await trio.sleep(0)
                             else:
                                 self._connected = False
                                 raise Exception('Connection failed - handshake mismatch')
+                        elif "HomingComplete" in replyJson:
+                            print(replyStr)
+                            if replyJson["HomingComplete"] == True:
+                                self._homingComplete.set()
+                                self._isHomed = True
+                        elif "SteppersEnabled" in replyJson:
+                            print(replyStr)
+                            self._steppersEnabled = replyJson["SteppersEnabled"]
                         else:
                             print(replyStr)
                             await trio.sleep(0)
