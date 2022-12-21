@@ -65,7 +65,7 @@ class PrimaryMirrorControl:
     _client_stream = None
     _streamReady = False
     _receiveBuffer = b''
-    _homingScope = None
+    _cancelScope = None
     _outgoingDataTxChannel, _outgoingDataRxChannel = trio.open_memory_channel(0)
     _incomingDataTxChannel, _incomingDataRxChannel = trio.open_memory_channel(0)
     
@@ -167,13 +167,13 @@ class PrimaryMirrorControl:
         await self.sendPrimaryMirrorCommands()
         
     async def waitForHomingComplete(self, timeout=60):
-        with trio.fail_after(timeout) as cleanupScope:
-            self._homingScope = cleanupScope
+        with trio.fail_after(timeout) as cancelScope:
+            self._cancelScope = cancelScope
             await self._homingComplete.wait()
             tmp = 1
-            print(cleanupScope.cancel_called)
-            print(cleanupScope.cancelled_caught)
-        if self._homingScope.cancelled_caught:
+            print(cancelScope.cancel_called)
+            print(cancelScope.cancelled_caught)
+        if self._cancelScope.cancelled_caught:
             print("homing cancelled")
         self._currentTip = 0
         self._currentTilt = 0
@@ -188,7 +188,8 @@ class PrimaryMirrorControl:
         
         
     async def waitForHandshakeReply(self, secondsToWait=default_timeout):
-        with trio.fail_after(secondsToWait):
+        with trio.fail_after(secondsToWait) as cancelScope:
+            self._cancelScope = cancelScope
                 # print("waiting for handshake")
             await self._handshakeReceived.wait()
             
@@ -257,8 +258,8 @@ class PrimaryMirrorControl:
             # print("nothing to send")
             pass
     def interruptAnything(self):
-        if(self._homingScope != None):
-            self._homingScope.cancel()
+        if(self._cancelScope != None):
+            self._cancelScope.cancel()
         trio.sleep(0)
         
     async def sendStopCommand(self):
@@ -268,8 +269,8 @@ class PrimaryMirrorControl:
                 await outgoing.send(json.dumps(self._outgoingJsonMessage))
         await self.sendPrimaryMirrorCommands()
         await trio.sleep(0)
-        if(self._homingScope != None):
-            self._homingScope.cancel()
+        if(self._cancelScope != None):
+            self._cancelScope.cancel()
             # self._homingComplete.set()
         
     async def checkMessages(self):   
