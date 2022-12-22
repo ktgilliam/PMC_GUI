@@ -84,7 +84,7 @@ class PMC_GUI(GridLayout):
             btn.background_color = (1,1,1,1)
         
     def resetFocusStepSizeButtons(self):
-        buttonFilt = re.compile('_10*um_btn')
+        buttonFilt = re.compile('_10*mm_btn')
         buttonList = [b for b in self.ids if buttonFilt.match(b)]
         for b in buttonList:
             btn = self.ids[b]
@@ -411,11 +411,11 @@ class PMC_APP(App):
         self.nursery.start_soon(pmc.TiltRelative,DIRECTION.REVERSE)
         
     def plusFocusButtonPushed(self):
-        self.terminalManager.queueMessage(' Focus [+' + str(pmc._focusStepSize_um) + ' um]')
+        self.terminalManager.queueMessage(' Focus [+' + str(pmc._focusStepSize_mm) + ' um]')
         self.nursery.start_soon(pmc.FocusRelative,DIRECTION.FORWARD)
         
     def minusFocusButtonPushed(self):
-        self.terminalManager.queueMessage(' Focus [-' + str(pmc._focusStepSize_um) + ' um]')
+        self.terminalManager.queueMessage(' Focus [-' + str(pmc._focusStepSize_mm) + ' um]')
         self.nursery.start_soon(pmc.FocusRelative,DIRECTION.REVERSE)
             
     def _1masButtonPushed(self):
@@ -446,32 +446,32 @@ class PMC_APP(App):
         btn = gui.ids['_1000mas_btn']
         btn.background_color = (0,1,0,1)
         
-    def _1umButtonPushed(self):
+    def _0p2mmButtonPushed(self):
         gui = self.root
-        pmc._focusStepSize_um = 1
+        pmc._focusStepSize_mm = 0.2
         gui.resetFocusStepSizeButtons()
-        btn = gui.ids['_1um_btn']
+        btn = gui.ids['_0p2mm_btn']
         btn.background_color = (0,1,0,1)
 
-    def _10umButtonPushed(self):
+    def _2mmButtonPushed(self):
         gui = self.root
-        pmc._focusStepSize_um = 10
+        pmc._focusStepSize_mm = 2
         gui.resetFocusStepSizeButtons()
-        btn = gui.ids['_10um_btn']
+        btn = gui.ids['_2mm_btn']
         btn.background_color = (0,1,0,1)
         
-    def _100umButtonPushed(self):
+    def _20mmButtonPushed(self):
         gui = self.root
-        pmc._focusStepSize_um = 100
+        pmc._focusStepSize_mm = 20
         gui.resetFocusStepSizeButtons()
-        btn = gui.ids['_100um_btn']
+        btn = gui.ids['_20mm_btn']
         btn.background_color = (0,1,0,1)
 
-    def _1000umButtonPushed(self):
+    def _200mmButtonPushed(self):
         gui = self.root
-        pmc._focusStepSize_um = 1000
+        pmc._focusStepSize_mm = 200
         gui.resetFocusStepSizeButtons()
-        btn = gui.ids['_1000um_btn']
+        btn = gui.ids['_200mm_btn']
         btn.background_color = (0,1,0,1) 
             
     def AbsGoButtonPushed(self):
