@@ -107,7 +107,7 @@ PMC_GUI:
                         Label:
                         ##################
                     Label:
-                        text: "Tip/Tilt Step Size [urad]:"
+                        text: "Tip/Tilt Step Size [mas]:"
                         size_hint_y:None
                         height: 20
                     BoxLayout:
@@ -115,30 +115,30 @@ PMC_GUI:
                         size_hint_y: None
                         height: 40
                         Button:
-                            id: _1urad_btn
+                            id: _1mas_btn
                             text: '1'
                             size_hint_y: None
                             height: 30
                             background_color: (0,1,0,1)
-                            on_press: app._1uradButtonPushed()
+                            on_press: app._1masButtonPushed()
                         Button:
-                            id: _10urad_btn
+                            id: _10mas_btn
                             text: '10'
                             size_hint_y: None
                             height: 30
-                            on_press: app._10uradButtonPushed()
+                            on_press: app._10masButtonPushed()
                         Button:
-                            id: _100urad_btn
+                            id: _100mas_btn
                             text: '100'
                             size_hint_y: None
                             height: 30
-                            on_press: app._100uradButtonPushed()
+                            on_press: app._100masButtonPushed()
                         Button:
-                            id: _1000urad_btn
+                            id: _1000mas_btn
                             text: '1000'
                             size_hint_y: None
                             height: 30
-                            on_press: app._1000uradButtonPushed()
+                            on_press: app._1000masButtonPushed()
                 GridLayout:
                     cols: 1
                     padding: [10, 10, 10, 10]
@@ -224,7 +224,7 @@ PMC_GUI:
                 GridLayout:
                     cols: 2
                     Label: 
-                        text: 'Tip [urad]: '
+                        text: 'Tip [mas]: '
                         size_hint_y: None
                         height: 30
                         size_hint_x: None
@@ -236,7 +236,7 @@ PMC_GUI:
                         height: 30
                         # disabled: True
                     Label: 
-                        text: 'Tilt [urad]: '
+                        text: 'Tilt [mas]: '
                         size_hint_y: None
                         height: 30
                         size_hint_x: None
@@ -358,7 +358,7 @@ PMC_GUI:
                     row_default_height: 30
                     padding: [10, 10, 10, 10]
                     Label:
-                        text: "Tip [urad]: "
+                        text: "Tip [mas]: "
                         size_hint_x: None
                         width: 90
                     FloatInput:
@@ -367,7 +367,7 @@ PMC_GUI:
                         readonly: True
                         text: '0.0'
                     Label:
-                        text: "Tilt [urad]: "
+                        text: "Tilt [mas]: "
                         size_hint_x: None
                         width: 90
                     FloatInput:

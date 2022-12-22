@@ -77,7 +77,7 @@ class PMC_GUI(GridLayout):
         enableStepBtn.disabled = True
              
     def resetTipTiltStepSizeButtons(self):
-        buttonFilt = re.compile('_10*urad_btn')
+        buttonFilt = re.compile('_10*mas_btn')
         buttonList = [b for b in self.ids if buttonFilt.match(b)]
         for b in buttonList:
             btn = self.ids[b]
@@ -395,55 +395,55 @@ class PMC_APP(App):
                 self.terminalManager.queueMessage(exc.msg)
             
     def plusTipButtonPushed(self):
-        self.terminalManager.queueMessage(' Tip [+' + str(pmc._tipTiltStepSize_urad) + ' urad]')
+        self.terminalManager.queueMessage(' Tip [+' + str(pmc._tipTiltStepSize_mas) + ' mas]')
         self.nursery.start_soon(pmc.TipRelative, DIRECTION.FORWARD)
     
     def minusTipButtonPushed(self):
-        self.terminalManager.queueMessage(' Tip [-' + str(pmc._tipTiltStepSize_urad) + ' urad]')
+        self.terminalManager.queueMessage(' Tip [-' + str(pmc._tipTiltStepSize_mas) + ' mas]')
         self.nursery.start_soon(pmc.TipRelative,DIRECTION.REVERSE)
         
     def plusTiltButtonPushed(self):
-        self.terminalManager.queueMessage(' Tilt [+' + str(pmc._tipTiltStepSize_urad) + ' urad]')
+        self.terminalManager.queueMessage(' Tilt [+' + str(pmc._tipTiltStepSize_mas) + ' mas]')
         self.nursery.start_soon(pmc.TiltRelative,DIRECTION.FORWARD)
 
     def minusTiltButtonPushed(self):
-        self.terminalManager.queueMessage(' Tilt [-' + str(pmc._tipTiltStepSize_urad) + ' urad]')
+        self.terminalManager.queueMessage(' Tilt [-' + str(pmc._tipTiltStepSize_mas) + ' mas]')
         self.nursery.start_soon(pmc.TiltRelative,DIRECTION.REVERSE)
         
     def plusFocusButtonPushed(self):
-        self.terminalManager.queueMessage(' Focus [+' + str(pmc._focusStepSize_um) + ' urad]')
+        self.terminalManager.queueMessage(' Focus [+' + str(pmc._focusStepSize_um) + ' um]')
         self.nursery.start_soon(pmc.FocusRelative,DIRECTION.FORWARD)
         
     def minusFocusButtonPushed(self):
-        self.terminalManager.queueMessage(' Focus [-' + str(pmc._focusStepSize_um) + ' urad]')
+        self.terminalManager.queueMessage(' Focus [-' + str(pmc._focusStepSize_um) + ' um]')
         self.nursery.start_soon(pmc.FocusRelative,DIRECTION.REVERSE)
             
-    def _1uradButtonPushed(self):
+    def _1masButtonPushed(self):
         gui = self.root
-        pmc._tipTiltStepSize_urad = 1
+        pmc._tipTiltStepSize_mas = 1
         gui.resetTipTiltStepSizeButtons()
-        btn = gui.ids['_1urad_btn']
+        btn = gui.ids['_1mas_btn']
         btn.background_color = (0,1,0,1)
         
-    def _10uradButtonPushed(self):
+    def _10masButtonPushed(self):
         gui = self.root
-        pmc._tipTiltStepSize_urad = 10
+        pmc._tipTiltStepSize_mas = 10
         gui.resetTipTiltStepSizeButtons()
-        btn = gui.ids['_10urad_btn']
+        btn = gui.ids['_10mas_btn']
         btn.background_color = (0,1,0,1)
         
-    def _100uradButtonPushed(self):
+    def _100masButtonPushed(self):
         gui = self.root
-        pmc._tipTiltStepSize_urad = 100
+        pmc._tipTiltStepSize_mas = 100
         gui.resetTipTiltStepSizeButtons()
-        btn = gui.ids['_100urad_btn']
+        btn = gui.ids['_100mas_btn']
         btn.background_color = (0,1,0,1)
         
-    def _1000uradButtonPushed(self):
+    def _1000masButtonPushed(self):
         gui = self.root
-        pmc._tipTiltStepSize_urad = 1000
+        pmc._tipTiltStepSize_mas = 1000
         gui.resetTipTiltStepSizeButtons()
-        btn = gui.ids['_1000urad_btn']
+        btn = gui.ids['_1000mas_btn']
         btn.background_color = (0,1,0,1)
         
     def _1umButtonPushed(self):
