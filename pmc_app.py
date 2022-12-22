@@ -411,11 +411,11 @@ class PMC_APP(App):
         self.nursery.start_soon(pmc.TiltRelative,DIRECTION.REVERSE)
         
     def plusFocusButtonPushed(self):
-        self.terminalManager.queueMessage(' Focus [+' + str(pmc._focusStepSize_mm) + ' um]')
+        self.terminalManager.queueMessage(' Focus [+' + str(pmc._focusStepSize_mm) + ' mm]')
         self.nursery.start_soon(pmc.FocusRelative,DIRECTION.FORWARD)
         
     def minusFocusButtonPushed(self):
-        self.terminalManager.queueMessage(' Focus [-' + str(pmc._focusStepSize_mm) + ' um]')
+        self.terminalManager.queueMessage(' Focus [-' + str(pmc._focusStepSize_mm) + ' mm]')
         self.nursery.start_soon(pmc.FocusRelative,DIRECTION.REVERSE)
             
     def _1masButtonPushed(self):
