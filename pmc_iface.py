@@ -259,10 +259,10 @@ class PrimaryMirrorControl:
         else:
             # print("nothing to send")
             pass
+        
     def interruptAnything(self):
         if(self._cancelScope != None):
             self._cancelScope.cancel()
-        trio.sleep(0)
         
     async def sendStopCommand(self):
         # await self.startNewMessage()

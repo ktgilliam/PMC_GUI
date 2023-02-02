@@ -12,19 +12,74 @@ PMC_GUI:
     abs_speed_prop: int(app.config.get('Motion','abs_move'))
     debug_mode_prop: app.config.get('General', 'dbg_mode')=='True'
     # Top half is for inputs.
-    Label:
-        id: title_label
-        text: "PRIMARY MIRROR CONTROL [Version 0.1]"
-        font_size: '20sp'
-        bold: True
-        size_hint_y: None
-        height: 30
-        canvas.before:
-            Color:
-                rgba: 1, 1, 1, 1
-            Line:
-                width: 2
-                rectangle: self.x, self.y, self.width, self.height
+    GridLayout:
+        cols: 1
+        size_hint: 1, None
+        height: 68
+        Label:
+            id: title_label
+            text: "PRIMARY MIRROR CONTROL [Version 0.1]"
+            font_size: '20sp'
+            bold: True
+            size_hint_y: None
+            height: 30
+            canvas.before:
+                Color:
+                    rgba: 1, 1, 1, 1
+                Line:
+                    width: 2
+                    rectangle: self.x, self.y, self.width, self.height
+
+        StackLayout:
+            # cols: 2
+            padding: [4, 4, 4, 4]
+            size_hint_y: None
+            height: 36
+            canvas.before:
+                Color:
+                    rgba: 1, 1, 1, 1
+                Line:
+                    width: 2
+                    rectangle: self.x, self.y, self.width, self.height
+            Button:
+                id: connect_btn
+                text:'Connect'
+                size_hint_y: None
+                height: 30
+                size_hint_x: None
+                width:90
+                # on_release: app.connectButtonPushed(app.ip_addr_prop, int(app.port_prop))
+                on_release: app.appRequestList.append(AppRequest.CONNECT_REQUESTED)
+            Button:
+                id: disconnect_btn
+                text:'Disconnect'
+                size_hint_y: None
+                height: 30
+                size_hint_x: None
+                width:90
+                disabled: True
+                # on_release: app.connectButtonPushed(app.ip_addr_prop, int(app.port_prop))
+                on_release: app.appRequestList.append(AppRequest.DISCONNECT_REQUESTED)
+            Button:
+                text:'Enable Steppers'
+                id: enable_steppers_btn
+                size_hint_y: None
+                height: 30
+                size_hint_x: None
+                width:120
+                on_release: app.appRequestList.append(AppRequest.TOGGLE_STEPPER_ENABLE)
+                disabled: True     
+            Button:
+                text:'STOP'
+                id: do_stop_btn
+                bold: True
+                size_hint_y: None
+                height: 30
+                size_hint_x: None
+                width:80
+                background_color: (1,0,0,1)
+                on_release: app.appRequestList.append(AppRequest.STOP_REQUESTED), app.stopButtonPushed()
+                disabled: True
     GridLayout:
         cols: 3
         size_hint: 1, None
@@ -174,11 +229,17 @@ PMC_GUI:
                         size_hint_y: None
                         height: 40
                         Button:
+                            id: _0p02mm_btn
+                            text: '0.02'
+                            size_hint_y: None
+                            height: 30
+                            background_color: (0,1,0,1)
+                            on_press: app._0p02mmButtonPushed()
+                        Button:
                             id: _0p2mm_btn
                             text: '0.2'
                             size_hint_y: None
                             height: 30
-                            background_color: (0,1,0,1)
                             on_press: app._0p2mmButtonPushed()
                         Button:
                             id: _2mm_btn
@@ -192,12 +253,7 @@ PMC_GUI:
                             size_hint_y: None
                             height: 30
                             on_press: app._20mmButtonPushed()
-                        Button:
-                            id: _200mm_btn
-                            text: '200'
-                            size_hint_y: None
-                            height: 30
-                            on_press: app._200mmButtonPushed()
+                            disabled: True
                     #_________________
         GridLayout:
             cols: 1
@@ -270,65 +326,63 @@ PMC_GUI:
 
             GridLayout:
                 cols:1
+                canvas.before:
+                    Color:
+                        rgba: 1, 1, 1, 1
+                    Line:
+                        width: 2
+                        rectangle: self.x, self.y, self.width, self.height
                 Label:
-                    text: 'Other Controls'
+                    text: 'Homing'
                     size_hint_y : None
                     height:30
-                StackLayout:
-                    # cols: 2
-                    padding: [10, 10, 10, 10]
-                    # Label: 
-                    #     text: 'Debug Mode'
-                    #     size_hint_y: None
-                    #     height: 30
-                    Button:
-                        id: connect_btn
-                        text:'Connect'
-                        size_hint_y: None
-                        height: 30
-                        size_hint_x: None
-                        width:90
-                        # on_release: app.connectButtonPushed(app.ip_addr_prop, int(app.port_prop))
-                        on_release: app.appRequestList.append(AppRequest.CONNECT_REQUESTED)
-                    Button:
-                        id: disconnect_btn
-                        text:'Disconnect'
-                        size_hint_y: None
-                        height: 30
-                        size_hint_x: None
-                        width:90
+                GridLayout:
+                    cols: 1
+                    padding: [15, 10, 10, 10]
+                    id: abs_ctrl
+                    canvas.before:
+                        Color:
+                            rgba: 1, 1, 1, 1
+                        Line:
+                            width: 2
+                            rectangle: self.x, self.y, self.width, self.height
+                    
+                    Label:
+                        text: '...'
+                        size_hint_y : None
+                        height:30
                         disabled: True
-                        # on_release: app.connectButtonPushed(app.ip_addr_prop, int(app.port_prop))
-                        on_release: app.appRequestList.append(AppRequest.DISCONNECT_REQUESTED)
-                    Button:
-                        text:'Enable Steppers'
-                        id: enable_steppers_btn
-                        size_hint_y: None
-                        height: 30
-                        size_hint_x: None
-                        width:120
-                        on_release: app.appRequestList.append(AppRequest.TOGGLE_STEPPER_ENABLE)
-                        disabled: True     
-                    Button:
-                        id: do_home_all_btn
-                        text:'Home All'
-                        size_hint_y: None
-                        height: 30
-                        size_hint_x: None
-                        width:70
-                        disabled: True
-                        on_release: app.appRequestList.append(AppRequest.GO_HOME_REQUESTED)
-                    Button:
-                        text:'STOP'
-                        id: do_stop_btn
-                        bold: True
-                        size_hint_y: None
-                        height: 30
-                        size_hint_x: None
-                        width:80
-                        background_color: (1,0,0,1)
-                        on_release: app.appRequestList.append(AppRequest.STOP_REQUESTED), app.stopButtonPushed()
-                        disabled: True
+                    GridLayout:
+                        cols: 2
+                        size_hint: None, None
+                        row_force_default: True
+                        row_default_height: 30
+                        Label:
+                            size_hint: None, None
+                            height: 30
+                            width:70
+                            text: 'Step 1:'
+                        Button:
+                            id: do_home_all_btn
+                            text:'Start Homing'
+                            size_hint: None, None
+                            height: 30
+                            width:140
+                            disabled: True
+                            on_release: app.appRequestList.append(AppRequest.GO_HOME_REQUESTED)
+                        Label:
+                            size_hint: None, None
+                            height: 30
+                            width:70
+                            text: 'Step 2:'
+                        Button:
+                            id: do_set_home_btn
+                            text:'Press when @ limit'
+                            size_hint: None, None
+                            height: 30
+                            width:140
+                            disabled: True
+                            on_release: app.appRequestList.append(AppRequest.GO_HOME_REQUESTED)
 
 
         GridLayout:
@@ -400,9 +454,9 @@ PMC_GUI:
                 row_default_height: 30
                 padding: [10, 10, 10, 10]
                 Label:
-                    text: "Fan Speed [%]: "
+                    text: "Speed [%]: "
                     size_hint_x: None
-                    width: 100
+                    width: 60
                     size_hint_y: None
                     height: 30
                 FloatInput:
@@ -412,6 +466,13 @@ PMC_GUI:
                     text: '0.0'
                     size_hint_y: None
                     height: 30
+            
+            # Label:
+            #     text: ""
+            #     size_hint_x: None
+            #     width: 100
+            #     size_hint_y: None
+            #     height: 30
     TerminalWidget:
         label: 'Terminal'
         id: terminal

@@ -84,7 +84,7 @@ class PMC_GUI(GridLayout):
             btn.background_color = (1,1,1,1)
         
     def resetFocusStepSizeButtons(self):
-        buttonFilt = re.compile('_10*mm_btn')
+        buttonFilt = re.compile('_.*mm_btn')
         buttonList = [b for b in self.ids if buttonFilt.match(b)]
         for b in buttonList:
             btn = self.ids[b]
@@ -446,6 +446,13 @@ class PMC_APP(App):
         btn = gui.ids['_1000mas_btn']
         btn.background_color = (0,1,0,1)
         
+    def _0p02mmButtonPushed(self):
+        gui = self.root
+        pmc._focusStepSize_mm = 0.02
+        gui.resetFocusStepSizeButtons()
+        btn = gui.ids['_0p02mm_btn']
+        btn.background_color = (0,1,0,1)
+               
     def _0p2mmButtonPushed(self):
         gui = self.root
         pmc._focusStepSize_mm = 0.2
@@ -466,13 +473,6 @@ class PMC_APP(App):
         gui.resetFocusStepSizeButtons()
         btn = gui.ids['_20mm_btn']
         btn.background_color = (0,1,0,1)
-
-    def _200mmButtonPushed(self):
-        gui = self.root
-        pmc._focusStepSize_mm = 200
-        gui.resetFocusStepSizeButtons()
-        btn = gui.ids['_200mm_btn']
-        btn.background_color = (0,1,0,1) 
             
     def AbsGoButtonPushed(self):
         gui = self.root
