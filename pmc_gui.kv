@@ -110,6 +110,10 @@ PMC_GUI:
                 GridLayout:
                     cols: 1
                     padding: [10, 10, 10, 10]
+                    Label:
+                        text: "Tip/Tilt Control [mas]:"
+                        size_hint_y:None
+                        height: 20
                     GridLayout:
                         cols: 3
                         ##################
@@ -161,10 +165,7 @@ PMC_GUI:
                         Label:
                         Label:
                         ##################
-                    Label:
-                        text: "Tip/Tilt Step Size [mas]:"
-                        size_hint_y:None
-                        height: 20
+
                     BoxLayout:
                         orientation: 'horizontal'
                         size_hint_y: None
@@ -196,64 +197,83 @@ PMC_GUI:
                             on_press: app._1000masButtonPushed()
                 GridLayout:
                     cols: 1
-                    padding: [10, 10, 10, 10]
-                    GridLayout:
-                        cols: 3
-                        Label:
-                        Button:
-                            id: do_pos_focus_btn
-                            text: '+Focus'
-                            size_hint_y: None
-                            height: 40
-                            disabled: True
-                            on_press: app.plusFocusButtonPushed()
-                        Label:
-                        Label:
-                        Button:
-                            id: do_neg_focus_btn
-                            text: '-Focus'
-                            size_hint_y: None
-                            height: 40
-                            disabled: True
-                            on_press: app.minusFocusButtonPushed()
-                        Label:
-                        Label:
-                        Label:
-                        Label:
+                    padding: [10, 10, 10, 10] 
                     Label:
-                        text: "Focus Step Size [mm]:"
+                        text: "Focus Control [mm]:"
                         size_hint_y:None
                         height: 20
-                    BoxLayout:
-                        orientation: 'horizontal'
-                        size_hint_y: None
-                        height: 40
-                        Button:
-                            id: _0p02mm_btn
-                            text: '0.02'
-                            size_hint_y: None
-                            height: 30
-                            background_color: (0,1,0,1)
-                            on_press: app._0p02mmButtonPushed()
-                        Button:
-                            id: _0p2mm_btn
-                            text: '0.2'
-                            size_hint_y: None
-                            height: 30
-                            on_press: app._0p2mmButtonPushed()
-                        Button:
-                            id: _2mm_btn
-                            text: '2'
-                            size_hint_y: None
-                            height: 30
-                            on_press: app._2mmButtonPushed()
-                        Button:
-                            id: _20mm_btn
-                            text: '20'
-                            size_hint_y: None
-                            height: 30
-                            on_press: app._20mmButtonPushed()
-                            disabled: True
+                    GridLayout:
+                        cols: 2
+                        GridLayout:
+                            cols: 3
+                            Label:
+                            Button:
+                                id: do_pos_focus_btn
+                                text: '+Focus'
+                                size_hint: None, None
+                                height: 40
+                                width: 70
+                                disabled: True
+                                on_press: app.plusFocusButtonPushed()
+                            Label:
+                            Label:
+                            Button:
+                                id: do_neg_focus_btn
+                                text: '-Focus'
+                                size_hint: None, None
+                                height: 40
+                                width: 70
+                                disabled: True
+                                on_press: app.minusFocusButtonPushed()
+                            Label:
+                            Label:
+                            Label:
+                            Label:
+                            
+                        GridLayout:
+                            cols: 1
+                            size_hint: 0.5, 0.1
+                            # row_force_default: True
+                            # row_default_height: 30
+                            height: self.height
+                            # orientation: 'vertical'
+                            # height: 40
+                            Label:
+                                # height:40
+                            Button:
+                                id: _0p02mm_btn
+                                text: '0.02'
+                                size_hint: None, None
+                                height: 30
+                                width: 40
+                                background_color: (0,1,0,1)
+                                on_press: app._0p02mmButtonPushed()
+                            Button:
+                                id: _0p2mm_btn
+                                text: '0.2'
+                                size_hint: None, None
+                                height: 30
+                                width: 40
+                                on_press: app._0p2mmButtonPushed()
+                            Button:
+                                id: _2mm_btn
+                                text: '2'
+                                size_hint: None, None
+                                height: 30
+                                width: 40
+                                on_press: app._2mmButtonPushed()
+                            Button:
+                                id: _20mm_btn
+                                text: '20'
+                                size_hint: None, None
+                                height: 30
+                                width: 40
+                                on_press: app._20mmButtonPushed()
+                                disabled: True
+                            Label:
+                            Label:
+                            Label:
+                            Label:
                     #_________________
         GridLayout:
             cols: 1
