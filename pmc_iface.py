@@ -169,6 +169,12 @@ class PrimaryMirrorControl:
         await trio.sleep(0)
         await self.sendPrimaryMirrorCommands()
         
+    async def sendBottomFound(self):       
+        await self.startNewMessage()
+        await self.addKvCommandPairs(BottomFound=True)
+        await trio.sleep(0)
+        await self.sendPrimaryMirrorCommands()  
+        
     async def waitForHomingComplete(self, timeout=60):
         with trio.fail_after(timeout) as cancelScope:
             self._cancelScope = cancelScope
