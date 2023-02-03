@@ -332,6 +332,9 @@ class PMC_APP(App):
             request = self.appRequestList.pop()
             if request == AppRequest.TOGGLE_CONNECTION:
                 await self.setAppState(AppState.DISCONNECTED)
+                if pmc.steppersEnabled():
+                    await pmc.sendEnableSteppers(False)
+                    enableStepBtn.text = "Enable Steppers"
                 await self.resetConnection()
                 await self.terminalManager.addMessage('Disconnected.')
                 gui.disableControls()
