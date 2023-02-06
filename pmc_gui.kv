@@ -12,19 +12,64 @@ PMC_GUI:
     abs_speed_prop: int(app.config.get('Motion','abs_move'))
     debug_mode_prop: app.config.get('General', 'dbg_mode')=='True'
     # Top half is for inputs.
-    Label:
-        id: title_label
-        text: "PRIMARY MIRROR CONTROL [Version 0.1]"
-        font_size: '20sp'
-        bold: True
-        size_hint_y: None
-        height: 30
-        canvas.before:
-            Color:
-                rgba: 1, 1, 1, 1
-            Line:
-                width: 2
-                rectangle: self.x, self.y, self.width, self.height
+    GridLayout:
+        cols: 1
+        size_hint: 1, None
+        height: 68
+        Label:
+            id: title_label
+            text: "PRIMARY MIRROR CONTROL [Version 0.1]"
+            font_size: '20sp'
+            bold: True
+            size_hint_y: None
+            height: 30
+            canvas.before:
+                Color:
+                    rgba: 1, 1, 1, 1
+                Line:
+                    width: 2
+                    rectangle: self.x, self.y, self.width, self.height
+
+        StackLayout:
+            # cols: 2
+            padding: [4, 4, 4, 4]
+            size_hint_y: None
+            height: 36
+            canvas.before:
+                Color:
+                    rgba: 1, 1, 1, 1
+                Line:
+                    width: 2
+                    rectangle: self.x, self.y, self.width, self.height
+            Button:
+                id: connect_btn
+                text:'Connect'
+                size_hint_y: None
+                height: 30
+                size_hint_x: None
+                width:110
+                background_color: (1,0,0,1)
+                on_release: app.appRequestList.append(AppRequest.TOGGLE_CONNECTION)
+            Button:
+                text:'Enable Steppers'
+                id: enable_steppers_btn
+                size_hint_y: None
+                height: 30
+                size_hint_x: None
+                width:120
+                on_release: app.appRequestList.append(AppRequest.TOGGLE_STEPPER_ENABLE)
+                disabled: True     
+            Button:
+                text:'STOP'
+                id: do_stop_btn
+                bold: True
+                size_hint_y: None
+                height: 30
+                size_hint_x: None
+                width:80
+                background_color: (1,0,0,1)
+                on_release: app.appRequestList.append(AppRequest.STOP_REQUESTED), app.stopButtonPushed()
+                disabled: True
     GridLayout:
         cols: 3
         size_hint: 1, None
@@ -55,6 +100,39 @@ PMC_GUI:
                 GridLayout:
                     cols: 1
                     padding: [10, 10, 10, 10]
+                    Label:
+                        text: "Tip/Tilt Control [as]:"
+                        size_hint_y:None
+                        height: 20
+                    BoxLayout:
+                        orientation: 'horizontal'
+                        size_hint_y: None
+                        height: 40
+                        Button:
+                            id: _1as_btn
+                            text: '1'
+                            size_hint_y: None
+                            height: 30
+                            background_color: (0,1,0,1)
+                            on_press: app._angleStepSizeButtonPushed(1.0)
+                        Button:
+                            id: _10as_btn
+                            text: '10'
+                            size_hint_y: None
+                            height: 30
+                            on_press: app._angleStepSizeButtonPushed(10.0)
+                        Button:
+                            id: _100as_btn
+                            text: '100'
+                            size_hint_y: None
+                            height: 30
+                            on_press: app._angleStepSizeButtonPushed(100.0)
+                        Button:
+                            id: _1000as_btn
+                            text: '1000'
+                            size_hint_y: None
+                            height: 30
+                            on_press: app._angleStepSizeButtonPushed(1000.0)
                     GridLayout:
                         cols: 3
                         ##################
@@ -106,98 +184,96 @@ PMC_GUI:
                         Label:
                         Label:
                         ##################
-                    Label:
-                        text: "Tip/Tilt Step Size [mas]:"
-                        size_hint_y:None
-                        height: 20
-                    BoxLayout:
-                        orientation: 'horizontal'
-                        size_hint_y: None
-                        height: 40
-                        Button:
-                            id: _1mas_btn
-                            text: '1'
-                            size_hint_y: None
-                            height: 30
-                            background_color: (0,1,0,1)
-                            on_press: app._1masButtonPushed()
-                        Button:
-                            id: _10mas_btn
-                            text: '10'
-                            size_hint_y: None
-                            height: 30
-                            on_press: app._10masButtonPushed()
-                        Button:
-                            id: _100mas_btn
-                            text: '100'
-                            size_hint_y: None
-                            height: 30
-                            on_press: app._100masButtonPushed()
-                        Button:
-                            id: _1000mas_btn
-                            text: '1000'
-                            size_hint_y: None
-                            height: 30
-                            on_press: app._1000masButtonPushed()
+
+
                 GridLayout:
                     cols: 1
-                    padding: [10, 10, 10, 10]
-                    GridLayout:
-                        cols: 3
-                        Label:
-                        Button:
-                            id: do_pos_focus_btn
-                            text: '+Focus'
-                            size_hint_y: None
-                            height: 40
-                            disabled: True
-                            on_press: app.plusFocusButtonPushed()
-                        Label:
-                        Label:
-                        Button:
-                            id: do_neg_focus_btn
-                            text: '-Focus'
-                            size_hint_y: None
-                            height: 40
-                            disabled: True
-                            on_press: app.minusFocusButtonPushed()
-                        Label:
-                        Label:
-                        Label:
-                        Label:
+                    padding: [10, 10, 10, 10] 
                     Label:
-                        text: "Focus Step Size [mm]:"
+                        text: "Focus Control [um]:"
                         size_hint_y:None
                         height: 20
-                    BoxLayout:
-                        orientation: 'horizontal'
-                        size_hint_y: None
-                        height: 40
-                        Button:
-                            id: _0p2mm_btn
-                            text: '0.2'
-                            size_hint_y: None
-                            height: 30
-                            background_color: (0,1,0,1)
-                            on_press: app._0p2mmButtonPushed()
-                        Button:
-                            id: _2mm_btn
-                            text: '2'
-                            size_hint_y: None
-                            height: 30
-                            on_press: app._2mmButtonPushed()
-                        Button:
-                            id: _20mm_btn
-                            text: '20'
-                            size_hint_y: None
-                            height: 30
-                            on_press: app._20mmButtonPushed()
-                        Button:
-                            id: _200mm_btn
-                            text: '200'
-                            size_hint_y: None
-                            height: 30
-                            on_press: app._200mmButtonPushed()
+                    GridLayout:
+                        cols: 2
+                        GridLayout:
+                            cols: 3
+                            Label:
+                            Button:
+                                id: do_pos_focus_btn
+                                text: '+Focus'
+                                size_hint: None, None
+                                height: 40
+                                width: 70
+                                disabled: True
+                                on_press: app.plusFocusButtonPushed()
+                            Label:
+                            Label:
+                            Button:
+                                id: do_neg_focus_btn
+                                text: '-Focus'
+                                size_hint: None, None
+                                height: 40
+                                width: 70
+                                disabled: True
+                                on_press: app.minusFocusButtonPushed()
+                            Label:
+                            Label:
+                            Label:
+                            Label:
+                            
+                        GridLayout:
+                            cols: 1
+                            size_hint: 0.5, 0.1
+                            # row_force_default: True
+                            # row_default_height: 30
+                            height: self.height
+                            # orientation: 'vertical'
+                            # height: 40
+                            Label:
+                                # height:40
+                            Button:
+                                id: _0p2um_btn
+                                text: '0.2'
+                                size_hint: None, None
+                                height: 30
+                                width: 40
+                                background_color: (0,1,0,1)
+                                on_press: app._focusStepSizeButtonPushed(0.2)
+                            Button:
+                                id: _2um_btn
+                                text: '2'
+                                size_hint: None, None
+                                height: 30
+                                width: 40
+                                on_press: app._focusStepSizeButtonPushed(2)
+                            Button:
+                                id: _20um_btn
+                                text: '20'
+                                size_hint: None, None
+                                height: 30
+                                width: 40
+                                on_press: app._focusStepSizeButtonPushed(20)
+                                # disabled: True
+                            Button:
+                                id: _200um_btn
+                                text: '200'
+                                size_hint: None, None
+                                height: 30
+                                width: 40
+                                on_press: app._focusStepSizeButtonPushed(200)
+                                # disabled: True
+                            Button:
+                                id: _2000um_btn
+                                text: '2000'
+                                size_hint: None, None
+                                height: 30
+                                width: 40
+                                on_press: app._focusStepSizeButtonPushed(2000)
+                                # disabled: True
+                            Label:
+                            Label:
+                            Label:
+                            Label:
                     #_________________
         GridLayout:
             cols: 1
@@ -224,7 +300,7 @@ PMC_GUI:
                 GridLayout:
                     cols: 2
                     Label: 
-                        text: 'Tip [mas]: '
+                        text: 'Tip [as]: '
                         size_hint_y: None
                         height: 30
                         size_hint_x: None
@@ -236,7 +312,7 @@ PMC_GUI:
                         height: 30
                         # disabled: True
                     Label: 
-                        text: 'Tilt [mas]: '
+                        text: 'Tilt [as]: '
                         size_hint_y: None
                         height: 30
                         size_hint_x: None
@@ -248,7 +324,7 @@ PMC_GUI:
                         height: 30
                         # disabled: True
                     Label: 
-                        text: 'Focus [mm]: '
+                        text: 'Focus [um]: '
                         size_hint_y: None
                         height: 30
                         size_hint_x: None
@@ -270,65 +346,63 @@ PMC_GUI:
 
             GridLayout:
                 cols:1
+                canvas.before:
+                    Color:
+                        rgba: 1, 1, 1, 1
+                    Line:
+                        width: 2
+                        rectangle: self.x, self.y, self.width, self.height
                 Label:
-                    text: 'Other Controls'
+                    text: 'Homing'
                     size_hint_y : None
                     height:30
-                StackLayout:
-                    # cols: 2
-                    padding: [10, 10, 10, 10]
-                    # Label: 
-                    #     text: 'Debug Mode'
-                    #     size_hint_y: None
-                    #     height: 30
-                    Button:
-                        id: connect_btn
-                        text:'Connect'
-                        size_hint_y: None
-                        height: 30
-                        size_hint_x: None
-                        width:90
-                        # on_release: app.connectButtonPushed(app.ip_addr_prop, int(app.port_prop))
-                        on_release: app.appRequestList.append(AppRequest.CONNECT_REQUESTED)
-                    Button:
-                        id: disconnect_btn
-                        text:'Disconnect'
-                        size_hint_y: None
-                        height: 30
-                        size_hint_x: None
-                        width:90
+                GridLayout:
+                    cols: 1
+                    padding: [15, 10, 10, 10]
+                    id: abs_ctrl
+                    canvas.before:
+                        Color:
+                            rgba: 1, 1, 1, 1
+                        Line:
+                            width: 2
+                            rectangle: self.x, self.y, self.width, self.height
+                    
+                    Label:
+                        text: '...'
+                        size_hint_y : None
+                        height:30
                         disabled: True
-                        # on_release: app.connectButtonPushed(app.ip_addr_prop, int(app.port_prop))
-                        on_release: app.appRequestList.append(AppRequest.DISCONNECT_REQUESTED)
-                    Button:
-                        text:'Enable Steppers'
-                        id: enable_steppers_btn
-                        size_hint_y: None
-                        height: 30
-                        size_hint_x: None
-                        width:120
-                        on_release: app.appRequestList.append(AppRequest.TOGGLE_STEPPER_ENABLE)
-                        disabled: True     
-                    Button:
-                        id: do_home_all_btn
-                        text:'Home All'
-                        size_hint_y: None
-                        height: 30
-                        size_hint_x: None
-                        width:70
-                        disabled: True
-                        on_release: app.appRequestList.append(AppRequest.GO_HOME_REQUESTED)
-                    Button:
-                        text:'STOP'
-                        id: do_stop_btn
-                        bold: True
-                        size_hint_y: None
-                        height: 30
-                        size_hint_x: None
-                        width:80
-                        background_color: (1,0,0,1)
-                        on_release: app.appRequestList.append(AppRequest.STOP_REQUESTED), app.stopButtonPushed()
-                        disabled: True
+                    GridLayout:
+                        cols: 2
+                        size_hint: None, None
+                        row_force_default: True
+                        row_default_height: 30
+                        Label:
+                            size_hint: None, None
+                            height: 30
+                            width:70
+                            text: 'Step 1:'
+                        Button:
+                            id: do_home_all_btn
+                            text:'Start Homing'
+                            size_hint: None, None
+                            height: 30
+                            width:140
+                            disabled: True
+                            on_release: app.appRequestList.append(AppRequest.GO_HOME_REQUESTED)
+                        Label:
+                            size_hint: None, None
+                            height: 30
+                            width:70
+                            text: 'Step 2:'
+                        Button:
+                            id: bottom_found_btn
+                            text:'Press when @ limit'
+                            size_hint: None, None
+                            height: 30
+                            width:140
+                            disabled: True
+                            on_release: app.appRequestList.append(AppRequest.BOTTOM_FOUND_REQUESTED)
 
 
         GridLayout:
@@ -376,7 +450,7 @@ PMC_GUI:
                         readonly: True
                         text: '0.0'
                     Label:
-                        text: "Focus [mm]: "
+                        text: "Focus [um]: "
                         size_hint_x: None
                         width: 90
                     FloatInput:
@@ -400,9 +474,9 @@ PMC_GUI:
                 row_default_height: 30
                 padding: [10, 10, 10, 10]
                 Label:
-                    text: "Fan Speed [%]: "
+                    text: "Speed [%]: "
                     size_hint_x: None
-                    width: 100
+                    width: 60
                     size_hint_y: None
                     height: 30
                 FloatInput:
@@ -412,6 +486,13 @@ PMC_GUI:
                     text: '0.0'
                     size_hint_y: None
                     height: 30
+            
+            # Label:
+            #     text: ""
+            #     size_hint_x: None
+            #     width: 100
+            #     size_hint_y: None
+            #     height: 30
     TerminalWidget:
         label: 'Terminal'
         id: terminal

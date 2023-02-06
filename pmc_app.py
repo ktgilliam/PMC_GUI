@@ -19,9 +19,9 @@ from numeric_widgets import FloatInput
 
 class AppRequest(IntEnum):
     NO_REQUESTS = 0
-    CONNECT_REQUESTED=1
-    DISCONNECT_REQUESTED=2
-    GO_HOME_REQUESTED=3
+    TOGGLE_CONNECTION=1
+    GO_HOME_REQUESTED=2
+    BOTTOM_FOUND_REQUESTED=3
     TOGGLE_STEPPER_ENABLE=4
     STOP_REQUESTED=5
 class AppState(IntEnum):
@@ -77,14 +77,14 @@ class PMC_GUI(GridLayout):
         enableStepBtn.disabled = True
              
     def resetTipTiltStepSizeButtons(self):
-        buttonFilt = re.compile('_10*mas_btn')
+        buttonFilt = re.compile('_10*as_btn')
         buttonList = [b for b in self.ids if buttonFilt.match(b)]
         for b in buttonList:
             btn = self.ids[b]
             btn.background_color = (1,1,1,1)
         
     def resetFocusStepSizeButtons(self):
-        buttonFilt = re.compile('_10*mm_btn')
+        buttonFilt = re.compile('_.*um_btn')
         buttonList = [b for b in self.ids if buttonFilt.match(b)]
         for b in buttonList:
             btn = self.ids[b]
@@ -263,22 +263,19 @@ class PMC_APP(App):
         """
         gui =  self.root
         conBtn = gui.ids['connect_btn']
-        disconBtn = gui.ids['disconnect_btn']
+        # disconBtn = gui.ids['disconnect_btn']
         if len(self.appRequestList) > 0:
             request = self.appRequestList.pop()
-            if request == AppRequest.CONNECT_REQUESTED:
+            if request == AppRequest.TOGGLE_CONNECTION:
                 self.connectionFailedEvent = trio.Event() #reset the failed connection flag
                 await self.terminalManager.addMessage('Connecting...')
                 await self.setAppState(AppState.CONNECT_IN_PROGRESS)
-                conBtn.disabled = True
-            elif request == AppRequest.DISCONNECT_REQUESTED:
-                # await self.terminalManager.addMessage("Disconnect requested from disconnected state", MessageType.WARNING)
+                conBtn.text = 'Connecting...'
+                conBtn.background_color = (0.5,0.5,0.5,1)
                 pass
         await trio.sleep(0)
                 
     async def connectInProgressStateHandler(self):
-        gui =  self.root
-        conBtn = gui.ids['connect_btn']
         try:
             await pmc.open_connection(self.ip_addr_prop, self.port_prop)
         except trio.TooSlowError as e:
@@ -308,49 +305,57 @@ class PMC_APP(App):
         gui =  self.root
         conBtn = gui.ids['connect_btn']
         conBtn.disabled = False
+        conBtn.text = 'Connect'
+        conBtn.background_color = (1,0,0,1)
         await pmc.Disconnect()
         await self.setAppState(AppState.DISCONNECTED)
         
     async def connectionSucceededHandler(self):
         gui =  self.root
         conBtn = gui.ids['connect_btn']
-        conBtn.background_color = (0,1,0,1)
-        conBtn.text = 'Connected'
-        disconBtn = gui.ids['disconnect_btn']
-        disconBtn.background_color = (1,0,0,1)
-        disconBtn.disabled = False
         enableStepBtn = gui.ids['enable_steppers_btn']
         enableStepBtn.disabled = False
         
         await self.setAppState(AppState.CONNECTED)
         await self.terminalManager.addMessage('Connected!', MessageType.GOOD_NEWS)
+        conBtn.background_color = (0,1,0,1)
+        conBtn.text = 'Disconnect'
         
     async def connectedStateHandler(self):
         gui =  self.root
         goBtn = gui.ids['go_abs_btn']
         conBtn = gui.ids['connect_btn']
-        disconBtn = gui.ids['disconnect_btn']
+        # disconBtn = gui.ids['disconnect_btn']
         enableStepBtn = gui.ids['enable_steppers_btn']
+        homeBtn = gui.ids['do_home_all_btn']
+        bottomFoundBtn = gui.ids['bottom_found_btn']
+        
         if len(self.appRequestList) > 0:
             request = self.appRequestList.pop()
-            if request == AppRequest.CONNECT_REQUESTED:
-                # await self.terminalManager.addMessage("Connect requested from connected state", MessageType.WARNING)
-                pass
-            elif request == AppRequest.DISCONNECT_REQUESTED:
+            if request == AppRequest.TOGGLE_CONNECTION:
                 await self.setAppState(AppState.DISCONNECTED)
+                if pmc.steppersEnabled():
+                    await pmc.sendEnableSteppers(False)
+                    enableStepBtn.text = "Enable Steppers"
                 await self.resetConnection()
                 await self.terminalManager.addMessage('Disconnected.')
                 gui.disableControls()
-                conBtn.background_color = (1,1,1,1)
-                disconBtn.background_color = (1,1,1,1)
-                disconBtn.disabled = True
+                conBtn.background_color = (1,0,0,1)
                 conBtn.text = 'Connect'
             elif request == AppRequest.GO_HOME_REQUESTED:
-                homeBtn = gui.ids['do_home_all_btn']
                 homeBtn.text = "Homing..."
                 homeBtn.disabled = True
-                await self.terminalManager.addMessage('Homing...')
+                bottomFoundBtn.disabled = False
+                await self.terminalManager.addMessage('Homing. Press step 2 when all motors have bottomed out')
                 await pmc.sendHomeAll(self.home_speed_prop)
+                await trio.sleep(0)
+                homeBtn.disabled = True
+                homeBtn.text = "Home All"
+                goBtn.disabled = False
+            elif request == AppRequest.BOTTOM_FOUND_REQUESTED:
+                await self.terminalManager.addMessage('Bottom found. Waiting for mirror to return to center...')
+                bottomFoundBtn.disabled = True
+                await pmc.sendBottomFound()
                 await trio.sleep(0)
                 try:
                     await pmc.waitForHomingComplete(self.homing_timeout_prop)
@@ -358,10 +363,8 @@ class PMC_APP(App):
                 except trio.TooSlowError as e:
                      await self.terminalManager.addMessage('Homing timed out.', MessageType.ERROR)
                      await pmc.sendStopCommand()
-                     
-                homeBtn.disabled = False
-                homeBtn.text = "Home All"
-                goBtn.disabled = False
+                else:
+                    homeBtn.disabled = False
             elif request == AppRequest.TOGGLE_STEPPER_ENABLE:
                 if pmc.steppersEnabled():
                     await pmc.sendEnableSteppers(False)
@@ -395,84 +398,58 @@ class PMC_APP(App):
                 self.terminalManager.queueMessage(exc.msg)
             
     def plusTipButtonPushed(self):
-        self.terminalManager.queueMessage(' Tip [+' + str(pmc._tipTiltStepSize_mas) + ' mas]')
+        self.terminalManager.queueMessage(' Tip [+' + str(pmc._tipTiltStepSize_as) + ' as]')
         self.nursery.start_soon(pmc.TipRelative, DIRECTION.FORWARD)
     
     def minusTipButtonPushed(self):
-        self.terminalManager.queueMessage(' Tip [-' + str(pmc._tipTiltStepSize_mas) + ' mas]')
+        self.terminalManager.queueMessage(' Tip [-' + str(pmc._tipTiltStepSize_as) + ' as]')
         self.nursery.start_soon(pmc.TipRelative,DIRECTION.REVERSE)
         
     def plusTiltButtonPushed(self):
-        self.terminalManager.queueMessage(' Tilt [+' + str(pmc._tipTiltStepSize_mas) + ' mas]')
+        self.terminalManager.queueMessage(' Tilt [+' + str(pmc._tipTiltStepSize_as) + ' as]')
         self.nursery.start_soon(pmc.TiltRelative,DIRECTION.FORWARD)
 
     def minusTiltButtonPushed(self):
-        self.terminalManager.queueMessage(' Tilt [-' + str(pmc._tipTiltStepSize_mas) + ' mas]')
+        self.terminalManager.queueMessage(' Tilt [-' + str(pmc._tipTiltStepSize_as) + ' as]')
         self.nursery.start_soon(pmc.TiltRelative,DIRECTION.REVERSE)
         
     def plusFocusButtonPushed(self):
-        self.terminalManager.queueMessage(' Focus [+' + str(pmc._focusStepSize_mm) + ' mm]')
+        self.terminalManager.queueMessage(' Focus [+' + str(pmc._focusStepSize_um) + ' mm]')
         self.nursery.start_soon(pmc.FocusRelative,DIRECTION.FORWARD)
         
     def minusFocusButtonPushed(self):
-        self.terminalManager.queueMessage(' Focus [-' + str(pmc._focusStepSize_mm) + ' mm]')
+        self.terminalManager.queueMessage(' Focus [-' + str(pmc._focusStepSize_um) + ' mm]')
         self.nursery.start_soon(pmc.FocusRelative,DIRECTION.REVERSE)
             
-    def _1masButtonPushed(self):
+    def _angleStepSizeButtonPushed(self, stepSize):
         gui = self.root
-        pmc._tipTiltStepSize_mas = 1
+        pmc._tipTiltStepSize_as = stepSize
         gui.resetTipTiltStepSizeButtons()
-        btn = gui.ids['_1mas_btn']
+        if stepSize == 1.0:
+            btn = gui.ids['_1as_btn']
+        elif stepSize == 10.0:
+            btn = gui.ids['_10as_btn']
+        elif stepSize == 100.0:
+            btn = gui.ids['_100as_btn']
+        elif stepSize == 1000.0:
+            btn = gui.ids['_1000as_btn']
         btn.background_color = (0,1,0,1)
         
-    def _10masButtonPushed(self):
+    def _focusStepSizeButtonPushed(self, stepSize):
         gui = self.root
-        pmc._tipTiltStepSize_mas = 10
-        gui.resetTipTiltStepSizeButtons()
-        btn = gui.ids['_10mas_btn']
-        btn.background_color = (0,1,0,1)
-        
-    def _100masButtonPushed(self):
-        gui = self.root
-        pmc._tipTiltStepSize_mas = 100
-        gui.resetTipTiltStepSizeButtons()
-        btn = gui.ids['_100mas_btn']
-        btn.background_color = (0,1,0,1)
-        
-    def _1000masButtonPushed(self):
-        gui = self.root
-        pmc._tipTiltStepSize_mas = 1000
-        gui.resetTipTiltStepSizeButtons()
-        btn = gui.ids['_1000mas_btn']
-        btn.background_color = (0,1,0,1)
-        
-    def _0p2mmButtonPushed(self):
-        gui = self.root
-        pmc._focusStepSize_mm = 0.2
+        pmc._focusStepSize_um = stepSize
         gui.resetFocusStepSizeButtons()
-        btn = gui.ids['_0p2mm_btn']
+        if stepSize == 0.2:
+            btn = gui.ids['_0p2um_btn']
+        elif stepSize == 2.0:
+            btn = gui.ids['_2um_btn']
+        elif stepSize == 20.0:
+            btn = gui.ids['_20um_btn']
+        elif stepSize == 200.0:
+            btn = gui.ids['_200um_btn']
+        elif stepSize == 2000.0:
+            btn = gui.ids['_2000um_btn']
         btn.background_color = (0,1,0,1)
-
-    def _2mmButtonPushed(self):
-        gui = self.root
-        pmc._focusStepSize_mm = 2
-        gui.resetFocusStepSizeButtons()
-        btn = gui.ids['_2mm_btn']
-        btn.background_color = (0,1,0,1)
-        
-    def _20mmButtonPushed(self):
-        gui = self.root
-        pmc._focusStepSize_mm = 20
-        gui.resetFocusStepSizeButtons()
-        btn = gui.ids['_20mm_btn']
-        btn.background_color = (0,1,0,1)
-
-    def _200mmButtonPushed(self):
-        gui = self.root
-        pmc._focusStepSize_mm = 200
-        gui.resetFocusStepSizeButtons()
-        btn = gui.ids['_200mm_btn']
-        btn.background_color = (0,1,0,1) 
             
     def AbsGoButtonPushed(self):
         gui = self.root
