@@ -77,14 +77,14 @@ class PMC_GUI(GridLayout):
         enableStepBtn.disabled = True
              
     def resetTipTiltStepSizeButtons(self):
-        buttonFilt = re.compile('_10*mas_btn')
+        buttonFilt = re.compile('_10*as_btn')
         buttonList = [b for b in self.ids if buttonFilt.match(b)]
         for b in buttonList:
             btn = self.ids[b]
             btn.background_color = (1,1,1,1)
         
     def resetFocusStepSizeButtons(self):
-        buttonFilt = re.compile('_.*mm_btn')
+        buttonFilt = re.compile('_.*um_btn')
         buttonList = [b for b in self.ids if buttonFilt.match(b)]
         for b in buttonList:
             btn = self.ids[b]
@@ -305,6 +305,8 @@ class PMC_APP(App):
         gui =  self.root
         conBtn = gui.ids['connect_btn']
         conBtn.disabled = False
+        conBtn.text = 'Connect'
+        conBtn.background_color = (1,0,0,1)
         await pmc.Disconnect()
         await self.setAppState(AppState.DISCONNECTED)
         
@@ -352,6 +354,7 @@ class PMC_APP(App):
                 goBtn.disabled = False
             elif request == AppRequest.BOTTOM_FOUND_REQUESTED:
                 await self.terminalManager.addMessage('Bottom found. Waiting for mirror to return to center...')
+                bottomFoundBtn.disabled = True
                 await pmc.sendBottomFound()
                 await trio.sleep(0)
                 try:
@@ -360,8 +363,8 @@ class PMC_APP(App):
                 except trio.TooSlowError as e:
                      await self.terminalManager.addMessage('Homing timed out.', MessageType.ERROR)
                      await pmc.sendStopCommand()
-                finally:
-                    bottomFoundBtn.disabled = True
+                else:
+                    homeBtn.disabled = False
             elif request == AppRequest.TOGGLE_STEPPER_ENABLE:
                 if pmc.steppersEnabled():
                     await pmc.sendEnableSteppers(False)
@@ -395,55 +398,57 @@ class PMC_APP(App):
                 self.terminalManager.queueMessage(exc.msg)
             
     def plusTipButtonPushed(self):
-        self.terminalManager.queueMessage(' Tip [+' + str(pmc._tipTiltStepSize_mas) + ' mas]')
+        self.terminalManager.queueMessage(' Tip [+' + str(pmc._tipTiltStepSize_as) + ' as]')
         self.nursery.start_soon(pmc.TipRelative, DIRECTION.FORWARD)
     
     def minusTipButtonPushed(self):
-        self.terminalManager.queueMessage(' Tip [-' + str(pmc._tipTiltStepSize_mas) + ' mas]')
+        self.terminalManager.queueMessage(' Tip [-' + str(pmc._tipTiltStepSize_as) + ' as]')
         self.nursery.start_soon(pmc.TipRelative,DIRECTION.REVERSE)
         
     def plusTiltButtonPushed(self):
-        self.terminalManager.queueMessage(' Tilt [+' + str(pmc._tipTiltStepSize_mas) + ' mas]')
+        self.terminalManager.queueMessage(' Tilt [+' + str(pmc._tipTiltStepSize_as) + ' as]')
         self.nursery.start_soon(pmc.TiltRelative,DIRECTION.FORWARD)
 
     def minusTiltButtonPushed(self):
-        self.terminalManager.queueMessage(' Tilt [-' + str(pmc._tipTiltStepSize_mas) + ' mas]')
+        self.terminalManager.queueMessage(' Tilt [-' + str(pmc._tipTiltStepSize_as) + ' as]')
         self.nursery.start_soon(pmc.TiltRelative,DIRECTION.REVERSE)
         
     def plusFocusButtonPushed(self):
-        self.terminalManager.queueMessage(' Focus [+' + str(pmc._focusStepSize_mm) + ' mm]')
+        self.terminalManager.queueMessage(' Focus [+' + str(pmc._focusStepSize_um) + ' mm]')
         self.nursery.start_soon(pmc.FocusRelative,DIRECTION.FORWARD)
         
     def minusFocusButtonPushed(self):
-        self.terminalManager.queueMessage(' Focus [-' + str(pmc._focusStepSize_mm) + ' mm]')
+        self.terminalManager.queueMessage(' Focus [-' + str(pmc._focusStepSize_um) + ' mm]')
         self.nursery.start_soon(pmc.FocusRelative,DIRECTION.REVERSE)
             
     def _angleStepSizeButtonPushed(self, stepSize):
         gui = self.root
-        pmc._tipTiltStepSize_mas = stepSize
+        pmc._tipTiltStepSize_as = stepSize
         gui.resetTipTiltStepSizeButtons()
         if stepSize == 1.0:
-            btn = gui.ids['_1mas_btn']
+            btn = gui.ids['_1as_btn']
         elif stepSize == 10.0:
-            btn = gui.ids['_10mas_btn']
+            btn = gui.ids['_10as_btn']
         elif stepSize == 100.0:
-            btn = gui.ids['_100mas_btn']
+            btn = gui.ids['_100as_btn']
         elif stepSize == 1000.0:
-            btn = gui.ids['_1000mas_btn']
+            btn = gui.ids['_1000as_btn']
         btn.background_color = (0,1,0,1)
         
     def _focusStepSizeButtonPushed(self, stepSize):
         gui = self.root
-        pmc._focusStepSize_mm = stepSize
+        pmc._focusStepSize_um = stepSize
         gui.resetFocusStepSizeButtons()
-        if stepSize == 0.02:
-            btn = gui.ids['_0p02mm_btn']
-        elif stepSize == 0.2:
-            btn = gui.ids['_0p2mm_btn']
+        if stepSize == 0.2:
+            btn = gui.ids['_0p2um_btn']
         elif stepSize == 2.0:
-            btn = gui.ids['_2mm_btn']
+            btn = gui.ids['_2um_btn']
         elif stepSize == 20.0:
-            btn = gui.ids['_20mm_btn']
+            btn = gui.ids['_20um_btn']
+        elif stepSize == 200.0:
+            btn = gui.ids['_200um_btn']
+        elif stepSize == 2000.0:
+            btn = gui.ids['_2000um_btn']
         btn.background_color = (0,1,0,1)
             
     def AbsGoButtonPushed(self):

@@ -50,16 +50,16 @@ rx_buff_size = 1024
 #     for exc in excgroup.exceptions:
 #         pause = 1
 #         print(exc)
-urad_per_mas = pi/648.0
-mas_per_urad = 1.0/urad_per_mas
+# urad_per_mas = pi/648.0
+# mas_per_urad = 1.0/urad_per_mas
 # urad_to_arcsec = 0.2062648062471
 class PrimaryMirrorControl:
     
-    _tipTiltStepSize_mas = 1
-    _focusStepSize_mm = 0.2
-    _currentTip_mas = 0.0
-    _currentTilt_mas = 0.0
-    _currentFocus_mm = 0.0
+    _tipTiltStepSize_as = 1
+    _focusStepSize_um = 0.2
+    _currentTip_as = 0.0
+    _currentTilt_as = 0.0
+    _currentFocus_um = 0.0
     
     _controlMode = ControlMode.STOP
     _isHomed = False
@@ -80,9 +80,9 @@ class PrimaryMirrorControl:
     _steppersEnabled = False
     
     def reset(self):
-        self._currentTip_mas = 0.0
-        self._currentTilt_mas = 0.0
-        self._currentFocus_mm = 0.0 
+        self._currentTip_as = 0.0
+        self._currentTilt_as = 0.0
+        self._currentFocus_um = 0.0 
         self._isHomed = False
         self._disconnectCommandEvent = trio.Event()
         
@@ -97,19 +97,19 @@ class PrimaryMirrorControl:
     #             print(exc)
             
     def setTipTiltStepSize(self, val):
-        self._tipTiltStepSize_mas = val
+        self._tipTiltStepSize_as = val
         
     def setFocusStepSize(self, val):
-        self._focusStepSize_mm = val         
+        self._focusStepSize_um = val         
     
     def getCurrentTip(self):
-        return self._currentTip_mas
+        return self._currentTip_as
     
     def getCurrentTilt(self):
-        return self._currentTilt_mas
+        return self._currentTilt_as
     
     def getCurrentFocus(self):
-        return self._currentFocus_mm
+        return self._currentFocus_um
     
     def steppersEnabled(self):
         return self._steppersEnabled
@@ -138,33 +138,33 @@ class PrimaryMirrorControl:
             
     async def TipRelative(self,dir):
         if self._connected:
-            self._currentTip_mas += dir*self._tipTiltStepSize_mas
-            await self.SendRelativeMoveCommand(dir*self._tipTiltStepSize_mas*urad_per_mas, AXIS.TIP)
+            self._currentTip_as += dir*self._tipTiltStepSize_as
+            await self.SendRelativeMoveCommand(dir*self._tipTiltStepSize_as, AXIS.TIP)
 
     async def TiltRelative(self,dir):
         if self._connected:
-            self._currentTilt_mas += dir*self._tipTiltStepSize_mas
-            await self.SendRelativeMoveCommand(dir*self._tipTiltStepSize_mas*urad_per_mas, AXIS.TILT)
+            self._currentTilt_as += dir*self._tipTiltStepSize_as
+            await self.SendRelativeMoveCommand(dir*self._tipTiltStepSize_as, AXIS.TILT)
         
     async def FocusRelative(self,dir):
         if self._connected:
-            self._currentFocus_mm += dir*self._focusStepSize_mm
-            await self.SendRelativeMoveCommand(dir*self._focusStepSize_mm, AXIS.FOCUS)
+            self._currentFocus_um += dir*self._focusStepSize_um
+            await self.SendRelativeMoveCommand(dir*self._focusStepSize_um, AXIS.FOCUS)
     
     async def MoveAbsolute(self,tip, tilt, focus):
         if self._connected:
             await self.startNewMessage()
-            self._currentTip_mas = tip
-            self._currentTilt_mas = tilt
-            self._currentFocus_mm = focus
-            await self.addKvCommandPairs(MoveType=MoveTypes.ABSOLUTE, SetTip=tip*urad_per_mas, SetTilt=tilt*urad_per_mas, SetFocus=focus)
+            self._currentTip_as = tip
+            self._currentTilt_as = tilt
+            self._currentFocus_um = focus
+            await self.addKvCommandPairs(MoveType=MoveTypes.ABSOLUTE, SetTip=tip, SetTilt=tilt, SetFocus=focus)
             
     async def sendHomeAll(self, homeSpeed):       
         await self.startNewMessage()
         await self.addKvCommandPairs(FindHome=int(homeSpeed))
-        self._currentTip_mas = 0.0
-        self._currentTilt_mas = 0.0
-        self._currentFocus_mm = 0.0 
+        self._currentTip_as = 0.0
+        self._currentTilt_as = 0.0
+        self._currentFocus_um = 0.0 
         self._homingComplete = trio.Event()
         await trio.sleep(0)
         await self.sendPrimaryMirrorCommands()
@@ -183,9 +183,9 @@ class PrimaryMirrorControl:
             print(cancelScope.cancelled_caught)
         if self._cancelScope.cancelled_caught:
             print("homing cancelled")
-        self._currentTip_mas = 0
-        self._currentTilt_mas = 0
-        self._currentFocus_mm = 0
+        self._currentTip_as = 0
+        self._currentTilt_as = 0
+        self._currentFocus_um = 0
             
     async def sendHandshake(self):
         await self.startNewMessage()
