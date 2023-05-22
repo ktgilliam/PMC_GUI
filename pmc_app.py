@@ -24,6 +24,7 @@ class AppRequest(IntEnum):
     BOTTOM_FOUND_REQUESTED=3
     TOGGLE_STEPPER_ENABLE=4
     STOP_REQUESTED=5
+    STOW_MIRROR_REQUESTED=6
 class AppState(IntEnum):
     INIT=0
     DISCONNECTED=1
@@ -315,7 +316,6 @@ class PMC_APP(App):
         conBtn = gui.ids['connect_btn']
         enableStepBtn = gui.ids['enable_steppers_btn']
         enableStepBtn.disabled = False
-        
         await self.setAppState(AppState.CONNECTED)
         await self.terminalManager.addMessage('Connected!', MessageType.GOOD_NEWS)
         conBtn.background_color = (0,1,0,1)
@@ -329,6 +329,7 @@ class PMC_APP(App):
         enableStepBtn = gui.ids['enable_steppers_btn']
         homeBtn = gui.ids['do_home_all_btn']
         bottomFoundBtn = gui.ids['bottom_found_btn']
+        stowMirrorBtn = gui.ids['stow_btn']
         
         if len(self.appRequestList) > 0:
             request = self.appRequestList.pop()
@@ -351,7 +352,7 @@ class PMC_APP(App):
                 await trio.sleep(0)
                 homeBtn.disabled = True
                 homeBtn.text = "Home All"
-                goBtn.disabled = False
+                # goBtn.disabled = False
             elif request == AppRequest.BOTTOM_FOUND_REQUESTED:
                 await self.terminalManager.addMessage('Bottom found. Waiting for mirror to return to center...')
                 bottomFoundBtn.disabled = True
@@ -372,14 +373,18 @@ class PMC_APP(App):
                     gui.enableRelativeControls(False)
                     # TODO: Ask if system is homed and wait for reply before enabling.
                     goBtn.disabled = True
+                    stowMirrorBtn.disabled = True
                     enableStepBtn.text = "Enable Steppers"
                 else:
                     await pmc.sendEnableSteppers(True)
                     gui.enableRelativeControls(True)
-                    goBtn.disabled = False
+                    # goBtn.disabled = False
+                    stowMirrorBtn.disabled = False
                     enableStepBtn.text = "Disable Steppers"
             elif request == AppRequest.STOP_REQUESTED:
                 await pmc.sendStopCommand()
+            elif request == AppRequest.STOW_MIRROR_REQUESTED:
+                await pmc.sendStowMirrorCommand()
                     
         await pmc.sendPrimaryMirrorCommands()
         

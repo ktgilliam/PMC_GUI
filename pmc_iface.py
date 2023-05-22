@@ -281,6 +281,16 @@ class PrimaryMirrorControl:
             self._cancelScope.cancel()
             # self._homingComplete.set()
         
+    async def sendStowMirrorCommand(self):
+        # await self.startNewMessage()
+        await self.addKvCommandPairs(StowMirror=1)
+        async with self._outgoingDataTxChannel.clone() as outgoing:
+                await outgoing.send(json.dumps(self._outgoingJsonMessage))
+        await self.sendPrimaryMirrorCommands()
+        await trio.sleep(0)
+        # if(self._cancelScope != None):
+        #     self._cancelScope.cancel()
+            
     async def checkMessages(self):   
         while 1:
             async with self._incomingDataRxChannel.clone() as incoming:

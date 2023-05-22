@@ -70,6 +70,15 @@ PMC_GUI:
                 background_color: (1,0,0,1)
                 on_release: app.appRequestList.append(AppRequest.STOP_REQUESTED), app.stopButtonPushed()
                 disabled: True
+            Button:
+                text:'Stow Mirror'
+                id: stow_btn
+                size_hint_y: None
+                height: 30
+                size_hint_x: None
+                width:110
+                on_release: app.appRequestList.append(AppRequest.STOW_MIRROR_REQUESTED)
+                disabled: True    
     GridLayout:
         cols: 3
         size_hint: 1, None
@@ -310,7 +319,7 @@ PMC_GUI:
                         text: '0.0'
                         size_hint_y: None
                         height: 30
-                        # disabled: True
+                        disabled: True
                     Label: 
                         text: 'Tilt [as]: '
                         size_hint_y: None
@@ -322,7 +331,7 @@ PMC_GUI:
                         text: '0.0'
                         size_hint_y: None
                         height: 30
-                        # disabled: True
+                        disabled: True
                     Label: 
                         text: 'Focus [um]: '
                         size_hint_y: None
@@ -334,6 +343,7 @@ PMC_GUI:
                         text: '0.0'
                         size_hint_y: None
                         height: 30
+                        disabled: True
                 Button:
                     id: go_abs_btn
                     text:'Go'
@@ -341,7 +351,7 @@ PMC_GUI:
                     height: 30
                     # size_hint_x: None
                     # width:30
-                    # disabled: True
+                    disabled: True
                     on_press: app.AbsGoButtonPushed()
 
             GridLayout:
