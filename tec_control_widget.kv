@@ -4,7 +4,7 @@
     # size_hint: 0.2, None
     size_hint: None, None
     # size: (self.parent.width*0.5, 40)
-    height: 40
+    height: 30
     id: thisField
     canvas.before:
         Color:
@@ -17,11 +17,11 @@
         cols: 2
         Label:
             size_hint: 0.3, None
-            height: 40
+            height: 30
             text: '#'+str(thisField.tec_no)
         FloatInput:
             size_hint: 0.7, None
-            height: 40
+            height: 30
 
 <TECFieldList>:
     spacing: "10dp"
@@ -53,8 +53,16 @@
                     width: 2
                     rectangle: self.x, self.y, self.width, self.height
             Button:
-                id: connect_btn
-                text:'Connect'
+                id: connect_a_btn
+                text:'Connect A'
+                size_hint_y: None
+                height: 30
+                size_hint_x: None
+                width:110
+                background_color: (1,0,0,1)
+            Button:
+                id: connect_b_btn
+                text:'Connect B'
                 size_hint_y: None
                 height: 30
                 size_hint_x: None
@@ -69,7 +77,16 @@
                 width:140
                 # background_color: (1,0,0,1)
                 on_release: root.loadList()
-                
+            Button:
+                id: send_all_btn
+                text:'Send All'
+                size_hint_y: None
+                height: 30
+                size_hint_x: None
+                width:140
+                disabled: True
+                # background_color: (1,0,0,1)
+                on_release: root.loadList()
         ScrollView:
             do_scroll_x: False
             do_scroll_y: True
@@ -78,7 +95,7 @@
             # size_hint: 1,None
             canvas.before:
                 Color:
-                    rgba: 0, 1, 1, 1
+                    rgba: 1, 1, 1, 1
                 Line:
                     width: 2
                     rectangle: self.x, self.y, self.width, self.height

@@ -10,13 +10,13 @@ from kivy.lang import Builder
 
 from terminal_widget import *
 from numeric_widgets import FloatInput
-from pmc_iface import DIRECTION, PrimaryMirrorControl
+from ttf_iface import DIRECTION, TipTiltFocusControlInterface
 import re
 from enum import IntEnum
 from collections import deque
 import json
 
-pmc = PrimaryMirrorControl()
+ttfIface = TipTiltFocusControlInterface()
 
 class ControllerRequest(IntEnum):
     NO_REQUESTS = 0
@@ -43,15 +43,15 @@ class TipTiltControlWidget(GridLayout):
         
     def updateOutputFields(self):
         tipValField = self.ids.tip_val
-        tipValField.text = str(round(pmc.getCurrentTip(), 4))
+        tipValField.text = str(round(ttfIface.getCurrentTip(), 4))
         
         tiltValField = self.ids['tilt_val']
         # tiltValField.text = str(pmc._currentTilt)
-        tiltValField.text = str(round(pmc.getCurrentTilt(), 4))
+        tiltValField.text = str(round(ttfIface.getCurrentTilt(), 4))
         
         focusValField = self.ids['focus_val']
         # focusValField.text = str(pmc._currentFocus)
-        focusValField.text = str(round(pmc.getCurrentFocus(), 4))
+        focusValField.text = str(round(ttfIface.getCurrentFocus(), 4))
         
     def enableRelativeControls(self, doEnable):
         buttonFilt = re.compile('do_[a-z\_]+_btn')
@@ -127,7 +127,7 @@ class TipTiltController():
             elif currentState == ControllerState.CONNECT_IN_PROGRESS:
                 if self.debugMode:
                     await trio.sleep(0)
-                    pmc._connected = True #overriding the pmc connection flag (bad)
+                    ttfIface._connected = True #overriding the pmc connection flag (bad)
                     await self.terminalManager.addMessage('Connecting... (debug mode so not really)')
                     await self.connectionSucceededHandler()
                     # await trio.sleep(0)
@@ -177,7 +177,7 @@ class TipTiltController():
                 
     async def connectInProgressStateHandler(self):
         try:
-            await pmc.open_connection(self.controllerIpAddr, self.controllerPort)
+            await ttfIface.open_connection(self.controllerIpAddr, self.controllerPort)
         except trio.TooSlowError as e:
             await self.terminalManager.addMessage('Timed out trying to open TCP Stream', MessageType.ERROR)
             self.connectionFailedEvent.set()
@@ -187,11 +187,11 @@ class TipTiltController():
             self.connectionFailedEvent.set()
             return
         # self.nursery.start_soon(pmc.startCommsStream, self.printErrorCallbacks)
-        self.nursery.start_soon(pmc.startCommsStream, self.printErrorCallbacks)
-        await pmc.sendHandshake()
+        self.nursery.start_soon(ttfIface.startCommsStream, self.printErrorCallbacks)
+        await ttfIface.sendHandshake()
         await trio.sleep(0)
         try:
-            await pmc.waitForHandshakeReply(10)
+            await ttfIface.waitForHandshakeReply(10)
         except trio.TooSlowError as e:
             await self.terminalManager.addMessage('Did not receive handshake reply.', MessageType.ERROR)
             self.connectionFailedEvent.set()
@@ -207,7 +207,7 @@ class TipTiltController():
         conBtn.disabled = False
         conBtn.text = 'Connect'
         conBtn.background_color = (1,0,0,1)
-        await pmc.Disconnect()
+        await ttfIface.Disconnect()
         await self.setControllerState(ControllerState.DISCONNECTED)
         
     async def connectionSucceededHandler(self):
@@ -233,8 +233,8 @@ class TipTiltController():
             request = self.ControllerRequestList.pop()
             if request == ControllerRequest.TOGGLE_CONNECTION:
                 await self.setControllerState(ControllerState.DISCONNECTED)
-                if pmc.steppersEnabled():
-                    await pmc.sendEnableSteppers(False)
+                if ttfIface.steppersEnabled():
+                    await ttfIface.sendEnableSteppers(False)
                     enableStepBtn.text = "Enable Steppers"
                 await self.resetConnection()
                 await self.terminalManager.addMessage('Disconnected.')
@@ -246,7 +246,7 @@ class TipTiltController():
                 homeBtn.disabled = True
                 bottomFoundBtn.disabled = False
                 await self.terminalManager.addMessage('Homing. Press step 2 when all motors have bottomed out')
-                await pmc.sendHomeAll(self.home_speed_prop)
+                await ttfIface.sendHomeAll(self.home_speed_prop)
                 await trio.sleep(0)
                 homeBtn.disabled = True
                 homeBtn.text = "Home All"
@@ -254,33 +254,33 @@ class TipTiltController():
             elif request == ControllerRequest.BOTTOM_FOUND_REQUESTED:
                 await self.terminalManager.addMessage('Bottom found. Waiting for mirror to return to center...')
                 bottomFoundBtn.disabled = True
-                await pmc.sendBottomFound()
+                await ttfIface.sendBottomFound()
                 await trio.sleep(0)
                 try:
-                    await pmc.waitForHomingComplete(self.homing_timeout_prop)
+                    await ttfIface.waitForHomingComplete(self.homing_timeout_prop)
                     await self.terminalManager.addMessage('Homing Complete.', MessageType.GOOD_NEWS)
                 except trio.TooSlowError as e:
                      await self.terminalManager.addMessage('Homing timed out.', MessageType.ERROR)
-                     await pmc.sendStopCommand()
+                     await ttfIface.sendStopCommand()
                 else:
                     homeBtn.disabled = False
             elif request == ControllerRequest.TOGGLE_STEPPER_ENABLE:
-                if pmc.steppersEnabled():
-                    await pmc.sendEnableSteppers(False)
+                if ttfIface.steppersEnabled():
+                    await ttfIface.sendEnableSteppers(False)
                     # TODO: wait for ack before enabling
                     self.controllerWidget.enableRelativeControls(False)
                     # TODO: Ask if system is homed and wait for reply before enabling.
                     goBtn.disabled = True
                     enableStepBtn.text = "Enable Steppers"
                 else:
-                    await pmc.sendEnableSteppers(True)
+                    await ttfIface.sendEnableSteppers(True)
                     self.controllerWidget.enableRelativeControls(True)
                     goBtn.disabled = False
                     enableStepBtn.text = "Disable Steppers"
             elif request == ControllerRequest.STOP_REQUESTED:
-                await pmc.sendStopCommand()
+                await ttfIface.sendStopCommand()
                     
-        await pmc.sendPrimaryMirrorCommands()
+        await ttfIface.sendPrimaryMirrorCommands()
         
     def printErrorCallbacks(self, excgroup):
         for exc in excgroup.exceptions:
@@ -297,32 +297,32 @@ class TipTiltController():
                 self.terminalManager.queueMessage(exc.msg)
             
     def plusTipButtonPushed(self):
-        self.terminalManager.queueMessage(' Tip [+' + str(pmc._tipTiltStepSize_as) + ' as]')
-        self.nursery.start_soon(pmc.TipRelative, DIRECTION.FORWARD)
+        self.terminalManager.queueMessage(' Tip [+' + str(ttfIface._tipTiltStepSize_as) + ' as]')
+        self.nursery.start_soon(ttfIface.TipRelative, DIRECTION.FORWARD)
     
     def minusTipButtonPushed(self):
-        self.terminalManager.queueMessage(' Tip [-' + str(pmc._tipTiltStepSize_as) + ' as]')
-        self.nursery.start_soon(pmc.TipRelative,DIRECTION.REVERSE)
+        self.terminalManager.queueMessage(' Tip [-' + str(ttfIface._tipTiltStepSize_as) + ' as]')
+        self.nursery.start_soon(ttfIface.TipRelative,DIRECTION.REVERSE)
         
     def plusTiltButtonPushed(self):
-        self.terminalManager.queueMessage(' Tilt [+' + str(pmc._tipTiltStepSize_as) + ' as]')
-        self.nursery.start_soon(pmc.TiltRelative,DIRECTION.FORWARD)
+        self.terminalManager.queueMessage(' Tilt [+' + str(ttfIface._tipTiltStepSize_as) + ' as]')
+        self.nursery.start_soon(ttfIface.TiltRelative,DIRECTION.FORWARD)
 
     def minusTiltButtonPushed(self):
-        self.terminalManager.queueMessage(' Tilt [-' + str(pmc._tipTiltStepSize_as) + ' as]')
-        self.nursery.start_soon(pmc.TiltRelative,DIRECTION.REVERSE)
+        self.terminalManager.queueMessage(' Tilt [-' + str(ttfIface._tipTiltStepSize_as) + ' as]')
+        self.nursery.start_soon(ttfIface.TiltRelative,DIRECTION.REVERSE)
         
     def plusFocusButtonPushed(self):
-        self.terminalManager.queueMessage(' Focus [+' + str(pmc._focusStepSize_um) + ' mm]')
-        self.nursery.start_soon(pmc.FocusRelative,DIRECTION.FORWARD)
+        self.terminalManager.queueMessage(' Focus [+' + str(ttfIface._focusStepSize_um) + ' mm]')
+        self.nursery.start_soon(ttfIface.FocusRelative,DIRECTION.FORWARD)
         
     def minusFocusButtonPushed(self):
-        self.terminalManager.queueMessage(' Focus [-' + str(pmc._focusStepSize_um) + ' mm]')
-        self.nursery.start_soon(pmc.FocusRelative,DIRECTION.REVERSE)
+        self.terminalManager.queueMessage(' Focus [-' + str(ttfIface._focusStepSize_um) + ' mm]')
+        self.nursery.start_soon(ttfIface.FocusRelative,DIRECTION.REVERSE)
             
     def _angleStepSizeButtonPushed(self, stepSize):
         gui = self.root
-        pmc._tipTiltStepSize_as = stepSize
+        ttfIface._tipTiltStepSize_as = stepSize
         self.controllerWidget.resetTipTiltStepSizeButtons()
         if stepSize == 1.0:
             btn = self.controllerWidget.ids['_1as_btn']
@@ -336,7 +336,7 @@ class TipTiltController():
         
     def _focusStepSizeButtonPushed(self, stepSize):
         gui = self.root
-        pmc._focusStepSize_um = stepSize
+        ttfIface._focusStepSize_um = stepSize
         self.controllerWidget.resetFocusStepSizeButtons()
         if stepSize == 0.2:
             btn = self.controllerWidget.ids['_0p2um_btn']
@@ -356,10 +356,10 @@ class TipTiltController():
         tiltAbsTI = self.controllerWidget.ids['tilt_abs']
         focusAbsTI = self.controllerWidget.ids['focus_abs']
         if len(focusAbsTI.text) > 0: 
-            self.nursery.start_soon(pmc.MoveAbsolute,float(tipAbsTI.text), float(tiltAbsTI.text), float(focusAbsTI.text))
+            self.nursery.start_soon(ttfIface.MoveAbsolute,float(tipAbsTI.text), float(tiltAbsTI.text), float(focusAbsTI.text))
 
     def stopButtonPushed(self):
-        pmc.interruptAnything()
+        ttfIface.interruptAnything()
                  
     def defaultButtonPushed(self):
         self.terminalManager.queueMessage('Button not assigned yet!')

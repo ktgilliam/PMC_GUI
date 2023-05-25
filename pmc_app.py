@@ -43,12 +43,10 @@ class PMC_GUI(GridLayout):
        
 class PMC_APP(App):
     nursery = None
-
     tasksStarted = False
     terminalManager = None
     tipTiltController = None
     tecController = None
-    
     
     ip_addr_prop = StringProperty()
     tip_tilt_port_prop = NumericProperty()
