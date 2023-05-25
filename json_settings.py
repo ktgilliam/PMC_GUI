@@ -20,10 +20,17 @@ json_connection_settings = json.dumps([
     },
     {
         "type":"numeric",
-        "title":"Port",
+        "title":"Tip/Tilt Port",
         "desc":"Port",
         "section":"Connection",
-        "key": "ip_port"
+        "key": "tip_tilt_ip_port"
+    },
+    {
+        "type":"numeric",
+        "title":"TEC Port",
+        "desc":"Port",
+        "section":"Connection",
+        "key": "tec_ip_port"
     },
 ])
 

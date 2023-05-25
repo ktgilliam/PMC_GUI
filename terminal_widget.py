@@ -1,4 +1,3 @@
-
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.label import Label
 from kivy.properties import ObjectProperty
@@ -20,7 +19,7 @@ class MessageType(Enum):
     IMPORTANT = 3
     GOOD_NEWS = 4
 
-Builder.load_file('terminal_widget.kv')
+# Builder.load_file('terminal_widget.kv')
 
 
 class TerminalWidget(GridLayout):
