@@ -18,12 +18,10 @@ from json_settings import *
 # from pmc_iface import DIRECTION, PrimaryMirrorControl
 from terminal_widget import *
 from tip_tilt_control_widget import *
+from tec_control_widget import *
 
 from numeric_widgets import FloatInput
 
-
-    
-    
 Window.size = (900, 700)
 Window.minimum_width, Window.minimum_height = Window.size
 
@@ -49,10 +47,13 @@ class PMC_APP(App):
     tasksStarted = False
     terminalManager = None
     tipTiltController = None
+    tecController = None
+    
     
     ip_addr_prop = StringProperty()
     tip_tilt_port_prop = NumericProperty()
-    tec_port_prop = NumericProperty()
+    tec_a_port_prop = NumericProperty()
+    tec_b_port_prop = NumericProperty()
     fan_speed_prop = NumericProperty()
     home_speed_prop = NumericProperty()
     homing_timeout_prop = NumericProperty()
@@ -65,12 +66,13 @@ class PMC_APP(App):
         self.settings_cls = SettingsWithSidebar
         self.use_kivy_settings = False
         Builder.load_file('tip_tilt_control_widget.kv')
+        Builder.load_file('tec_control_widget.kv')
         Builder.load_file('terminal_widget.kv')
         gui = Builder.load_file('pmc_gui.kv')
         return gui
 
     def build_config(self, config):
-        config.setdefaults("Connection", {"ip_addr": "localhost", "tip_tilt_ip_port": 4400, "tec_ip_port": 4500})
+        config.setdefaults("Connection", {"ip_addr": "localhost", "tip_tilt_ip_port": 4400, "tec_a_ip_port": 4500, "tec_b_ip_port": 4500})
         config.setdefaults("Motion", {"fan_speed":50, "homing_speed":100, "homing_timeout":60, "rel_move": 100, "abs_move": 100})
         config.setdefaults("General", {"dbg_mode":False})
         return super().build_config(config)
@@ -85,13 +87,16 @@ class PMC_APP(App):
         if section == "General":
             if key == "dbg_mode":
                 self.debug_mode_prop = bool(int(value))
+                self.tipTiltController.setDebugMode(self.debug_mode_prop)
         elif section == "Connection":
             if key == "ip_addr":
                 self.ip_addr_prop = value
             elif key == "tip_tilt_ip_port":
                 self.tip_tilt_port_prop = int(value)
-            elif key == "tec_ip_port":
-                self.tec_port_prop = int(value)
+            elif key == "tecBoxA_ip_port":
+                self.tecBoxA_port_prop = int(value)
+            elif key == "tecBoxB_ip_port":
+                self.tecBoxB_port_prop = int(value)
         elif section == "Motion":
             if key == "fan":
                 self.fan_speed_prop = int(value)
@@ -107,10 +112,10 @@ class PMC_APP(App):
     
     def load_config(self):
         config = super().load_config()
-        self.debug_mode_prop = bool(config.get('General','dbg_mode')=='True')
         self.ip_addr_prop = config.get('Connection','ip_addr')
         self.tip_tilt_port_prop = int(config.get('Connection','tip_tilt_ip_port'))
-        self.tec_port_prop = int(config.get('Connection','tec_ip_port'))
+        self.tec_a_port_prop = int(config.get('Connection','tec_a_ip_port'))
+        self.tec_b_port_prop = int(config.get('Connection','tec_b_ip_port'))
         self.fan_speed_prop = int(config.get('Motion','fan_speed'))
         self.home_speed_prop = int(config.get('Motion','homing_speed'))
         self.homing_timeout_prop = int(config.get('Motion','homing_timeout'))
@@ -164,15 +169,13 @@ class PMC_APP(App):
 
     async def initializeTipTiltControl(self):
         while (TipTiltControlWidget.singletonControlWidget == None):
-            gui = self.root
             await trio.sleep(0) 
-        tmp = self.root.ids.tiptilt
-        self.tipTiltController = TipTiltController(TipTiltControlWidget.singletonControlWidget, self.nursery)
-        self.tipTiltController.connectTerminal(TerminalWidget.terminal)
+        self.tipTiltController = TipTiltController(self.root.ids.tipTiltCtrl, self.nursery, self.debug_mode_prop)
+        self.tipTiltController.connectTerminal(self.terminalManager)
         self.tipTiltController.setConnectionInfo(self.ip_addr_prop, self.tip_tilt_port_prop)
 
-
-
+    async def initializeTECControl(self):
+        self.tecController = TECController(self.root.ids.tecCtrl, self.nursery, self.debug_mode_prop)
 
 from task_tracer import Tracer, FilterType
 

@@ -94,18 +94,24 @@ class TipTiltController():
     controllerIpAddr = None
     controllerPort = None
     controllerWidget = None
+    terminalManager = None
+    debugMode = None
     
-    def __init__(self, ctrlWidget, nursery, **kwargs): 
+    def __init__(self, ctrlWidget, nursery, debugMode = False, **kwargs): 
         self.nursery = nursery
         self.controllerWidget = ctrlWidget
+        self.debugMode = debugMode
         nursery.start_soon(self.updateControls)
         
-    def connectTerminal(self, terminal):
-        self.terminal = terminal
+    def connectTerminal(self, terminalManager):
+        self.terminalManager = terminalManager
     
     def setConnectionInfo(self, ip, port):
         self.controllerIpAddr = ip
         self.controllerPort = port
+    
+    def setDebugMode(self, mode):
+        self.debugMode = mode
         
     async def updateControls(self):
         """Main state machine for handling events in the app
@@ -119,11 +125,12 @@ class TipTiltController():
             elif currentState == ControllerState.DISCONNECTED:
                 await self.disconnectedStateHandler()
             elif currentState == ControllerState.CONNECT_IN_PROGRESS:
-                if self.debug_mode_prop:
+                if self.debugMode:
                     await trio.sleep(0)
                     pmc._connected = True #overriding the pmc connection flag (bad)
                     await self.terminalManager.addMessage('Connecting... (debug mode so not really)')
-                    await trio.sleep(0)
+                    await self.connectionSucceededHandler()
+                    # await trio.sleep(0)
                 else:
                     await self.connectInProgressStateHandler()
                     if self.connectionFailedEvent.is_set():
@@ -170,7 +177,7 @@ class TipTiltController():
                 
     async def connectInProgressStateHandler(self):
         try:
-            await pmc.open_connection(self.ip_addr_prop, self.port_prop)
+            await pmc.open_connection(self.controllerIpAddr, self.controllerPort)
         except trio.TooSlowError as e:
             await self.terminalManager.addMessage('Timed out trying to open TCP Stream', MessageType.ERROR)
             self.connectionFailedEvent.set()
@@ -204,11 +211,9 @@ class TipTiltController():
         await self.setControllerState(ControllerState.DISCONNECTED)
         
     async def connectionSucceededHandler(self):
-
         conBtn = self.controllerWidget.ids['connect_btn']
         enableStepBtn = self.controllerWidget.ids['enable_steppers_btn']
         enableStepBtn.disabled = False
-        
         await self.setControllerState(ControllerState.CONNECTED)
         await self.terminalManager.addMessage('Connected!', MessageType.GOOD_NEWS)
         conBtn.background_color = (0,1,0,1)

@@ -4,37 +4,22 @@
 
 <TipTiltControlWidget>:
     cols: 1
-    id: id: id.tiptiltcontrol
-    Label:
-        id: title_label
-        text: "PRIMARY MIRROR CONTROL [Version 0.1]"
-        font_size: '20sp'
-        bold: True
-        size_hint_y: None
-        height: 30
-    # canvas.before:
-    #     Color:
-    #         rgba: 1, 1, 1, 1
-    #     Line:
-    #         width: 2
-    #         rectangle: self.x, self.y, self.width, self.height
-    # Top half is for inputs.
+    id: id: tiptiltcontrol
+
     GridLayout:
         cols: 1
-        size_hint: 1, None
-        height: 68
-
+        size_hint: 1, 1
+        canvas.before:
+            Color:
+                rgba: 1, 1, 1, 1
+            Line:
+                width: 2
+                rectangle: self.x, self.y, self.width, self.height
         StackLayout:
-            # cols: 2
             padding: [4, 4, 4, 4]
             size_hint_y: None
             height: 36
-            canvas.before:
-                Color:
-                    rgba: 1, 1, 1, 1
-                Line:
-                    width: 2
-                    rectangle: self.x, self.y, self.width, self.height
+            id: top_btns
             Button:
                 id: connect_btn
                 text:'Connect'
@@ -43,15 +28,15 @@
                 size_hint_x: None
                 width:110
                 background_color: (1,0,0,1)
-                on_release: app.ControllerRequestList.append(ControllerRequest.TOGGLE_CONNECTION)
+                on_release: app.tipTiltController.ControllerRequestList.append(ControllerRequest.TOGGLE_CONNECTION)
             Button:
                 text:'Enable Steppers'
                 id: enable_steppers_btn
                 size_hint_y: None
                 height: 30
                 size_hint_x: None
-                width:120
-                on_release: app.ControllerRequestList.append(ControllerRequest.TOGGLE_STEPPER_ENABLE)
+                width:140
+                on_release: app.tipTiltController.ControllerRequestList.append(ControllerRequest.TOGGLE_STEPPER_ENABLE)
                 disabled: True     
             Button:
                 text:'STOP'
@@ -62,284 +47,28 @@
                 size_hint_x: None
                 width:80
                 background_color: (1,0,0,1)
-                on_release: app.ControllerRequestList.append(ControllerRequest.STOP_REQUESTED), app.stopButtonPushed()
+                on_release: app.tipTiltController.ControllerRequestList.append(ControllerRequest.STOP_REQUESTED), app.stopButtonPushed()
                 disabled: True
-    GridLayout:
-        cols: 3
-        size_hint: 1, None
-        size: root.width, root.height * 0.5
         GridLayout:
-            cols: 1
-            id: rel_ctrl
-            size_hint_x: None
-            width: 400
+            # Parent of the Relative, Absolute, and Output
+            id: tec_ctrl_cols
+            cols: 3
+            size_hint: 1, 1
+            # size: root.width, root.height * 0.5
+            width: root.width
             canvas.before:
                 Color:
-                    rgba: 1, 1, 1, 1 
+                    rgba: 1, 1, 1, 1
                 Line:
                     width: 2
                     rectangle: self.x, self.y, self.width, self.height
-            Label:
-                text: "Tip/Tilt/Focus (Relative)"
-                size_hint_y: None
-                height: 30
             GridLayout:
-                cols: 2
-                canvas.before:
-                    Color:
-                        rgba: 1, 1, 1, 1 
-                    Line:
-                        width: 2
-                        rectangle: self.x, self.y, self.width, self.height
-                GridLayout:
-                    cols: 1
-                    padding: [10, 10, 10, 10]
-                    Label:
-                        text: "Tip/Tilt Control [as]:"
-                        size_hint_y:None
-                        height: 20
-                    BoxLayout:
-                        orientation: 'horizontal'
-                        size_hint_y: None
-                        height: 40
-                        Button:
-                            id: _1as_btn
-                            text: '1'
-                            size_hint_y: None
-                            height: 30
-                            background_color: (0,1,0,1)
-                            on_press: app._angleStepSizeButtonPushed(1.0)
-                        Button:
-                            id: _10as_btn
-                            text: '10'
-                            size_hint_y: None
-                            height: 30
-                            on_press: app._angleStepSizeButtonPushed(10.0)
-                        Button:
-                            id: _100as_btn
-                            text: '100'
-                            size_hint_y: None
-                            height: 30
-                            on_press: app._angleStepSizeButtonPushed(100.0)
-                        Button:
-                            id: _1000as_btn
-                            text: '1000'
-                            size_hint_y: None
-                            height: 30
-                            on_press: app._angleStepSizeButtonPushed(1000.0)
-                    GridLayout:
-                        cols: 3
-                        ##################
-                        Label:
-                        Button:
-                            id: do_pos_tip_btn
-                            text: '+ Tip'
-                            size_hint_y: None
-                            height: 40
-                            size_hint_x: None
-                            width: 50
-                            disabled: True
-                            on_press: app.plusTipButtonPushed()
-                        Label:
-                        ##################
-                        Button:
-                            id: do_neg_tilt_btn
-                            text: '- Tilt'
-                            size_hint_y: None
-                            height: 40
-                            size_hint_x: None
-                            width: 50
-                            disabled: True
-                            on_press: app.minusTiltButtonPushed()
-                        Label: # Would like to put an indicator light here.
-                        Button:
-                            id: do_pos_tilt_btn
-                            text: '+ Tilt'
-                            size_hint_y: None
-                            height: 40
-                            size_hint_x: None
-                            width: 50
-                            disabled: True
-                            on_press: app.plusTiltButtonPushed()
-                        ##################
-                        Label:
-                        Button:
-                            id: do_neg_tip_btn
-                            text: '- Tip'
-                            size_hint_y: None
-                            height: 40
-                            size_hint_x: None
-                            width: 50
-                            disabled: True
-                            on_press: app.minusTipButtonPushed()
-                        Label:
-                        ##################
-                        Label:
-                        Label:
-                        Label:
-                        ##################
-
-
-                GridLayout:
-                    cols: 1
-                    padding: [10, 10, 10, 10] 
-                    Label:
-                        text: "Focus Control [um]:"
-                        size_hint_y:None
-                        height: 20
-                    GridLayout:
-                        cols: 2
-                        GridLayout:
-                            cols: 3
-                            Label:
-                            Button:
-                                id: do_pos_focus_btn
-                                text: '+Focus'
-                                size_hint: None, None
-                                height: 40
-                                width: 70
-                                disabled: True
-                                on_press: app.plusFocusButtonPushed()
-                            Label:
-                            Label:
-                            Button:
-                                id: do_neg_focus_btn
-                                text: '-Focus'
-                                size_hint: None, None
-                                height: 40
-                                width: 70
-                                disabled: True
-                                on_press: app.minusFocusButtonPushed()
-                            Label:
-                            Label:
-                            Label:
-                            Label:
-                            
-                        GridLayout:
-                            cols: 1
-                            size_hint: 0.5, 0.1
-                            # row_force_default: True
-                            # row_default_height: 30
-                            height: self.height
-                            # orientation: 'vertical'
-                            # height: 40
-                            Label:
-                                # height:40
-                            Button:
-                                id: _0p2um_btn
-                                text: '0.2'
-                                size_hint: None, None
-                                height: 30
-                                width: 40
-                                background_color: (0,1,0,1)
-                                on_press: app._focusStepSizeButtonPushed(0.2)
-                            Button:
-                                id: _2um_btn
-                                text: '2'
-                                size_hint: None, None
-                                height: 30
-                                width: 40
-                                on_press: app._focusStepSizeButtonPushed(2)
-                            Button:
-                                id: _20um_btn
-                                text: '20'
-                                size_hint: None, None
-                                height: 30
-                                width: 40
-                                on_press: app._focusStepSizeButtonPushed(20)
-                                # disabled: True
-                            Button:
-                                id: _200um_btn
-                                text: '200'
-                                size_hint: None, None
-                                height: 30
-                                width: 40
-                                on_press: app._focusStepSizeButtonPushed(200)
-                                # disabled: True
-                            Button:
-                                id: _2000um_btn
-                                text: '2000'
-                                size_hint: None, None
-                                height: 30
-                                width: 40
-                                on_press: app._focusStepSizeButtonPushed(2000)
-                                # disabled: True
-                            Label:
-                            Label:
-                            Label:
-                            Label:
-                    #_________________
-        GridLayout:
-            cols: 1
-            canvas.before:
-                Color:
-                    rgba: 1, 1, 1, 1 
-                Line:
-                    width: 2
-                    rectangle: self.x, self.y, self.width, self.height
-            Label:
-                text: 'Tip/Tilt/Focus Absolute'
-                size_hint_y: None
-                height: 30
-            GridLayout:
+                # Relative Control Column
+                size_hint_x: 0.33
                 cols: 1
-                padding: [15, 10, 10, 10]
-                id: abs_ctrl
-                canvas.before:
-                    Color:
-                        rgba: 1, 1, 1, 1
-                    Line:
-                        width: 2
-                        rectangle: self.x, self.y, self.width, self.height
-                GridLayout:
-                    cols: 2
-                    Label: 
-                        text: 'Tip [as]: '
-                        size_hint_y: None
-                        height: 30
-                        size_hint_x: None
-                        width: 90
-                    FloatInput:
-                        id: tip_abs
-                        text: '0.0'
-                        size_hint_y: None
-                        height: 30
-                        # disabled: True
-                    Label: 
-                        text: 'Tilt [as]: '
-                        size_hint_y: None
-                        height: 30
-                        size_hint_x: None
-                        width: 90
-                    FloatInput:
-                        id: tilt_abs
-                        text: '0.0'
-                        size_hint_y: None
-                        height: 30
-                        # disabled: True
-                    Label: 
-                        text: 'Focus [um]: '
-                        size_hint_y: None
-                        height: 30
-                        size_hint_x: None
-                        width: 90
-                    FloatInput:
-                        id: focus_abs
-                        text: '0.0'
-                        size_hint_y: None
-                        height: 30
-                Button:
-                    id: go_abs_btn
-                    text:'Go'
-                    size_hint_y: None
-                    height: 30
-                    # size_hint_x: None
-                    # width:30
-                    # disabled: True
-                    on_press: app.AbsGoButtonPushed()
+                id: rel_ctrl
 
-            GridLayout:
-                cols:1
+                # width: 400
                 canvas.before:
                     Color:
                         rgba: 1, 1, 1, 1
@@ -347,9 +76,215 @@
                         width: 2
                         rectangle: self.x, self.y, self.width, self.height
                 Label:
-                    text: 'Homing'
-                    size_hint_y : None
-                    height:30
+                    text: "Tip/Tilt/Focus (Relative)"
+                    size_hint_y: None
+                    height: 30
+                GridLayout:
+                    cols: 2
+                    canvas.before:
+                        Color:
+                            rgba: 1, 1, 1, 1 
+                        Line:
+                            width: 2
+                            rectangle: self.x, self.y, self.width, self.height
+                    GridLayout:
+                        cols: 1
+                        canvas.before:
+                            Color:
+                                rgba: 1, 1, 1, 1
+                            Line:
+                                width: 1
+                                rectangle: self.x, self.y, self.width, self.height
+                        padding: [10, 10, 10, 10]
+                        Label:
+                            text: "Tip/Tilt Control [as]:"
+                            size_hint_y:None
+                            height: 20
+                        BoxLayout:
+                            orientation: 'horizontal'
+                            size_hint_y: None
+                            height: 40
+                            Button:
+                                id: _1as_btn
+                                text: '1'
+                                size_hint_y: None
+                                height: 30
+                                background_color: (0,1,0,1)
+                                on_press: app._angleStepSizeButtonPushed(1.0)
+                            Button:
+                                id: _10as_btn
+                                text: '10'
+                                size_hint_y: None
+                                height: 30
+                                on_press: app._angleStepSizeButtonPushed(10.0)
+                            Button:
+                                id: _100as_btn
+                                text: '100'
+                                size_hint_y: None
+                                height: 30
+                                on_press: app._angleStepSizeButtonPushed(100.0)
+                            Button:
+                                id: _1000as_btn
+                                text: '1000'
+                                size_hint_y: None
+                                height: 30
+                                on_press: app._angleStepSizeButtonPushed(1000.0)
+                        GridLayout:
+                            cols: 3
+                            ##################
+                            Label:
+                            Button:
+                                id: do_pos_tip_btn
+                                text: '+ Tip'
+                                size_hint_y: None
+                                height: 40
+                                size_hint_x: None
+                                width: 50
+                                disabled: True
+                                on_press: app.plusTipButtonPushed()
+                            Label:
+                            ##################
+                            Button:
+                                id: do_neg_tilt_btn
+                                text: '- Tilt'
+                                size_hint_y: None
+                                height: 40
+                                size_hint_x: None
+                                width: 50
+                                disabled: True
+                                on_press: app.minusTiltButtonPushed()
+                            Label: # Would like to put an indicator light here.
+                            Button:
+                                id: do_pos_tilt_btn
+                                text: '+ Tilt'
+                                size_hint_y: None
+                                height: 40
+                                size_hint_x: None
+                                width: 50
+                                disabled: True
+                                on_press: app.plusTiltButtonPushed()
+                            ##################
+                            Label:
+                            Button:
+                                id: do_neg_tip_btn
+                                text: '- Tip'
+                                size_hint_y: None
+                                height: 40
+                                size_hint_x: None
+                                width: 50
+                                disabled: True
+                                on_press: app.minusTipButtonPushed()
+                            Label:
+                            ##################
+                            Label:
+                            Label:
+                            Label:
+                            ##################
+
+
+                    GridLayout:
+                        cols: 1
+                        padding: [10, 10, 10, 10] 
+                        Label:
+                            text: "Focus Control [um]:"
+                            size_hint_y:None
+                            height: 20
+                        GridLayout:
+                            cols: 2
+                            GridLayout:
+                                cols: 3
+                                Label:
+                                Button:
+                                    id: do_pos_focus_btn
+                                    text: '+Focus'
+                                    size_hint: None, None
+                                    height: 40
+                                    width: 90
+                                    disabled: True
+                                    on_press: app.plusFocusButtonPushed()
+                                Label:
+                                Label:
+                                Button:
+                                    id: do_neg_focus_btn
+                                    text: '-Focus'
+                                    size_hint: None, None
+                                    height: 40
+                                    width: 90
+                                    disabled: True
+                                    on_press: app.minusFocusButtonPushed()
+                                Label:
+                                Label:
+                                Label:
+                                Label:
+                                
+                            GridLayout:
+                                cols: 1
+                                size_hint: 0.5, 0.1
+                                # row_force_default: True
+                                # row_default_height: 30
+                                height: self.height
+                                # orientation: 'vertical'
+                                # height: 40
+                                Label:
+                                    # height:40
+                                Button:
+                                    id: _0p2um_btn
+                                    text: '0.2'
+                                    size_hint: None, None
+                                    height: 30
+                                    width: 60
+                                    background_color: (0,1,0,1)
+                                    on_press: app._focusStepSizeButtonPushed(0.2)
+                                Button:
+                                    id: _2um_btn
+                                    text: '2'
+                                    size_hint: None, None
+                                    height: 30
+                                    width: 60
+                                    on_press: app._focusStepSizeButtonPushed(2)
+                                Button:
+                                    id: _20um_btn
+                                    text: '20'
+                                    size_hint: None, None
+                                    height: 30
+                                    width: 60
+                                    on_press: app._focusStepSizeButtonPushed(20)
+                                    # disabled: True
+                                Button:
+                                    id: _200um_btn
+                                    text: '200'
+                                    size_hint: None, None
+                                    height: 30
+                                    width: 60
+                                    on_press: app._focusStepSizeButtonPushed(200)
+                                    # disabled: True
+                                Button:
+                                    id: _2000um_btn
+                                    text: '2000'
+                                    size_hint: None, None
+                                    height: 30
+                                    width: 60
+                                    on_press: app._focusStepSizeButtonPushed(2000)
+                                    # disabled: True
+                                Label:
+                                Label:
+                                Label:
+                                Label:
+                        #_________________
+            GridLayout:
+                # Absolute Control Column
+                size_hint_x: 0.33
+                cols: 1
+                canvas.before:
+                    Color:
+                        rgba: 1, 1, 1, 1 
+                    Line:
+                        width: 2
+                        rectangle: self.x, self.y, self.width, self.height
+                Label:
+                    text: 'Tip/Tilt/Focus Absolute'
+                    size_hint_y: None
+                    height: 30
                 GridLayout:
                     cols: 1
                     padding: [15, 10, 10, 10]
@@ -360,133 +295,204 @@
                         Line:
                             width: 2
                             rectangle: self.x, self.y, self.width, self.height
-                    
-                    Label:
-                        text: '...'
-                        size_hint_y : None
-                        height:30
-                        disabled: True
                     GridLayout:
                         cols: 2
-                        size_hint: None, None
-                        row_force_default: True
-                        row_default_height: 30
+                        Label: 
+                            text: 'Tip [as]: '
+                            size_hint_y: None
+                            height: 30
+                            size_hint_x: None
+                            width: 90
+                        FloatInput:
+                            id: tip_abs
+                            text: '0.0'
+                            size_hint_y: None
+                            height: 30
+                            # disabled: True
+                        Label: 
+                            text: 'Tilt [as]: '
+                            size_hint_y: None
+                            height: 30
+                            size_hint_x: None
+                            width: 90
+                        FloatInput:
+                            id: tilt_abs
+                            text: '0.0'
+                            size_hint_y: None
+                            height: 30
+                            # disabled: True
+                        Label: 
+                            text: 'Focus [um]: '
+                            size_hint_y: None
+                            height: 30
+                            size_hint_x: None
+                            width: 90
+                        FloatInput:
+                            id: focus_abs
+                            text: '0.0'
+                            size_hint_y: None
+                            height: 30
+                    Button:
+                        id: go_abs_btn
+                        text:'Go'
+                        size_hint_y: None
+                        height: 30
+                        # size_hint_x: None
+                        # width:30
+                        # disabled: True
+                        on_press: app.AbsGoButtonPushed()
+
+                GridLayout:
+                    cols:1
+                    canvas.before:
+                        Color:
+                            rgba: 1, 1, 1, 1
+                        Line:
+                            width: 2
+                            rectangle: self.x, self.y, self.width, self.height
+                    Label:
+                        text: 'Homing'
+                        size_hint_y : None
+                        height:30
+                    GridLayout:
+                        cols: 1
+                        padding: [15, 10, 10, 10]
+                        id: abs_ctrl
+                        canvas.before:
+                            Color:
+                                rgba: 1, 1, 1, 1
+                            Line:
+                                width: 2
+                                rectangle: self.x, self.y, self.width, self.height
+                        
                         Label:
-                            size_hint: None, None
-                            height: 30
-                            width:70
-                            text: 'Step 1:'
-                        Button:
-                            id: do_home_all_btn
-                            text:'Start Homing'
-                            size_hint: None, None
-                            height: 30
-                            width:140
+                            text: '...'
+                            size_hint_y : None
+                            height:30
                             disabled: True
-                            on_release: app.ControllerRequestList.append(ControllerRequest.GO_HOME_REQUESTED)
-                        Label:
+                        GridLayout:
+                            cols: 2
                             size_hint: None, None
-                            height: 30
-                            width:70
-                            text: 'Step 2:'
-                        Button:
-                            id: bottom_found_btn
-                            text:'Press when @ limit'
-                            size_hint: None, None
-                            height: 30
-                            width:140
-                            disabled: True
-                            on_release: app.ControllerRequestList.append(ControllerRequest.BOTTOM_FOUND_REQUESTED)
+                            row_force_default: True
+                            row_default_height: 30
+                            Label:
+                                size_hint: None, None
+                                height: 30
+                                width:70
+                                text: 'Step 1:'
+                            Button:
+                                id: do_home_all_btn
+                                text:'Start Homing'
+                                size_hint: None, None
+                                height: 30
+                                width:160
+                                disabled: True
+                                on_release: app.tipTiltController.ControllerRequestList.append(ControllerRequest.GO_HOME_REQUESTED)
+                            Label:
+                                size_hint: None, None
+                                height: 30
+                                width:70
+                                text: 'Step 2:'
+                            Button:
+                                id: bottom_found_btn
+                                text:'Press when @ limit'
+                                size_hint: None, None
+                                height: 30
+                                width:160
+                                disabled: True
+                                on_release: app.tipTiltController.ControllerRequestList.append(ControllerRequest.BOTTOM_FOUND_REQUESTED)
 
 
-        GridLayout:
-            cols: 1
-            id: outputs
-            canvas.before:
-                Color:
-                    rgba: 1, 1, 1, 1
-                Line:
-                    width: 2
-                    rectangle: self.x, self.y, self.width, self.height
-            Label:
-                text: "Output (Read-Only)"
-                size_hint_y: None
-                height: 30
             GridLayout:
+                # Output Control Column
+                size_hint_x: 0.33
                 cols: 1
+                id: outputs
                 canvas.before:
                     Color:
-                        rgba: 1, 1, 1, 1 
+                        rgba: 1, 1, 1, 1
                     Line:
                         width: 2
                         rectangle: self.x, self.y, self.width, self.height
+                Label:
+                    text: "Output (Read-Only)"
+                    size_hint_y: None
+                    height: 30
+                GridLayout:
+                    cols: 1
+                    canvas.before:
+                        Color:
+                            rgba: 1, 1, 1, 1 
+                        Line:
+                            width: 2
+                            rectangle: self.x, self.y, self.width, self.height
+                    GridLayout:
+                        cols: 2
+                        row_force_default: True
+                        row_default_height: 30
+                        padding: [10, 10, 10, 10]
+                        Label:
+                            text: "Tip [mas]: "
+                            size_hint_x: None
+                            width: 90
+                        FloatInput:
+                            id: tip_val
+                            multiline: 'false'
+                            readonly: True
+                            text: '0.0'
+                        Label:
+                            text: "Tilt [mas]: "
+                            size_hint_x: None
+                            width: 90
+                        FloatInput:
+                            id: tilt_val
+                            multiline: 'false'
+                            readonly: True
+                            text: '0.0'
+                        Label:
+                            text: "Focus [um]: "
+                            size_hint_x: None
+                            width: 90
+                        FloatInput:
+                            id: focus_val
+                            multiline: 'false'
+                            readonly: True
+                            text: '0.0'
+                Label:
+                    text: "Fan Control"
+                    size_hint_y: None
+                    height: 30
                 GridLayout:
                     cols: 2
+                    canvas.before:
+                        Color:
+                            rgba: 1, 1, 1, 1 
+                        Line:
+                            width: 2
+                            rectangle: self.x, self.y, self.width, self.height
                     row_force_default: True
                     row_default_height: 30
                     padding: [10, 10, 10, 10]
                     Label:
-                        text: "Tip [mas]: "
+                        text: "Speed [%]: "
                         size_hint_x: None
-                        width: 90
+                        width: 60
+                        size_hint_y: None
+                        height: 30
                     FloatInput:
-                        id: tip_val
+                        id: fan_val
                         multiline: 'false'
                         readonly: True
                         text: '0.0'
-                    Label:
-                        text: "Tilt [mas]: "
-                        size_hint_x: None
-                        width: 90
-                    FloatInput:
-                        id: tilt_val
-                        multiline: 'false'
-                        readonly: True
-                        text: '0.0'
-                    Label:
-                        text: "Focus [um]: "
-                        size_hint_x: None
-                        width: 90
-                    FloatInput:
-                        id: focus_val
-                        multiline: 'false'
-                        readonly: True
-                        text: '0.0'
-            Label:
-                text: "Fan Control"
-                size_hint_y: None
-                height: 30
-            GridLayout:
-                cols: 2
-                canvas.before:
-                    Color:
-                        rgba: 1, 1, 1, 1 
-                    Line:
-                        width: 2
-                        rectangle: self.x, self.y, self.width, self.height
-                row_force_default: True
-                row_default_height: 30
-                padding: [10, 10, 10, 10]
-                Label:
-                    text: "Speed [%]: "
-                    size_hint_x: None
-                    width: 60
-                    size_hint_y: None
-                    height: 30
-                FloatInput:
-                    id: fan_val
-                    multiline: 'false'
-                    readonly: True
-                    text: '0.0'
-                    size_hint_y: None
-                    height: 30
-            
-            # Label:
-            #     text: ""
-            #     size_hint_x: None
-            #     width: 100
-            #     size_hint_y: None
-            #     height: 30
+                        size_hint_y: None
+                        height: 30
+                
+                # Label:
+                #     text: ""
+                #     size_hint_x: None
+                #     width: 100
+                #     size_hint_y: None
+                #     height: 30
 
 
 

@@ -1,0 +1,118 @@
+#:kivy 2.1.0
+
+<TECField>:
+    # size_hint: 0.2, None
+    size_hint: None, None
+    # size: (self.parent.width*0.5, 40)
+    height: 40
+    id: thisField
+    canvas.before:
+        Color:
+            rgba: 1, 1, 1, 1
+        Line:
+            width: 1
+            rectangle: self.x, self.y, self.width, self.height
+    cols: 1
+    GridLayout:
+        cols: 2
+        Label:
+            size_hint: 0.3, None
+            height: 40
+            text: '#'+str(thisField.tec_no)
+        FloatInput:
+            size_hint: 0.7, None
+            height: 40
+
+<TECFieldList>:
+    spacing: "10dp"
+    padding: "10dp"
+    size_hint: 1,None
+    height: 1000
+        
+<TECControlWidget>:
+    cols: 1
+    # id: id: id.teccontrol
+    GridLayout:
+        cols: 1
+        size_hint: 1, 1
+        canvas.before:
+            Color:
+                rgba: 1, 1, 1, 1
+            Line:
+                width: 2
+                rectangle: self.x, self.y, self.width, self.height
+        StackLayout:
+            padding: [4, 4, 4, 4]
+            size_hint_y: None
+            height: 36
+            id: top_btns
+            canvas.before:
+                Color:
+                    rgba: 1, 1, 1, 1
+                Line:
+                    width: 2
+                    rectangle: self.x, self.y, self.width, self.height
+            Button:
+                id: connect_btn
+                text:'Connect'
+                size_hint_y: None
+                height: 30
+                size_hint_x: None
+                width:110
+                background_color: (1,0,0,1)
+            Button:
+                id: load_tec_cfg_btn
+                text:'Load Currents'
+                size_hint_y: None
+                height: 30
+                size_hint_x: None
+                width:140
+                # background_color: (1,0,0,1)
+                on_release: root.loadList()
+                
+        ScrollView:
+            do_scroll_x: False
+            do_scroll_y: True
+            scroll_type: ['bars']
+            bar_width: 12
+            # size_hint: 1,None
+            canvas.before:
+                Color:
+                    rgba: 0, 1, 1, 1
+                Line:
+                    width: 2
+                    rectangle: self.x, self.y, self.width, self.height
+            TECFieldList:
+                id: tec_field_list
+                cols: 4
+
+                # TECField:
+                #     # tec_no: 4
+                # TECField:
+                #     # tec_no: 5
+                # TECField:
+                #     # tec_no: 6
+                # TECField:
+                #     # tec_no: 7
+                # TECField:
+                #     # tec_no: 8
+                # TECField:
+                #     # tec_no: 99
+                # TECField:
+                #     # tec_no: 1
+                # TECField:
+                #     # tec_no: 4
+                # TECField:
+                #     # tec_no: 5
+                # TECField:
+                #     # tec_no: 6
+                # TECField:
+                #     # tec_no: 7
+                # TECField:
+                #     # tec_no: 8
+                # TECField:
+                #     # tec_no: 99
+                # TECField:
+                #     # tec_no: 1
+
+
