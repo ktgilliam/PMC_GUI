@@ -208,6 +208,7 @@ class TipTiltController():
         conBtn.text = 'Connect'
         conBtn.background_color = (1,0,0,1)
         await ttfIface.Disconnect()
+        ttfIface.ttf_reset()
         await self.setControllerState(ControllerState.DISCONNECTED)
         
     async def connectionSucceededHandler(self):
@@ -280,7 +281,7 @@ class TipTiltController():
             elif request == ControllerRequest.STOP_REQUESTED:
                 await ttfIface.sendStopCommand()
                     
-        await ttfIface.sendPrimaryMirrorCommands()
+        await ttfIface.sendCommands()
         
     def printErrorCallbacks(self, excgroup):
         for exc in excgroup.exceptions:

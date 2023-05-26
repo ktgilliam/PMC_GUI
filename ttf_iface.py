@@ -54,8 +54,11 @@ class TipTiltFocusControlInterface(LFASTControllerInterface):
     _homingComplete = trio.Event()
     _steppersEnabled = False
     
-    def reset(self):
-        super.reset()
+    def __init__(self):
+        super().__init__()
+        
+    def ttf_reset(self):
+        self.reset()
         self._currentTip_as = 0.0
         self._currentTilt_as = 0.0
         self._currentFocus_um = 0.0 

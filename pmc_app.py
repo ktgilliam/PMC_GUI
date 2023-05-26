@@ -22,10 +22,8 @@ from tec_control_widget import *
 
 from numeric_widgets import FloatInput
 
-Window.size = (900, 700)
+Window.size = (1100, 700)
 Window.minimum_width, Window.minimum_height = Window.size
-
-
 
 # Uncomment these lines to see all the messages
 # from kivy.logger import Logger
@@ -63,10 +61,11 @@ class PMC_APP(App):
     def build(self):
         self.settings_cls = SettingsWithSidebar
         self.use_kivy_settings = False
-        Builder.load_file('tip_tilt_control_widget.kv')
-        Builder.load_file('tec_control_widget.kv')
-        Builder.load_file('terminal_widget.kv')
-        gui = Builder.load_file('pmc_gui.kv')
+        Builder.load_file('kv_files/util_widgets.kv')
+        Builder.load_file('kv_files/tip_tilt_control_widget.kv')
+        Builder.load_file('kv_files/tec_control_widget.kv')
+        gui = Builder.load_file('kv_files/pmc_gui.kv')
+        Builder.load_file('kv_files/terminal_widget.kv')
         return gui
 
     def build_config(self, config):

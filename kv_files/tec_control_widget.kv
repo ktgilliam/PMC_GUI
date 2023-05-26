@@ -1,0 +1,202 @@
+#:kivy 2.2.0
+
+<TECField>:
+    # size_hint: 0.2, None
+    size_hint: None, None
+    # size: (self.parent.width*0.5, 40)
+    height: 30
+    id: thisField
+    # canvas.before:
+    #     Color:
+    #         rgba: 1, 1, 1, 1
+    #     Line:
+    #         width: 1
+    #         rectangle: self.x, self.y, self.width, self.height
+    cols: 1
+    BorderGridLayout:
+        border_color: 1,1,1,1
+        border_width: 1
+        cols: 4
+        BackgroundLabel:
+            background_color: 0,0,0,1
+            size_hint: 0.25, None
+            height: 30
+            text_size: self.size
+            font_size: '12sp'
+            halign: 'center'
+            valign: 'middle'
+            padding: 0, 0
+            text: 'TEC'+str(thisField.tec_no)
+        BorderLabel:
+            border_width: 1
+            border_color: (1,0,0,1)
+            size_hint: 0.25, None
+            height: 30
+            text_size: self.size
+            font_size: '12sp'
+            halign: 'center'
+            valign: 'middle'
+            padding: 0, 0
+            text: 'N/A'
+        FloatInput:
+            canvas.before:
+                Color:
+                    rgba: 1, 1, 1, 1
+                Line:
+                    width: 1
+                    rectangle: self.x, self.y, self.width, self.height
+            size_hint: 0.25, None
+            height: 30
+        BorderLabel:
+            border_width: 2
+            size_hint: 0.25, None
+            height: 30
+            text_size: self.size
+            font_size: '12sp'
+            halign: 'center'
+            valign: 'middle'
+            padding: 0, 0
+            text: 'N/A'
+
+<TECFieldHeader>:
+    cols: 4
+    size_hint_y: None
+    height: 30
+    padding: 10, 0
+    BorderLabel:
+        border_width: 2
+        size_hint: 0.25, None
+        height: 30
+        text_size: self.size
+        font_size: '12sp'
+        halign: 'center'
+        valign: 'middle'
+        padding: 0, 0
+        text: 'Channel'
+    BorderLabel:
+        border_width: 2
+        size_hint: 0.25, None
+        height: 30
+        text_size: self.size
+        font_size: '12sp'
+        halign: 'center'
+        valign: 'middle'
+        padding: 0, 0
+        text: 'CurrentFB'
+    BorderLabel:
+        border_width: 2
+        size_hint: 0.25, None
+        height: 30
+        text_size: self.size
+        font_size: '12sp'
+        halign: 'center'
+        valign: 'middle'
+        padding: 0, 0
+        text: 'CurrentSP'
+    BorderLabel:
+        border_width: 2
+        size_hint: 0.25, None
+        height: 30
+        text_size: self.size
+        font_size: '12sp'
+        halign: 'center'
+        valign: 'middle'
+        padding: 0, 0
+        text: 'Seebeck'
+
+<TECFieldList>:
+    spacing: "10dp"
+    padding: "10dp"
+    size_hint: 1,None
+    height: 1000
+    cols: 4
+
+<TECControlWidget>:
+    cols: 1
+    # id: id: id.teccontrol
+    BorderGridLayout:
+        border_width: 1
+        border_color: 0,0,0,1
+        cols: 1
+        size_hint: 1, 1
+        StackLayout:
+            padding: [4, 4, 4, 4]
+            size_hint_y: None
+            height: 36
+            id: top_btns
+            canvas.before:
+                Color:
+                    rgba: 1, 1, 1, 1
+                Line:
+                    width: 2
+                    rectangle: self.x, self.y, self.width, self.height
+            Button:
+                id: connect_a_btn
+                text:'Connect A'
+                size_hint_y: None
+                height: 30
+                size_hint_x: None
+                width:110
+                background_color: (1,0,0,1)
+            Button:
+                id: connect_b_btn
+                text:'Connect B'
+                size_hint_y: None
+                height: 30
+                size_hint_x: None
+                width:110
+                background_color: (1,0,0,1)
+            Button:
+                id: load_tec_cfg_btn
+                text:'Load Currents'
+                size_hint_y: None
+                height: 30
+                size_hint_x: None
+                width:140
+                # background_color: (1,0,0,1)
+                on_release: root.loadList()
+            Button:
+                id: send_all_btn
+                text:'All to Zero'
+                size_hint_y: None
+                height: 30
+                size_hint_x: None
+                width:140
+                disabled: True
+                # background_color: (1,0,0,1)
+                # on_release: root.loadList()
+            Button:
+                id: send_all_btn
+                text:'Send All'
+                size_hint_y: None
+                height: 30
+                size_hint_x: None
+                width:140
+                disabled: True
+                # background_color: (1,0,0,1)
+                # on_release: root.loadList()
+        BorderGridLayout:
+            border_width: 1
+            border_color: 1,0,0,1
+            cols: 4
+            size_hint_y: None
+            height: 30
+            TECFieldHeader:
+            TECFieldHeader:
+            TECFieldHeader:
+            TECFieldHeader:
+        ScrollView:
+            do_scroll_x: False
+            do_scroll_y: True
+            scroll_type: ['bars']
+            bar_width: 12
+            # size_hint: 1,None
+            canvas.before:
+                Color:
+                    rgba: 1, 1, 1, 1
+                Line:
+                    width: 2
+                    rectangle: self.x, self.y, self.width, self.height
+            TECFieldList:
+                id: tec_field_list
+

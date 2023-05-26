@@ -1,4 +1,4 @@
-#:kivy 2.1.0
+#:kivy 2.2.0
 
 # <TabbedPanelStrip>
 #     canvas:
@@ -7,7 +7,6 @@
 #         Rectangle:
 #             size: self.size
 #             pos: self.pos
-
 
 PMC_GUI:
 
@@ -35,19 +34,14 @@ PMC_GUI:
     #         rectangle: self.x, self.y, self.width, self.height
 
     # Top half is for inputs.
-    Label:
+    BackgroundLabel:
+        background_color: 0,0,0,1
         id: title_label
         text: "PRIMARY MIRROR CONTROL [Version 0.2]"
         font_size: '20sp'
         bold: True
         size_hint_y: None
         height: 30
-        canvas.before:
-            Color:
-                rgba: 1, 1, 1, 1
-            Line:
-                width: 2
-                rectangle: self.x, self.y, self.width, self.height
 
     TabbedPanel:
         id: 'tp'
@@ -56,17 +50,20 @@ PMC_GUI:
         tab_width: 200
         TabbedPanelItem:
             # size_hint: 0.5, None
-            text: 'TEC Control'
-            TECControlWidget:
-                id: tecCtrl
-        TabbedPanelItem:
-            # size_hint: 0.5, None
             # width: 160
             text: 'Tip/Tilt/Focus Control'
             TipTiltControlWidget:
                 label: 'TipTilt'
                 id: tipTiltCtrl
-
+        TabbedPanelItem:
+            # size_hint: 0.5, None
+            text: 'TEC Control'
+            TECControlWidget:
+                id: tecCtrl
+        TabbedPanelItem:
+            text: 'Wavefront Stuff'
+            Label:
+                text: 'Wavefront Stuff'
 
     TerminalWidget:
         label: 'Terminal'

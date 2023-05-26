@@ -29,6 +29,9 @@ class LFASTControllerInterface:
     _outgoingJsonMessage = {}
     _messageTypeLabel = "default"
     
+    def __init__(self):
+        pass
+    
     def reset(self):
         self._disconnectCommandEvent = trio.Event()
         

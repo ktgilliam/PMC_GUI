@@ -1,4 +1,4 @@
-#:kivy 2.1.0
+#:kivy 2.2.0
 #:import ControllerRequest tip_tilt_control_widget.ControllerRequest
 #:import FloatInput numeric_widgets
 
@@ -6,15 +6,11 @@
     cols: 1
     id: id: tiptiltcontrol
 
-    GridLayout:
+    BorderGridLayout:
+        border_width: 1
+        border_color: (1,1,1,1)
         cols: 1
         size_hint: 1, 1
-        canvas.before:
-            Color:
-                rgba: 1, 1, 1, 1
-            Line:
-                width: 2
-                rectangle: self.x, self.y, self.width, self.height
         StackLayout:
             padding: [4, 4, 4, 4]
             size_hint_y: None
@@ -49,52 +45,34 @@
                 background_color: (1,0,0,1)
                 on_release: app.tipTiltController.ControllerRequestList.append(ControllerRequest.STOP_REQUESTED), app.stopButtonPushed()
                 disabled: True
-        GridLayout:
+        BorderGridLayout:
+            border_width: 1
+            border_color: (1,1,1,1)
             # Parent of the Relative, Absolute, and Output
             id: tec_ctrl_cols
             cols: 3
             size_hint: 1, 1
             # size: root.width, root.height * 0.5
             width: root.width
-            canvas.before:
-                Color:
-                    rgba: 1, 1, 1, 1
-                Line:
-                    width: 2
-                    rectangle: self.x, self.y, self.width, self.height
-            GridLayout:
+            BorderGridLayout:
+                border_width: 1
+                border_color: (1,1,1,1)
                 # Relative Control Column
                 size_hint_x: 0.33
                 cols: 1
                 id: rel_ctrl
-
-                # width: 400
-                canvas.before:
-                    Color:
-                        rgba: 1, 1, 1, 1
-                    Line:
-                        width: 2
-                        rectangle: self.x, self.y, self.width, self.height
                 Label:
                     text: "Tip/Tilt/Focus (Relative)"
                     size_hint_y: None
                     height: 30
-                GridLayout:
+                BorderGridLayout:
+                    border_width: 1
+                    border_color: (1,1,1,1)
                     cols: 2
-                    canvas.before:
-                        Color:
-                            rgba: 1, 1, 1, 1 
-                        Line:
-                            width: 2
-                            rectangle: self.x, self.y, self.width, self.height
-                    GridLayout:
+                    BorderGridLayout:
+                        border_width: 1
+                        border_color: (1,1,1,1)
                         cols: 1
-                        canvas.before:
-                            Color:
-                                rgba: 1, 1, 1, 1
-                            Line:
-                                width: 1
-                                rectangle: self.x, self.y, self.width, self.height
                         padding: [10, 10, 10, 10]
                         Label:
                             text: "Tip/Tilt Control [as]:"
@@ -271,30 +249,22 @@
                                 Label:
                                 Label:
                         #_________________
-            GridLayout:
+            BorderGridLayout:
+                border_width: 1
+                border_color: (1,1,1,1)
                 # Absolute Control Column
                 size_hint_x: 0.33
                 cols: 1
-                canvas.before:
-                    Color:
-                        rgba: 1, 1, 1, 1 
-                    Line:
-                        width: 2
-                        rectangle: self.x, self.y, self.width, self.height
                 Label:
                     text: 'Tip/Tilt/Focus Absolute'
                     size_hint_y: None
                     height: 30
-                GridLayout:
+                BorderGridLayout:
+                    border_width: 1
+                    border_color: (1,1,1,1)
                     cols: 1
                     padding: [15, 10, 10, 10]
                     id: abs_ctrl
-                    canvas.before:
-                        Color:
-                            rgba: 1, 1, 1, 1
-                        Line:
-                            width: 2
-                            rectangle: self.x, self.y, self.width, self.height
                     GridLayout:
                         cols: 2
                         Label: 
@@ -342,29 +312,20 @@
                         # disabled: True
                         on_press: app.AbsGoButtonPushed()
 
-                GridLayout:
+                BorderGridLayout:
+                    border_width: 1
+                    border_color: (1,1,1,1)
                     cols:1
-                    canvas.before:
-                        Color:
-                            rgba: 1, 1, 1, 1
-                        Line:
-                            width: 2
-                            rectangle: self.x, self.y, self.width, self.height
                     Label:
                         text: 'Homing'
                         size_hint_y : None
                         height:30
-                    GridLayout:
+                    BorderGridLayout:
+                        border_width: 1
+                        border_color: (1,1,1,1)
                         cols: 1
                         padding: [15, 10, 10, 10]
-                        id: abs_ctrl
-                        canvas.before:
-                            Color:
-                                rgba: 1, 1, 1, 1
-                            Line:
-                                width: 2
-                                rectangle: self.x, self.y, self.width, self.height
-                        
+                        id: abs_ctrl                        
                         Label:
                             text: '...'
                             size_hint_y : None
@@ -401,31 +362,21 @@
                                 width:160
                                 disabled: True
                                 on_release: app.tipTiltController.ControllerRequestList.append(ControllerRequest.BOTTOM_FOUND_REQUESTED)
-
-
-            GridLayout:
+            BorderGridLayout:
+                border_width: 1
+                border_color: (1,1,1,1)
                 # Output Control Column
                 size_hint_x: 0.33
                 cols: 1
                 id: outputs
-                canvas.before:
-                    Color:
-                        rgba: 1, 1, 1, 1
-                    Line:
-                        width: 2
-                        rectangle: self.x, self.y, self.width, self.height
                 Label:
                     text: "Output (Read-Only)"
                     size_hint_y: None
                     height: 30
-                GridLayout:
+                BorderGridLayout:
+                    border_width: 1
+                    border_color: (1,1,1,1)
                     cols: 1
-                    canvas.before:
-                        Color:
-                            rgba: 1, 1, 1, 1 
-                        Line:
-                            width: 2
-                            rectangle: self.x, self.y, self.width, self.height
                     GridLayout:
                         cols: 2
                         row_force_default: True
@@ -462,14 +413,10 @@
                     text: "Fan Control"
                     size_hint_y: None
                     height: 30
-                GridLayout:
+                BorderGridLayout:
+                    border_width: 1
+                    border_color: (1,1,1,1)
                     cols: 2
-                    canvas.before:
-                        Color:
-                            rgba: 1, 1, 1, 1 
-                        Line:
-                            width: 2
-                            rectangle: self.x, self.y, self.width, self.height
                     row_force_default: True
                     row_default_height: 30
                     padding: [10, 10, 10, 10]

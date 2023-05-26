@@ -16,7 +16,8 @@ class TECField(GridLayout):
     def __init__(self, tec_no, **kwargs): 
         super().__init__(**kwargs)
         self.tec_no = tec_no
-
+class TECFieldHeader(GridLayout):
+    pass
 class TECFieldList(GridLayout):
     num_tec = NumericProperty()
     
@@ -31,7 +32,7 @@ class TECFieldList(GridLayout):
     def createFields(self):
         self.height = self.num_tec * 50 / self.cols
         for ii in range(self.num_tec):
-            tf = TECField(tec_no=ii+1, width = (self.parent.width-60)/self.cols)
+            tf = TECField(tec_no=ii+1, width = (self.parent.width-50)/self.cols)
             self.add_widget(tf)
             
 class TECControlWidget(GridLayout):
