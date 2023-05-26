@@ -15,10 +15,9 @@
     cols: 1
     BorderGridLayout:
         border_color: 1,1,1,1
-        border_width: 1
+        border_width: 0
         cols: 4
-        BackgroundLabel:
-            background_color: 0,0,0,1
+        Label:
             size_hint: 0.25, None
             height: 30
             text_size: self.size
@@ -28,8 +27,8 @@
             padding: 0, 0
             text: 'TEC'+str(thisField.tec_no)
         BorderLabel:
-            border_width: 1
-            border_color: (1,0,0,1)
+            border_width: 0
+            border_color: (1,1,1,1)
             size_hint: 0.25, None
             height: 30
             text_size: self.size
@@ -177,7 +176,7 @@
                 # on_release: root.loadList()
         BorderGridLayout:
             border_width: 1
-            border_color: 1,0,0,1
+            border_color: 1,1,1,1
             cols: 4
             size_hint_y: None
             height: 30

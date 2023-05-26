@@ -64,8 +64,8 @@ class PMC_APP(App):
         Builder.load_file('kv_files/util_widgets.kv')
         Builder.load_file('kv_files/tip_tilt_control_widget.kv')
         Builder.load_file('kv_files/tec_control_widget.kv')
-        gui = Builder.load_file('kv_files/pmc_gui.kv')
         Builder.load_file('kv_files/terminal_widget.kv')
+        gui = Builder.load_file('kv_files/pmc_gui.kv')
         return gui
 
     def build_config(self, config):
