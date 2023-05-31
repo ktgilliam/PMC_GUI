@@ -152,6 +152,7 @@ class PMC_APP(App):
         nursery.start_soon(self.initializeTerminal)
         await trio.sleep(0.1)
         nursery.start_soon(self.initializeTipTiltControl)
+        nursery.start_soon(self.initializeTECControl)
 
         
     async def initializeTerminal(self):
@@ -169,12 +170,27 @@ class PMC_APP(App):
         while (TipTiltControlWidget.singletonControlWidget == None):
             await trio.sleep(0) 
         self.tipTiltController = TipTiltController(self.root.ids.tipTiltCtrl, self.nursery, self.debug_mode_prop)
-        self.tipTiltController.connectTerminal(self.terminalManager)
         self.tipTiltController.setConnectionInfo(self.ip_addr_prop, self.tip_tilt_port_prop)
-
+        self.tipTiltController.registerConnectButtonId('tip_tilt_connect_btn')
+        self.tipTiltController.setDeviceLabel('Tip/Tilt/Focus')
+        self.tipTiltController.connectTerminal(self.terminalManager)
+        
     async def initializeTECControl(self):
+        # while (TECControlWidget.singletonControlWidget == None):
+        #     await trio.sleep(0) 
         self.tecController_A = TECController(self.root.ids.tecCtrl, self.nursery, self.debug_mode_prop)
-
+        self.tecController_A.setConnectionInfo(self.ip_addr_prop, self.tec_a_port_prop)
+        self.tecController_A.registerConnectButtonId('tec_connect_a_btn')
+        self.tecController_A.setDeviceLabel('TEC Box A')
+        self.tecController_A.connectTerminal(self.terminalManager)
+        
+        self.tecController_B = TECController(self.root.ids.tecCtrl, self.nursery, self.debug_mode_prop)
+        self.tecController_B.setConnectionInfo(self.ip_addr_prop, self.tec_a_port_prop)
+        self.tecController_B.registerConnectButtonId('tec_connect_b_btn')
+        self.tecController_B.setDeviceLabel('TEC Box B')
+        self.tecController_B.connectTerminal(self.terminalManager)
+         
+         
 from task_tracer import Tracer, FilterType
 
 if __name__ == "__main__":

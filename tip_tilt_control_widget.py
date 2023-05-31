@@ -18,7 +18,7 @@ import json
 
 from device_controller import DeviceController
 
-ttfIface = TipTiltFocusControlInterface()
+
 
 class ControllerRequest(IntEnum):
     NO_REQUESTS = 0
@@ -35,24 +35,12 @@ class ControllerState(IntEnum):
     
 class TipTiltControlWidget(GridLayout):   
     singletonControlWidget = None #ObjectProperty(None)
-    # test_label_prop = ObjectProperty()
-    
+    # test_label_prop = ObjectProperty()    
     def __init__(self, **kwargs): 
         super().__init__(**kwargs)
         if(TipTiltControlWidget.singletonControlWidget == None):
             TipTiltControlWidget.singletonControlWidget = self
-        
-    def updateOutputFields(self):
-        tipValField = self.ids.tip_val
-        tipValField.text = str(round(ttfIface.getCurrentTip(), 4))
-        
-        tiltValField = self.ids['tilt_val']
-        # tiltValField.text = str(pmc._currentTilt)
-        tiltValField.text = str(round(ttfIface.getCurrentTilt(), 4))
-        
-        focusValField = self.ids['focus_val']
-        # focusValField.text = str(pmc._currentFocus)
-        focusValField.text = str(round(ttfIface.getCurrentFocus(), 4))
+    
         
     def enableRelativeControls(self, doEnable):
         buttonFilt = re.compile('do_[a-z\_]+_btn')
@@ -84,21 +72,22 @@ class TipTiltControlWidget(GridLayout):
         for b in buttonList:
             btn = self.ids[b]
             btn.background_color = (1,1,1,1)
-            
-            
-            
+
 class TipTiltController(DeviceController):
     ControllerRequestList = deque([])
+    deviceInterface = TipTiltFocusControlInterface()
     
     def __init__(self, ctrlWidget, nursery, debugMode, **kwargs): 
         super().__init__(ctrlWidget, nursery, debugMode)
-        ttfIface.setDebugMode(debugMode)
-        # self.registerConnectedStateHandler(self.tipTiltConnectedStateHandler)
-        self.registerConnectButtonId('connect_btn')
+        self.deviceInterface.setDebugMode(debugMode)
+        
+    async def connectionSucceededHandler(self):
+        enableStepBtn = self.controllerWidget.ids['enable_steppers_btn']
+        enableStepBtn.disabled = False
+        
         
     async def connectedStateHandler(self):
         goBtn = self.controllerWidget.ids['go_abs_btn']
-        # disconBtn = self.controllerWidget.ids['disconnect_btn']
         enableStepBtn = self.controllerWidget.ids['enable_steppers_btn']
         homeBtn = self.controllerWidget.ids['do_home_all_btn']
         bottomFoundBtn = self.controllerWidget.ids['bottom_found_btn']
@@ -110,7 +99,7 @@ class TipTiltController(DeviceController):
                 homeBtn.disabled = True
                 bottomFoundBtn.disabled = False
                 await self.terminalManager.addMessage('Homing. Press step 2 when all motors have bottomed out')
-                await ttfIface.sendHomeAll(self.home_speed_prop)
+                await self.deviceInterface.sendHomeAll(self.home_speed_prop)
                 await trio.sleep(0)
                 homeBtn.disabled = True
                 homeBtn.text = "Home All"
@@ -118,37 +107,37 @@ class TipTiltController(DeviceController):
             elif request == ControllerRequest.BOTTOM_FOUND_REQUESTED:
                 await self.terminalManager.addMessage('Bottom found. Waiting for mirror to return to center...')
                 bottomFoundBtn.disabled = True
-                await ttfIface.sendBottomFound()
+                await self.deviceInterface.sendBottomFound()
                 await trio.sleep(0)
                 try:
-                    await ttfIface.waitForHomingComplete(self.homing_timeout_prop)
+                    await self.deviceInterface.waitForHomingComplete(self.homing_timeout_prop)
                     await self.terminalManager.addMessage('Homing Complete.', MessageType.GOOD_NEWS)
                 except trio.TooSlowError as e:
                     await self.terminalManager.addMessage('Homing timed out.', MessageType.ERROR)
-                    await ttfIface.sendStopCommand()
+                    await self.deviceInterface.sendStopCommand()
                 else:
                     homeBtn.disabled = False
             elif request == ControllerRequest.TOGGLE_STEPPER_ENABLE:
-                if ttfIface.steppersEnabled():
-                    await ttfIface.sendEnableSteppers(False)
+                if self.deviceInterface.steppersEnabled():
+                    await self.deviceInterface.sendEnableSteppers(False)
                     # TODO: wait for ack before enabling
                     self.controllerWidget.enableRelativeControls(False)
                     # TODO: Ask if system is homed and wait for reply before enabling.
                     goBtn.disabled = True
                     enableStepBtn.text = "Enable Steppers"
                 else:
-                    await ttfIface.sendEnableSteppers(True)
+                    await self.deviceInterface.sendEnableSteppers(True)
                     self.controllerWidget.enableRelativeControls(True)
                     goBtn.disabled = False
                     enableStepBtn.text = "Disable Steppers"
             elif request == ControllerRequest.STOP_REQUESTED:
-                await ttfIface.sendStopCommand() 
-        await ttfIface.sendCommands()
+                await self.deviceInterface.sendStopCommand() 
+        await self.deviceInterface.sendCommands()
             
     async def disconnectInProgressHandler(self):
         enableStepBtn = self.controllerWidget.ids['enable_steppers_btn']
-        if ttfIface.steppersEnabled():
-            await ttfIface.sendEnableSteppers(False)
+        if self.deviceInterface.steppersEnabled():
+            await self.deviceInterface.sendEnableSteppers(False)
             enableStepBtn.text = "Enable Steppers"
         self.controllerWidget.disableControls()
         
@@ -167,32 +156,32 @@ class TipTiltController(DeviceController):
                 self.terminalManager.queueMessage(exc.msg)
             
     def plusTipButtonPushed(self):
-        self.terminalManager.queueMessage(' Tip [+' + str(ttfIface._tipTiltStepSize_as) + ' as]')
-        self.nursery.start_soon(ttfIface.TipRelative, DIRECTION.FORWARD)
+        self.terminalManager.queueMessage(' Tip [+' + str(self.deviceInterface._tipTiltStepSize_as) + ' as]')
+        self.nursery.start_soon(self.deviceInterface.TipRelative, DIRECTION.FORWARD)
     
     def minusTipButtonPushed(self):
-        self.terminalManager.queueMessage(' Tip [-' + str(ttfIface._tipTiltStepSize_as) + ' as]')
-        self.nursery.start_soon(ttfIface.TipRelative,DIRECTION.REVERSE)
+        self.terminalManager.queueMessage(' Tip [-' + str(self.deviceInterface._tipTiltStepSize_as) + ' as]')
+        self.nursery.start_soon(self.deviceInterface.TipRelative,DIRECTION.REVERSE)
         
     def plusTiltButtonPushed(self):
-        self.terminalManager.queueMessage(' Tilt [+' + str(ttfIface._tipTiltStepSize_as) + ' as]')
-        self.nursery.start_soon(ttfIface.TiltRelative,DIRECTION.FORWARD)
+        self.terminalManager.queueMessage(' Tilt [+' + str(self.deviceInterface._tipTiltStepSize_as) + ' as]')
+        self.nursery.start_soon(self.deviceInterface.TiltRelative,DIRECTION.FORWARD)
 
     def minusTiltButtonPushed(self):
-        self.terminalManager.queueMessage(' Tilt [-' + str(ttfIface._tipTiltStepSize_as) + ' as]')
-        self.nursery.start_soon(ttfIface.TiltRelative,DIRECTION.REVERSE)
+        self.terminalManager.queueMessage(' Tilt [-' + str(self.deviceInterface._tipTiltStepSize_as) + ' as]')
+        self.nursery.start_soon(self.deviceInterface.TiltRelative,DIRECTION.REVERSE)
         
     def plusFocusButtonPushed(self):
-        self.terminalManager.queueMessage(' Focus [+' + str(ttfIface._focusStepSize_um) + ' mm]')
-        self.nursery.start_soon(ttfIface.FocusRelative,DIRECTION.FORWARD)
+        self.terminalManager.queueMessage(' Focus [+' + str(self.deviceInterface._focusStepSize_um) + ' mm]')
+        self.nursery.start_soon(self.deviceInterface.FocusRelative,DIRECTION.FORWARD)
         
     def minusFocusButtonPushed(self):
-        self.terminalManager.queueMessage(' Focus [-' + str(ttfIface._focusStepSize_um) + ' mm]')
-        self.nursery.start_soon(ttfIface.FocusRelative,DIRECTION.REVERSE)
+        self.terminalManager.queueMessage(' Focus [-' + str(self.deviceInterface._focusStepSize_um) + ' mm]')
+        self.nursery.start_soon(self.deviceInterface.FocusRelative,DIRECTION.REVERSE)
             
     def _angleStepSizeButtonPushed(self, stepSize):
         gui = self.root
-        ttfIface._tipTiltStepSize_as = stepSize
+        self.deviceInterface._tipTiltStepSize_as = stepSize
         self.controllerWidget.resetTipTiltStepSizeButtons()
         if stepSize == 1.0:
             btn = self.controllerWidget.ids['_1as_btn']
@@ -206,7 +195,7 @@ class TipTiltController(DeviceController):
         
     def _focusStepSizeButtonPushed(self, stepSize):
         gui = self.root
-        ttfIface._focusStepSize_um = stepSize
+        self.deviceInterface._focusStepSize_um = stepSize
         self.controllerWidget.resetFocusStepSizeButtons()
         if stepSize == 0.2:
             btn = self.controllerWidget.ids['_0p2um_btn']
@@ -226,10 +215,22 @@ class TipTiltController(DeviceController):
         tiltAbsTI = self.controllerWidget.ids['tilt_abs']
         focusAbsTI = self.controllerWidget.ids['focus_abs']
         if len(focusAbsTI.text) > 0: 
-            self.nursery.start_soon(ttfIface.MoveAbsolute,float(tipAbsTI.text), float(tiltAbsTI.text), float(focusAbsTI.text))
+            self.nursery.start_soon(self.deviceInterface.MoveAbsolute,float(tipAbsTI.text), float(tiltAbsTI.text), float(focusAbsTI.text))
 
     def stopButtonPushed(self):
-        ttfIface.interruptAnything()
+        self.deviceInterface.interruptAnything()
                  
     def defaultButtonPushed(self):
         self.terminalManager.queueMessage('Button not assigned yet!')
+        
+    def updateOutputFields(self):
+        tipValField = self.controllerWidget.ids.tip_val
+        tipValField.text = str(round(self.deviceInterface.getCurrentTip(), 4))
+        
+        tiltValField = self.controllerWidget.ids['tilt_val']
+        # tiltValField.text = str(pmc._currentTilt)
+        tiltValField.text = str(round(self.deviceInterface.getCurrentTilt(), 4))
+        
+        focusValField = self.controllerWidget.ids['focus_val']
+        # focusValField.text = str(pmc._currentFocus)
+        focusValField.text = str(round(self.deviceInterface.getCurrentFocus(), 4))

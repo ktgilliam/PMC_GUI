@@ -57,8 +57,8 @@ class TipTiltFocusControlInterface(LFASTControllerInterface):
     def __init__(self):
         super().__init__()
         
-    def ttf_reset(self):
-        self.reset()
+    def reset(self):
+        super().reset()
         self._currentTip_as = 0.0
         self._currentTilt_as = 0.0
         self._currentFocus_um = 0.0 

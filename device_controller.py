@@ -16,16 +16,13 @@ from enum import IntEnum
 from collections import deque
 import json
 
-ttfIface = TipTiltFocusControlInterface()
-    
 class ControllerState(IntEnum):
     INIT=0
     DISCONNECTED=1
     CONNECT_IN_PROGRESS = 2
     CONNECTED=3
     DISCONNECT_IN_PROGRESS = 4
-            
-            
+
 class DeviceController():
     nursery = None
     ControllerState = ControllerState.INIT
@@ -39,12 +36,17 @@ class DeviceController():
     connectedStateHandlerId = None
     connectButtonId = None
 
+    _deviceLabel = "Unlabeled Device"
+    # deviceInterface = None
     
     def __init__(self, ctrlWidget, nursery, debugMode = False, **kwargs): 
         self.nursery = nursery
         self.controllerWidget = ctrlWidget
         self.debugMode = debugMode
         nursery.start_soon(self.updateControls)
+        
+    def setDeviceLabel(self, label):
+        self._deviceLabel = label
         
     def connectTerminal(self, terminalManager):
         self.terminalManager = terminalManager
@@ -77,21 +79,23 @@ class DeviceController():
             elif currentState == ControllerState.CONNECT_IN_PROGRESS:
                 if self.debugMode:
                     await trio.sleep(0)
-                    ttfIface._connected = True #overriding the pmc connection flag (bad)
-                    await self.terminalManager.addMessage('Connecting... (debug mode so not really)')
-                    await self.connectionSucceededHandler()
+                    self.deviceInterface._connected = True #overriding the pmc connection flag (bad)
+                    await self.terminalManager.addMessage(self._deviceLabel + ': Connecting... (debug mode so not really)')
+                    await self.__connectionSucceededHandler()
                     # await trio.sleep(0)
                 else:
                     await self.connectInProgressStateHandler()
                     if self.connectionFailedEvent.is_set():
                         await self.resetConnection()
                     else:
-                        await self.connectionSucceededHandler()
+                        await self.__connectionSucceededHandler()
             elif currentState == ControllerState.CONNECTED:
                 await self.__connectedStateHandler()
             elif currentState == ControllerState.DISCONNECT_IN_PROGRESS:
                 await self._disconnectInProgressHandler()
-            self.controllerWidget.updateOutputFields()
+            
+            if hasattr(self, "updateOutputFields"):
+                self.updateOutputFields()
             await trio.sleep(0)
             
     async def setControllerState(self, state):
@@ -121,7 +125,7 @@ class DeviceController():
         #     if request == self.toggleConnectionRequested:
         if self.toggleConnectionRequested:
             self.connectionFailedEvent = trio.Event() #reset the failed connection flag
-            await self.terminalManager.addMessage('Connecting...')
+            await self.terminalManager.addMessage(self._deviceLabel + ': Connecting...')
             await self.setControllerState(ControllerState.CONNECT_IN_PROGRESS)
             conBtn.text = 'Connecting...'
             conBtn.background_color = (0.5,0.5,0.5,1)
@@ -131,27 +135,27 @@ class DeviceController():
                 
     async def connectInProgressStateHandler(self):
         try:
-            await ttfIface.open_connection(self.controllerIpAddr, self.controllerPort)
+            await self.deviceInterface.open_connection(self.controllerIpAddr, self.controllerPort)
         except trio.TooSlowError as e:
-            await self.terminalManager.addMessage('Timed out trying to open TCP Stream', MessageType.ERROR)
+            await self.terminalManager.addMessage(self._deviceLabel + ': Timed out trying to open TCP Stream', MessageType.ERROR)
             self.connectionFailedEvent.set()
             return
         except OSError as e:
-            await self.terminalManager.addMessage(str(e), MessageType.ERROR)
+            await self.terminalManager.addMessage(self._deviceLabel + ': ' + str(e), MessageType.ERROR)
             self.connectionFailedEvent.set()
             return
         # self.nursery.start_soon(pmc.startCommsStream, self.printErrorCallbacks)
-        self.nursery.start_soon(ttfIface.startCommsStream, self.printErrorCallbacks)
-        await ttfIface.sendHandshake()
+        self.nursery.start_soon(self.deviceInterface.startCommsStream, self.printErrorCallbacks)
+        await self.deviceInterface.sendHandshake()
         await trio.sleep(0)
         try:
-            await ttfIface.waitForHandshakeReply(10)
+            await self.deviceInterface.waitForHandshakeReply(10)
         except trio.TooSlowError as e:
-            await self.terminalManager.addMessage('Did not receive handshake reply.', MessageType.ERROR)
+            await self.terminalManager.addMessage(self._deviceLabel + ': Did not receive handshake reply.', MessageType.ERROR)
             self.connectionFailedEvent.set()
             return
         except TimeoutError as e:
-            await self.terminalManager.addMessage(str(e), MessageType.ERROR)
+            await self.terminalManager.addMessage(self._deviceLabel + ': ' + str(e), MessageType.ERROR)
             self.connectionFailedEvent.set()
             return
     
@@ -159,7 +163,7 @@ class DeviceController():
     async def __connectedStateHandler(self):
         conBtn = self.controllerWidget.ids[self.connectButtonId]
         if self.toggleConnectionRequested:
-            await self.terminalManager.addMessage('Disconnecting...')
+            await self.terminalManager.addMessage(self._deviceLabel + ': Disconnecting...')
             await self.setControllerState(ControllerState.DISCONNECT_IN_PROGRESS)
             conBtn.text = 'Disconnecting...'
             conBtn.background_color = (0.5,0.5,0.5,1)
@@ -184,18 +188,18 @@ class DeviceController():
         conBtn.disabled = False
         conBtn.text = 'Connect'
         conBtn.background_color = (1,0,0,1)
-        await ttfIface.Disconnect()
-        ttfIface.ttf_reset()
+        await self.deviceInterface.Disconnect()
+        self.deviceInterface.reset()
         await self.setControllerState(ControllerState.DISCONNECTED)
         
-    async def connectionSucceededHandler(self):
+    async def __connectionSucceededHandler(self):
         conBtn = self.controllerWidget.ids[self.connectButtonId]
-        enableStepBtn = self.controllerWidget.ids['enable_steppers_btn']
-        enableStepBtn.disabled = False
         await self.setControllerState(ControllerState.CONNECTED)
-        await self.terminalManager.addMessage('Connected!', MessageType.GOOD_NEWS)
+        await self.terminalManager.addMessage(self._deviceLabel + ': Connected!', MessageType.GOOD_NEWS)
         conBtn.background_color = (0,1,0,1)
         conBtn.text = 'Disconnect'
+        if hasattr(self, "connectionSucceededHandler"):
+            await self.connectionSucceededHandler()
     
     
     def printErrorCallbacks(self, excgroup):

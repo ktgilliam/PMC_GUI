@@ -3,8 +3,10 @@ from kivy.properties import NumericProperty
 import numpy as np
 
 from tec_iface import *
-BoxAIface = TecControllerInterface()
-BoxBIface = TecControllerInterface()
+from device_controller import DeviceController
+
+# BoxAIface = TecControllerInterface()
+# BoxBIface = TecControllerInterface()
 
 tmp_num_tecs = 132
 NUM_BOXES = 2
@@ -57,15 +59,15 @@ class TECControlWidget(GridLayout):
         list.createFields()
         a = 5        
             
-class TECController():
+class TECController(DeviceController):
     
     ControllerRequestList = deque([])
+    deviceInterface = TecControllerInterface()
     
     def __init__(self, ctrlWidget, nursery, debugMode = False, **kwargs): 
-        self.nursery = nursery
-        self.controllerWidget = ctrlWidget
-        self.debugMode = debugMode
-    
+        super().__init__(ctrlWidget, nursery, debugMode)
+        self.deviceInterface.setDebugMode(debugMode)
+        
     def get_tec_data(logdata=False,fname='tec'):
         pass
         # Get the data by box, board, and channel.  It's more efficient
@@ -106,30 +108,3 @@ class TECController():
     #                     data.append( float(''.join(tecdat)) )
     #                     pickle.dump(data,pfile)
     #                     pfile.close()
-    async def updateControls(self):
-        """Main state machine for handling events in the app
-        """
-        self.connectionFailedEvent = trio.Event()
-        # while 1:
-        #     currentState = await self.getControllerState()
-        #     if currentState == ControllerState.INIT:
-        #         await self.initStateHandler()
-        #     elif currentState == ControllerState.DISCONNECTED:
-        #         await self.disconnectedStateHandler()
-        #     elif currentState == ControllerState.CONNECT_IN_PROGRESS:
-        #         if self.debugMode:
-        #             await trio.sleep(0)
-        #             ttfIface._connected = True #overriding the pmc connection flag (bad)
-        #             await self.terminalManager.addMessage('Connecting... (debug mode so not really)')
-        #             await self.connectionSucceededHandler()
-        #             # await trio.sleep(0)
-        #         else:
-        #             await self.connectInProgressStateHandler()
-        #             if self.connectionFailedEvent.is_set():
-        #                 await self.resetConnection()
-        #             else:
-        #                 await self.connectionSucceededHandler()
-        #     elif currentState == ControllerState.CONNECTED:
-        #         await self.connectedStateHandler()                
-        #     self.controllerWidget.updateOutputFields()
-        #     await trio.sleep(0)
