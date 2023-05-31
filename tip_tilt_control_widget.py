@@ -38,7 +38,7 @@ class TipTiltControlWidget(GridLayout):
     # test_label_prop = ObjectProperty()    
     def __init__(self, **kwargs): 
         super().__init__(**kwargs)
-        if(TipTiltControlWidget.singletonControlWidget == None):
+        if TipTiltControlWidget.singletonControlWidget is None:
             TipTiltControlWidget.singletonControlWidget = self
     
         
@@ -74,17 +74,17 @@ class TipTiltControlWidget(GridLayout):
             btn.background_color = (1,1,1,1)
 
 class TipTiltController(DeviceController):
-    ControllerRequestList = deque([])
-    deviceInterface = TipTiltFocusControlInterface()
+
     
     def __init__(self, ctrlWidget, nursery, debugMode, **kwargs): 
         super().__init__(ctrlWidget, nursery, debugMode)
+        self.deviceInterface = TipTiltFocusControlInterface()
         self.deviceInterface.setDebugMode(debugMode)
+        self.ControllerRequestList = deque([])
         
     async def connectionSucceededHandler(self):
         enableStepBtn = self.controllerWidget.ids['enable_steppers_btn']
         enableStepBtn.disabled = False
-        
         
     async def connectedStateHandler(self):
         goBtn = self.controllerWidget.ids['go_abs_btn']

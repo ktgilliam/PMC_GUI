@@ -1,12 +1,9 @@
 from kivy.uix.gridlayout import GridLayout
 from kivy.properties import NumericProperty
 import numpy as np
-
+import gc
 from tec_iface import *
 from device_controller import DeviceController
-
-# BoxAIface = TecControllerInterface()
-# BoxBIface = TecControllerInterface()
 
 tmp_num_tecs = 132
 NUM_BOXES = 2
@@ -31,8 +28,10 @@ class TECField(GridLayout):
     def __init__(self, tec_no, **kwargs): 
         super().__init__(**kwargs)
         self.tec_no = tec_no
+        
 class TECFieldHeader(GridLayout):
     pass
+
 class TECFieldList(GridLayout):
     num_tec = NumericProperty()
     
@@ -59,15 +58,26 @@ class TECControlWidget(GridLayout):
         list.createFields()
         a = 5        
             
-class TECController(DeviceController):
+class TECBoxController(DeviceController):
     
-    ControllerRequestList = deque([])
-    deviceInterface = TecControllerInterface()
+    _instances = []
+
     
+    @staticmethod
+    def readConfigFromBoxes():
+        # There are either one or two boxes, so just get all the box controllers and talk to them
+        for box in TECBoxController._instances:
+           # Ask the teensy for a list of its TECs
+           pass 
+   
+        
     def __init__(self, ctrlWidget, nursery, debugMode = False, **kwargs): 
         super().__init__(ctrlWidget, nursery, debugMode)
+        self.ControllerRequestList = deque([])
+        self.deviceInterface = TecControllerInterface()
         self.deviceInterface.setDebugMode(debugMode)
-        
+        TECBoxController._instances.append(self)
+
     def get_tec_data(logdata=False,fname='tec'):
         pass
         # Get the data by box, board, and channel.  It's more efficient

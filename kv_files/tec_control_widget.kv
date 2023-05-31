@@ -1,4 +1,5 @@
 #:kivy 2.2.0
+#:import TECBoxController tec_control_widget.TECBoxController
 
 <TECField>:
     # size_hint: 0.2, None
@@ -137,7 +138,7 @@
                 size_hint_x: None
                 width:110
                 background_color: (1,0,0,1)
-                on_release: app.tecController_A.requestConnectionToggle()
+                on_release: app.tecBox_A.requestConnectionToggle()
             Button:
                 id: tec_connect_b_btn
                 text:'Connect B'
@@ -146,16 +147,17 @@
                 size_hint_x: None
                 width:110
                 background_color: (1,0,0,1)
-                on_release: app.tecController_B.requestConnectionToggle()
+                on_release: app.tecBox_B.requestConnectionToggle()
             Button:
-                id: load_tec_cfg_btn
-                text:'Load Currents'
+                id: read_tec_cfg_btn
+                text:'Read Config'
                 size_hint_y: None
                 height: 30
                 size_hint_x: None
                 width:140
                 # background_color: (1,0,0,1)
-                on_release: root.loadList()
+                # on_release: root.loadList()
+                on_release: TECBoxController.readConfigFromBoxes()
             Button:
                 id: send_all_btn
                 text:'All to Zero'

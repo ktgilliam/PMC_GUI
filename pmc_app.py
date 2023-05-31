@@ -44,8 +44,8 @@ class PMC_APP(App):
     tasksStarted = False
     terminalManager = None
     tipTiltController = None
-    tecController_A = None
-    tecController_B = None
+    tecBox_A = None
+    tecBox_B = None
     
     ip_addr_prop = StringProperty()
     tip_tilt_port_prop = NumericProperty()
@@ -159,7 +159,7 @@ class PMC_APP(App):
         """Creates the terminal object and stores it as a variable
         """
         gui = None
-        while (gui == None) or (TerminalWidget.terminal == None):
+        while (gui is None) or (TerminalWidget.terminal is None):
             gui = self.root
             await trio.sleep(0) 
         #terminal object exists, set up the terminal manager...
@@ -167,7 +167,7 @@ class PMC_APP(App):
         await self.terminalManager.addMessage('Welcome. Press F1 for settings.', MessageType.IMPORTANT)
 
     async def initializeTipTiltControl(self):
-        while (TipTiltControlWidget.singletonControlWidget == None):
+        while (TipTiltControlWidget.singletonControlWidget is None):
             await trio.sleep(0) 
         self.tipTiltController = TipTiltController(self.root.ids.tipTiltCtrl, self.nursery, self.debug_mode_prop)
         self.tipTiltController.setConnectionInfo(self.ip_addr_prop, self.tip_tilt_port_prop)
@@ -176,19 +176,19 @@ class PMC_APP(App):
         self.tipTiltController.connectTerminal(self.terminalManager)
         
     async def initializeTECControl(self):
-        # while (TECControlWidget.singletonControlWidget == None):
+        # while (TECControlWidget.singletonControlWidget is None):
         #     await trio.sleep(0) 
-        self.tecController_A = TECController(self.root.ids.tecCtrl, self.nursery, self.debug_mode_prop)
-        self.tecController_A.setConnectionInfo(self.ip_addr_prop, self.tec_a_port_prop)
-        self.tecController_A.registerConnectButtonId('tec_connect_a_btn')
-        self.tecController_A.setDeviceLabel('TEC Box A')
-        self.tecController_A.connectTerminal(self.terminalManager)
+        self.tecBox_A = TECBoxController(self.root.ids.tecCtrl, self.nursery, self.debug_mode_prop)
+        self.tecBox_A.setConnectionInfo(self.ip_addr_prop, self.tec_a_port_prop)
+        self.tecBox_A.registerConnectButtonId('tec_connect_a_btn')
+        self.tecBox_A.setDeviceLabel('TEC Box A')
+        self.tecBox_A.connectTerminal(self.terminalManager)
         
-        self.tecController_B = TECController(self.root.ids.tecCtrl, self.nursery, self.debug_mode_prop)
-        self.tecController_B.setConnectionInfo(self.ip_addr_prop, self.tec_a_port_prop)
-        self.tecController_B.registerConnectButtonId('tec_connect_b_btn')
-        self.tecController_B.setDeviceLabel('TEC Box B')
-        self.tecController_B.connectTerminal(self.terminalManager)
+        self.tecBox_B = TECBoxController(self.root.ids.tecCtrl, self.nursery, self.debug_mode_prop)
+        self.tecBox_B.setConnectionInfo(self.ip_addr_prop, self.tec_a_port_prop)
+        self.tecBox_B.registerConnectButtonId('tec_connect_b_btn')
+        self.tecBox_B.setDeviceLabel('TEC Box B')
+        self.tecBox_B.connectTerminal(self.terminalManager)
          
          
 from task_tracer import Tracer, FilterType
