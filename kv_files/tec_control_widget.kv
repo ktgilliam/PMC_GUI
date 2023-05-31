@@ -137,6 +137,7 @@
                 size_hint_x: None
                 width:110
                 background_color: (1,0,0,1)
+                on_release: app.tecController.ControllerRequestList.append(ControllerRequest.TOGGLE_CONNECTION_A)
             Button:
                 id: connect_b_btn
                 text:'Connect B'
@@ -145,6 +146,7 @@
                 size_hint_x: None
                 width:110
                 background_color: (1,0,0,1)
+                on_release: app.tecController.ControllerRequestList.append(ControllerRequest.TOGGLE_CONNECTION_B)
             Button:
                 id: load_tec_cfg_btn
                 text:'Load Currents'

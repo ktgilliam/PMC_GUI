@@ -114,7 +114,7 @@ class TipTiltController():
         self.debugMode = mode
         
     async def updateControls(self):
-        """Main state machine for handling events in the app
+        """Main state machine for handling tip/tilt events
         """
         self.connectionFailedEvent = trio.Event()
         

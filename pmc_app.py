@@ -44,7 +44,8 @@ class PMC_APP(App):
     tasksStarted = False
     terminalManager = None
     tipTiltController = None
-    tecController = None
+    tecController_A = None
+    tecController_B = None
     
     ip_addr_prop = StringProperty()
     tip_tilt_port_prop = NumericProperty()
