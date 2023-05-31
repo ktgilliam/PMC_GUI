@@ -24,7 +24,8 @@
                 size_hint_x: None
                 width:110
                 background_color: (1,0,0,1)
-                on_release: app.tipTiltController.ControllerRequestList.append(ControllerRequest.TOGGLE_CONNECTION)
+                # on_release: app.tipTiltController.ControllerRequestList.append(ControllerRequest.TOGGLE_CONNECTION)
+                on_release: app.tipTiltController.requestConnectionToggle()
             Button:
                 text:'Enable Steppers'
                 id: enable_steppers_btn

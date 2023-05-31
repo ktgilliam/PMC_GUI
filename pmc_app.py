@@ -173,7 +173,7 @@ class PMC_APP(App):
         self.tipTiltController.setConnectionInfo(self.ip_addr_prop, self.tip_tilt_port_prop)
 
     async def initializeTECControl(self):
-        self.tecController = TECController(self.root.ids.tecCtrl, self.nursery, self.debug_mode_prop)
+        self.tecController_A = TECController(self.root.ids.tecCtrl, self.nursery, self.debug_mode_prop)
 
 from task_tracer import Tracer, FilterType
 

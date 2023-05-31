@@ -28,12 +28,16 @@ class LFASTControllerInterface:
     _handshakeReceived = trio.Event()
     _outgoingJsonMessage = {}
     _messageTypeLabel = "default"
+    _debug_mode = False
     
     def __init__(self):
         pass
     
     def reset(self):
         self._disconnectCommandEvent = trio.Event()
+        
+    def setDebugMode(self, dm):
+        self._debug_mode = dm
         
     async def startNewMessage(self):
         self._outgoingJsonMessage[self._messageTypeLabel] = {}
@@ -60,11 +64,15 @@ class LFASTControllerInterface:
             
         
     async def sendCommands(self):
+        if self._debug_mode:
+            return
         if self._newCommandDataEvent.is_set():
             async with self._outgoingDataTxChannel.clone() as outgoing:
                 await outgoing.send(json.dumps(self._outgoingJsonMessage))
-                
+            
     async def aSendMessages(self, task_status=trio.TASK_STATUS_IGNORED):
+        if self._debug_mode:
+            return
         async with self._outgoingDataRxChannel.clone() as chan:
             print("inside aSendMessages with")
             async for message in chan:
@@ -76,6 +84,8 @@ class LFASTControllerInterface:
         
             
     async def aReceiveMessages(self, task_status=trio.TASK_STATUS_IGNORED):
+        if self._debug_mode:
+            return
         if self._client_stream != None:
             async for data in self._client_stream:
                 # print(data)

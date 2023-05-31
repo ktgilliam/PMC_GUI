@@ -18,6 +18,11 @@ class ControllerRequest(IntEnum):
     ALL_TO_ZERO=3
     LOAD_FROM_FILE=4
     
+class ControllerState(IntEnum):
+    INIT=0
+    DISCONNECTED=1
+    CONNECT_IN_PROGRESS = 2
+    CONNECTED=3
     
 class TECField(GridLayout):
     tec_no = NumericProperty()
