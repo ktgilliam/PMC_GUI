@@ -70,7 +70,7 @@ class PMC_APP(App):
         return gui
 
     def build_config(self, config):
-        config.setdefaults("Connection", {"ip_addr": "localhost", "tip_tilt_ip_port": 4400, "tec_a_ip_port": 4500, "tec_b_ip_port": 4500})
+        config.setdefaults("Connection", {"ip_addr": "169.254.84.177", "tip_tilt_ip_port": 4400, "tec_a_ip_port": 4500, "tec_b_ip_port": 4600})
         config.setdefaults("Motion", {"fan_speed":50, "homing_speed":100, "homing_timeout":60, "rel_move": 100, "abs_move": 100})
         config.setdefaults("General", {"dbg_mode":False})
         return super().build_config(config)
@@ -86,6 +86,8 @@ class PMC_APP(App):
             if key == "dbg_mode":
                 self.debug_mode_prop = bool(int(value))
                 self.tipTiltController.setDebugMode(self.debug_mode_prop)
+                self.tecBox_A.setDebugMode(self.debug_mode_prop)
+                self.tecBox_B.setDebugMode(self.debug_mode_prop)
         elif section == "Connection":
             if key == "ip_addr":
                 self.ip_addr_prop = value
@@ -119,7 +121,7 @@ class PMC_APP(App):
         self.homing_timeout_prop = int(config.get('Motion','homing_timeout'))
         self.rel_speed_prop: int(config.get('Motion','rel_move'))
         self.abs_speed_prop: int(config.get('Motion','abs_move'))
-        self.debug_mode_prop: config.get('General', 'dbg_mode')=='True'
+        self.debug_mode_prop = config.get('General', 'dbg_mode') == 'True'
         return config
             
     async def app_func(self):

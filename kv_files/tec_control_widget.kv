@@ -156,10 +156,9 @@
                 size_hint_x: None
                 width:140
                 # background_color: (1,0,0,1)
-                # on_release: root.loadList()
-                on_release: TECBoxController.readConfigFromBoxes()
+                on_release: TECBoxController.readConfigsFromBoxes()
             Button:
-                id: send_all_btn
+                id: all_to_zero_btn
                 text:'All to Zero'
                 size_hint_y: None
                 height: 30
@@ -167,7 +166,7 @@
                 width:140
                 disabled: True
                 # background_color: (1,0,0,1)
-                # on_release: root.loadList()
+                on_release: TECBoxController.setAllToZero()
             Button:
                 id: send_all_btn
                 text:'Send All'
@@ -177,7 +176,7 @@
                 width:140
                 disabled: True
                 # background_color: (1,0,0,1)
-                # on_release: root.loadList()
+                on_release: TECBoxController.sendAll()
         BorderGridLayout:
             border_width: 1
             border_color: 1,1,1,1

@@ -62,59 +62,24 @@ class TECBoxController(DeviceController):
     
     _instances = []
 
-    
+    # There are two TEC boxes, so the kivy callbacks are going to be static methods which use 
     @staticmethod
-    def readConfigFromBoxes():
-        # There are either one or two boxes, so just get all the box controllers and talk to them
+    def readConfigsFromBoxes():
         for box in TECBoxController._instances:
            # Ask the teensy for a list of its TECs
            pass 
    
-        
+    def setAllToZero():
+        for box in TECBoxController._instances:
+           pass 
+    
+    def sendAll():
+        for box in TECBoxController._instances:
+           pass 
+       
     def __init__(self, ctrlWidget, nursery, debugMode = False, **kwargs): 
         super().__init__(ctrlWidget, nursery, debugMode)
         self.ControllerRequestList = deque([])
         self.deviceInterface = TecControllerInterface()
         self.deviceInterface.setDebugMode(debugMode)
         TECBoxController._instances.append(self)
-
-    def get_tec_data(logdata=False,fname='tec'):
-        pass
-        # Get the data by box, board, and channel.  It's more efficient
-    #     start = time.time();
-    #     if(logdata):
-    #         print("I should log data now")
-    # #        fname = fname+time.strftime("%Y%m%d%H%M%S")+'.pkl'
-    # #        print(fname)
-    #         pfile = open(fname,'ab')
-    #     for box in range(NUM_BOXES):
-    #         for board in range(NUM_BOARDS):
-    #             data = objTec.getTecByBoxBoard(box+1,board);
-    #             pwrs = objTec.parseTecMessage(data);     # This is the parsed tec powers
-    #             # now get the tec numbers for the box and board
-    # ##            pwrs = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]  # Dummy values while not connected to TECs
-    #             boxIndex = np.squeeze(np.where(cc.BOXMAP[:,1] == box+1));
-    #             boardIndex = np.squeeze(np.where(cc.BOXMAP[boxIndex,2] == board));
-    #             tecs = cc.BOXMAP[boxIndex[boardIndex],0]  # this is the list of the tec numbers, now populate the corresponding edit boxes
-    #             # this routine will get the data into the GUI label
-    #             ii = 0;
-    #             for tec in tecs:
-    #                 if (Ivalues):
-    #                     tec_widgets[tec-1].metrics[0].value_str = f'{round((float(pwrs[ii+1])/100.0*8.11-1.32),2)}'
-    #                 else:
-    #                     tec_widgets[tec-1].metrics[0].value_str = f'{pwrs[ii+1]}'
-    #                 tec_widgets[tec-1].metrics[0].update(tec_widgets[tec-1].metrics[0])
-    # ##                tec_widgets[tec-1].metrics[0].new.setText(f'{pwrs[ii+1]}')
-    #                 ii += 1;
-    #                 if(logdata and tec==teclog):
-    # #                    numdata = 2+2*len(tempchans)
-    # #                    data = np.zeros((num_data,1))
-    #                     tecdat = []
-    #                     data = []
-    #                     tecdat.append(teclog)
-    #                     tecdat.append(f'{pwrs[ii]}')
-    # #                    data[0] = teclog
-    # #                    data[1] = f'{pwrs[ii]}'
-    #                     data.append( float(''.join(tecdat)) )
-    #                     pickle.dump(data,pfile)
-    #                     pfile.close()
