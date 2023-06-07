@@ -96,7 +96,7 @@ class LFASTControllerInterface:
                     while len(self._receiveBuffer) > 0:
                         termIdx = self._receiveBuffer.index(b'\x00')                   
                         recvStr = self._receiveBuffer[0:termIdx].decode('utf-8')
-                        self._receiveBuffer = self._receiveBuffer[termIdx+1:-1]
+                        self._receiveBuffer = self._receiveBuffer[termIdx:-1]
                         async with self._incomingDataTxChannel.clone() as chan:
                             await chan.send(recvStr)
                 except ValueError:

@@ -140,7 +140,7 @@ class TecControllerInterface(LFASTControllerInterface):
             tec_list = replyJson['tecConfigList']
             for tec in tec_list:
                 self.tecsConfigsReceived = self.tecsConfigsReceived + 1
-                print(str(tec['ID']) + ', '+str(tec['BRD']) + ', ' + str(tec['CHN']))
+                # print(str(tec['ID']) + ', '+str(tec['BRD']) + ', ' + str(tec['CHN']))
             print(str(self.tecsConfigsReceived) + " tec configs received.")
                 
         pass

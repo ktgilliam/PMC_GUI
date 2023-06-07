@@ -57,9 +57,14 @@ class TECControlWidget(GridLayout):
         list = self.ids['tec_field_list']
         list.createFields()
         a = 5        
-            
+
+class TECConfig:
+    def __init__(self, tecNo, boxNo, channelNo):
+        self.tecNo = tecNo
+        self.boxNo = boxNo
+        self.channelNo = channelNo
+        
 class TECBoxController(DeviceController):
-    
     _instances = []
     
     def __init__(self, ctrlWidget, nursery, debugMode = False, **kwargs): 
