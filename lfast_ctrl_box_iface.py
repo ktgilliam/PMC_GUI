@@ -7,7 +7,7 @@ from enum import IntEnum
 from exceptiongroup import catch
 import sys
 from math import pi
-
+import pprint
 
 default_timeout = 5
 rx_buff_size = 1024
@@ -88,18 +88,19 @@ class LFASTControllerInterface:
             return
         if self._client_stream != None:
             async for data in self._client_stream:
-                # print(data)
-                # if self._disconnectCommandEvent.is_set():
                 self._receiveBuffer += data
+                if len(data) == 5:
+                    pass
                 try:
-                    termIdx = self._receiveBuffer.index(b'\x00')
-                    recvStr = self._receiveBuffer[0:termIdx].decode('utf-8')
-                    print('Received: '+ recvStr)      
-                    self._receiveBuffer = self._receiveBuffer[termIdx:-1]
-                    async with self._incomingDataTxChannel.clone() as chan:
-                        await chan.send(recvStr)
+                    # print(self._receiveBuffer)
+                    while len(self._receiveBuffer) > 0:
+                        termIdx = self._receiveBuffer.index(b'\x00')                   
+                        recvStr = self._receiveBuffer[0:termIdx].decode('utf-8')
+                        self._receiveBuffer = self._receiveBuffer[termIdx+1:-1]
+                        async with self._incomingDataTxChannel.clone() as chan:
+                            await chan.send(recvStr)
                 except ValueError:
-                    pass          
+                    pass    # No terminator was detected so just wait for more data      
                 
     async def open_connection(self,  _ip, _port, timeout=default_timeout):
         self._connection = (_ip, _port)
@@ -119,7 +120,7 @@ class LFASTControllerInterface:
                     async with trio.open_nursery() as nursery:
                         nursery.start_soon(self.aSendMessages)
                         nursery.start_soon(self.aReceiveMessages)
-                        nursery.start_soon(self.checkMessages)
+                        nursery.start_soon(self.__checkMessages)
                     pass
                 # self._client_stream = None          
             # await trio.sleep(0)
@@ -131,7 +132,7 @@ class LFASTControllerInterface:
         if(self._cancelScope != None):
             self._cancelScope.cancel()
 
-    async def checkMessages(self):   
+    async def __checkMessages(self):   
         while 1:
             async with self._incomingDataRxChannel.clone() as incoming:
                 async for replyStr in incoming:
@@ -146,21 +147,16 @@ class LFASTControllerInterface:
                             else:
                                 self._connected = False
                                 raise Exception('Connection failed - handshake mismatch')
-                        elif "HomingComplete" in replyJson:
-                            print(replyStr)
-                            if replyJson["HomingComplete"] == True:
-                                self._homingComplete.set()
-                                self._isHomed = True
-                        elif "SteppersEnabled" in replyJson:
-                            print(replyStr)
-                            self._steppersEnabled = replyJson["SteppersEnabled"]
                         else:
-                            print(replyStr)
+                            if hasattr(self, "checkMessages"):
+                                self.checkMessages(replyJson)
+                            else:
+                                # print(replyStr)
+                                pass
+                            
                             await trio.sleep(0)
                     await trio.sleep(0.1)
-        
-
-            pause = 1
+            pass
             # self.Disonnect()
 
             

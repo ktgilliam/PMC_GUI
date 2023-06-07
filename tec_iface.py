@@ -18,7 +18,12 @@ rx_buff_size = 1024
 
 class TecControllerInterface(LFASTControllerInterface):
     
-    def setHeater(self, tec, pwmPct):
+    tecsConfigsReceived = 0
+    def __init__(self, msgTypeLabel="default"):
+        super().__init__()
+        self._messageTypeLabel = msgTypeLabel
+        
+    async def setHeater(self, tec, pwmPct):
         # This routine decodes to which box, board, and channel to send the
         # heater setting.
         mapIndex = np.squeeze(np.where(BOXMAP[:,0] == tec))
@@ -29,7 +34,7 @@ class TecControllerInterface(LFASTControllerInterface):
         self.sendTecCommand(int(box), int(board), int(channel), pwmPct)
         return
 
-    def getHeater(self, tec):
+    async def getHeater(self, tec):
         mapIndex = np.squeeze(np.where(BOXMAP[:,0] == tec))
         box = BOXMAP[mapIndex,1]
         board = BOXMAP[mapIndex,2]
@@ -40,7 +45,14 @@ class TecControllerInterface(LFASTControllerInterface):
         recvJsonMsg = json.loads(bdData)
         return recvJsonMsg[TECAlias[int(channel-1)]]
     
-    
+    async def getTecConfigFromTeensy(self):
+        if self._connected:
+            await self.startNewMessage()
+            await self.addKvCommandPairs(SendAll=True)
+            await trio.sleep(0) 
+            await self.sendCommands()
+            self.tecsConfigsReceived = 0
+            
     async def sendTecCommand(self, box, board, channel, pwmPct):
         """ This routine will send a heater setting to the TEC master board.  First it sends the board number.  Then it sends the channel number.  Then it sends the setHeater commmand with the pwmPct number which will set the heater using the previously sent board and channel number.  The master will parse out the data to the appropriate card in the box depending on boards number """
         await self.addKvCommandPairs(Board=int(board), Channel=int(channel-1), setHeater=float(pwmPct))
@@ -119,3 +131,16 @@ class TecControllerInterface(LFASTControllerInterface):
 #        self.closeTec()
 
         return recvStr
+
+    numtimes = 0
+    def checkMessages(self, replyJson):
+        # print('\n')
+        self.numtimes = self.numtimes+1
+        if "tecConfigList" in replyJson:
+            tec_list = replyJson['tecConfigList']
+            for tec in tec_list:
+                self.tecsConfigsReceived = self.tecsConfigsReceived + 1
+                print(str(tec['ID']) + ', '+str(tec['BRD']) + ', ' + str(tec['CHN']))
+            print(str(self.tecsConfigsReceived) + " tec configs received.")
+                
+        pass

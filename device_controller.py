@@ -37,6 +37,7 @@ class DeviceController():
     connectButtonId = None
 
     _deviceLabel = "Unlabeled Device"
+    
     # deviceInterface = None
     
     def __init__(self, ctrlWidget, nursery, debugMode = False, **kwargs): 
@@ -127,7 +128,7 @@ class DeviceController():
             self.connectionFailedEvent = trio.Event() #reset the failed connection flag
             await self.terminalManager.addMessage(self._deviceLabel + ': Connecting...')
             await self.setControllerState(ControllerState.CONNECT_IN_PROGRESS)
-            conBtn.text = 'Connecting...'
+            conBtn.text = 'Connecting ' + self._deviceLabel
             conBtn.background_color = (0.5,0.5,0.5,1)
             self.toggleConnectionRequested = False
             pass
@@ -165,7 +166,7 @@ class DeviceController():
         if self.toggleConnectionRequested:
             await self.terminalManager.addMessage(self._deviceLabel + ': Disconnecting...')
             await self.setControllerState(ControllerState.DISCONNECT_IN_PROGRESS)
-            conBtn.text = 'Disconnecting...'
+            conBtn.text = 'Disconnecting ' + self._deviceLabel
             conBtn.background_color = (0.5,0.5,0.5,1)
             self.toggleConnectionRequested = False
             pass
@@ -181,12 +182,12 @@ class DeviceController():
         await self.resetConnection()
         conBtn = self.controllerWidget.ids[self.connectButtonId]
         conBtn.background_color = (1,0,0,1)
-        conBtn.text = 'Connect'
+        conBtn.text = 'Connect ' + self._deviceLabel
         
     async def resetConnection(self):
         conBtn = self.controllerWidget.ids[self.connectButtonId]
         conBtn.disabled = False
-        conBtn.text = 'Connect'
+        conBtn.text = 'Connect ' + self._deviceLabel
         conBtn.background_color = (1,0,0,1)
         await self.deviceInterface.Disconnect()
         self.deviceInterface.reset()
@@ -197,7 +198,7 @@ class DeviceController():
         await self.setControllerState(ControllerState.CONNECTED)
         await self.terminalManager.addMessage(self._deviceLabel + ': Connected!', MessageType.GOOD_NEWS)
         conBtn.background_color = (0,1,0,1)
-        conBtn.text = 'Disconnect'
+        conBtn.text = 'Disconnect ' + self._deviceLabel
         if hasattr(self, "connectionSucceededHandler"):
             await self.connectionSucceededHandler()
     

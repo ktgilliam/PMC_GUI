@@ -87,7 +87,7 @@ class PMC_APP(App):
                 self.debug_mode_prop = bool(int(value))
                 self.tipTiltController.setDebugMode(self.debug_mode_prop)
                 self.tecBox_A.setDebugMode(self.debug_mode_prop)
-                self.tecBox_B.setDebugMode(self.debug_mode_prop)
+                # self.tecBox_B.setDebugMode(self.debug_mode_prop)
         elif section == "Connection":
             if key == "ip_addr":
                 self.ip_addr_prop = value
@@ -154,6 +154,7 @@ class PMC_APP(App):
         nursery.start_soon(self.initializeTerminal)
         await trio.sleep(0.1)
         nursery.start_soon(self.initializeTipTiltControl)
+        await trio.sleep(0.1)
         nursery.start_soon(self.initializeTECControl)
 
         
@@ -183,14 +184,14 @@ class PMC_APP(App):
         self.tecBox_A = TECBoxController(self.root.ids.tecCtrl, self.nursery, self.debug_mode_prop)
         self.tecBox_A.setConnectionInfo(self.ip_addr_prop, self.tec_a_port_prop)
         self.tecBox_A.registerConnectButtonId('tec_connect_a_btn')
-        self.tecBox_A.setDeviceLabel('TEC Box A')
+        self.tecBox_A.setDeviceLabel('A')
         self.tecBox_A.connectTerminal(self.terminalManager)
         
-        self.tecBox_B = TECBoxController(self.root.ids.tecCtrl, self.nursery, self.debug_mode_prop)
-        self.tecBox_B.setConnectionInfo(self.ip_addr_prop, self.tec_a_port_prop)
-        self.tecBox_B.registerConnectButtonId('tec_connect_b_btn')
-        self.tecBox_B.setDeviceLabel('TEC Box B')
-        self.tecBox_B.connectTerminal(self.terminalManager)
+        # self.tecBox_B = TECBoxController(self.root.ids.tecCtrl, self.nursery, self.debug_mode_prop)
+        # self.tecBox_B.setConnectionInfo(self.ip_addr_prop, self.tec_b_port_prop)
+        # self.tecBox_B.registerConnectButtonId('tec_connect_b_btn')
+        # self.tecBox_B.setDeviceLabel('B')
+        # self.tecBox_B.connectTerminal(self.terminalManager)
          
          
 from task_tracer import Tracer, FilterType

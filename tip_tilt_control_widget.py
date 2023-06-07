@@ -78,7 +78,7 @@ class TipTiltController(DeviceController):
     
     def __init__(self, ctrlWidget, nursery, debugMode, **kwargs): 
         super().__init__(ctrlWidget, nursery, debugMode)
-        self.deviceInterface = TipTiltFocusControlInterface()
+        self.deviceInterface = TipTiltFocusControlInterface("PMCMessage")
         self.deviceInterface.setDebugMode(debugMode)
         self.ControllerRequestList = deque([])
         

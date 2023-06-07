@@ -54,8 +54,9 @@ class TipTiltFocusControlInterface(LFASTControllerInterface):
     _homingComplete = trio.Event()
     _steppersEnabled = False
     
-    def __init__(self):
+    def __init__(self, msgTypeLabel="default"):
         super().__init__()
+        self._messageTypeLabel = msgTypeLabel
         
     def reset(self):
         super().reset()
@@ -173,3 +174,13 @@ class TipTiltFocusControlInterface(LFASTControllerInterface):
     def isHomed(self):
         return self._isHomed
     
+    def checkMessages(self, replyJson):
+        # print('\n')
+        self.numtimes = self.numtimes+1
+        if "HomingComplete" in replyJson:
+            if replyJson["HomingComplete"] == True:
+                self._homingComplete.set()
+                self._isHomed = True
+        elif "SteppersEnabled" in replyJson:
+            self._steppersEnabled = replyJson["SteppersEnabled"]
+        pass

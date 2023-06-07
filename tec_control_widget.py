@@ -61,12 +61,20 @@ class TECControlWidget(GridLayout):
 class TECBoxController(DeviceController):
     
     _instances = []
-
+    
+    def __init__(self, ctrlWidget, nursery, debugMode = False, **kwargs): 
+        super().__init__(ctrlWidget, nursery, debugMode)
+        self.ControllerRequestList = deque([])
+        self.deviceInterface = TecControllerInterface("TECCommand")
+        self.deviceInterface.setDebugMode(debugMode)
+        TECBoxController._instances.append(self)
+        
     # There are two TEC boxes, so the kivy callbacks are going to be static methods which use 
     @staticmethod
     def readConfigsFromBoxes():
         for box in TECBoxController._instances:
            # Ask the teensy for a list of its TECs
+           box.nursery.start_soon(box.deviceInterface.getTecConfigFromTeensy)
            pass 
    
     def setAllToZero():
@@ -77,9 +85,3 @@ class TECBoxController(DeviceController):
         for box in TECBoxController._instances:
            pass 
        
-    def __init__(self, ctrlWidget, nursery, debugMode = False, **kwargs): 
-        super().__init__(ctrlWidget, nursery, debugMode)
-        self.ControllerRequestList = deque([])
-        self.deviceInterface = TecControllerInterface()
-        self.deviceInterface.setDebugMode(debugMode)
-        TECBoxController._instances.append(self)
