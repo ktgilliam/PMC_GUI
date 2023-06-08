@@ -47,11 +47,11 @@ class TecControllerInterface(LFASTControllerInterface):
     
     async def getTecConfigFromTeensy(self):
         if self._connected:
+            self.tecsConfigsReceived = 0
             await self.startNewMessage()
             await self.addKvCommandPairs(SendAll=True)
             await trio.sleep(0) 
             await self.sendCommands()
-            self.tecsConfigsReceived = 0
             
     async def sendTecCommand(self, box, board, channel, pwmPct):
         """ This routine will send a heater setting to the TEC master board.  First it sends the board number.  Then it sends the channel number.  Then it sends the setHeater commmand with the pwmPct number which will set the heater using the previously sent board and channel number.  The master will parse out the data to the appropriate card in the box depending on boards number """

@@ -82,25 +82,28 @@ class LFASTControllerInterface:
             pass
         print("transmitter: connection closed")
         
-            
     async def aReceiveMessages(self, task_status=trio.TASK_STATUS_IGNORED):
         if self._debug_mode:
             return
         if self._client_stream != None:
             async for data in self._client_stream:
                 self._receiveBuffer += data
-                if len(data) == 5:
-                    pass
-                try:
-                    # print(self._receiveBuffer)
-                    while len(self._receiveBuffer) > 0:
-                        termIdx = self._receiveBuffer.index(b'\x00')                   
-                        recvStr = self._receiveBuffer[0:termIdx].decode('utf-8')
-                        self._receiveBuffer = self._receiveBuffer[termIdx:-1]
-                        async with self._incomingDataTxChannel.clone() as chan:
-                            await chan.send(recvStr)
-                except ValueError:
-                    pass    # No terminator was detected so just wait for more data      
+                while len(self._receiveBuffer) > 0:
+                # print(self._receiveBuffer)
+                    if not b'\x00' in self._receiveBuffer:
+                        # haven't gotten a complete message yet
+                        break
+                    # pprint.pprint(self._receiveBuffer.decode('utf-8'))
+                    chunks = self._receiveBuffer.split(b'\x00')
+                    for chunk in chunks:
+                        if len(chunk) > 0:
+                            recvStr = chunk.decode('utf-8')
+                            pprint.pprint(recvStr)
+                            self._receiveBuffer = self._receiveBuffer[len(chunk):]
+                            async with self._incomingDataTxChannel.clone() as chan:
+                                await chan.send(recvStr)
+                        else:
+                            self._receiveBuffer = self._receiveBuffer[1:]   
                 
     async def open_connection(self,  _ip, _port, timeout=default_timeout):
         self._connection = (_ip, _port)
