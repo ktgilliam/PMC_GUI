@@ -22,7 +22,7 @@ class ControllerState(IntEnum):
     CONNECT_IN_PROGRESS = 2
     CONNECTED=3
     DISCONNECT_IN_PROGRESS = 4
-
+    
 class DeviceController():
     nursery = None
     ControllerState = ControllerState.INIT
@@ -172,6 +172,7 @@ class DeviceController():
             pass
         else:
             if hasattr(self, "connectedStateHandler"):
+                await trio.sleep(0)
                 await self.connectedStateHandler()
         await trio.sleep(0)
     
@@ -219,3 +220,16 @@ class DeviceController():
                  
     def defaultButtonPushed(self):
         self.terminalManager.queueMessage('Button not assigned yet!')
+        
+    def printErrorCallbacks(self, excgroup):
+        for exc in excgroup.exceptions:
+            if isinstance(exc, json.JSONDecodeError):
+                self.terminalManager.queueMessage("Failed message decode. [{0}:{1}]. ".format(exc.msg, exc.doc))
+                self.terminalManager.queueMessage("Data stream corrupted, you should probably close/reopen")
+                self.currentState = ControllerState.INIT
+            elif isinstance(exc, trio.BrokenResourceError) or \
+                isinstance(exc, trio.ClosedResourceError):
+                    pass #Everything is fine, do nothing
+            else:
+                breakpoint()
+                self.terminalManager.queueMessage(exc.msg)

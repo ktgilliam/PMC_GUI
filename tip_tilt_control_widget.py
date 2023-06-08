@@ -19,19 +19,14 @@ import json
 from device_controller import DeviceController
 
 
-
-class ControllerRequest(IntEnum):
+class TtfControllerRequest(IntEnum):
     NO_REQUESTS = 0
     GO_HOME_REQUESTED=2
     BOTTOM_FOUND_REQUESTED=3
     TOGGLE_STEPPER_ENABLE=4
     STOP_REQUESTED=5
     
-class ControllerState(IntEnum):
-    INIT=0
-    DISCONNECTED=1
-    CONNECT_IN_PROGRESS = 2
-    CONNECTED=3
+
     
 class TipTiltControlWidget(GridLayout):   
     singletonControlWidget = None #ObjectProperty(None)
@@ -94,7 +89,7 @@ class TipTiltController(DeviceController):
         
         if len(self.ControllerRequestList) > 0:
             request = self.ControllerRequestList.pop()
-            if request == ControllerRequest.GO_HOME_REQUESTED:
+            if request == TtfControllerRequest.GO_HOME_REQUESTED:
                 homeBtn.text = "Homing..."
                 homeBtn.disabled = True
                 bottomFoundBtn.disabled = False
@@ -104,7 +99,7 @@ class TipTiltController(DeviceController):
                 homeBtn.disabled = True
                 homeBtn.text = "Home All"
                 goBtn.disabled = False
-            elif request == ControllerRequest.BOTTOM_FOUND_REQUESTED:
+            elif request == TtfControllerRequest.BOTTOM_FOUND_REQUESTED:
                 await self.terminalManager.addMessage('Bottom found. Waiting for mirror to return to center...')
                 bottomFoundBtn.disabled = True
                 await self.deviceInterface.sendBottomFound()
@@ -117,7 +112,7 @@ class TipTiltController(DeviceController):
                     await self.deviceInterface.sendStopCommand()
                 else:
                     homeBtn.disabled = False
-            elif request == ControllerRequest.TOGGLE_STEPPER_ENABLE:
+            elif request == TtfControllerRequest.TOGGLE_STEPPER_ENABLE:
                 if self.deviceInterface.steppersEnabled():
                     await self.deviceInterface.sendEnableSteppers(False)
                     # TODO: wait for ack before enabling
@@ -130,7 +125,7 @@ class TipTiltController(DeviceController):
                     self.controllerWidget.enableRelativeControls(True)
                     goBtn.disabled = False
                     enableStepBtn.text = "Disable Steppers"
-            elif request == ControllerRequest.STOP_REQUESTED:
+            elif request == TtfControllerRequest.STOP_REQUESTED:
                 await self.deviceInterface.sendStopCommand() 
         await self.deviceInterface.sendCommands()
             
@@ -141,20 +136,6 @@ class TipTiltController(DeviceController):
             enableStepBtn.text = "Enable Steppers"
         self.controllerWidget.disableControls()
         
-    def printErrorCallbacks(self, excgroup):
-        for exc in excgroup.exceptions:
-            if isinstance(exc, json.JSONDecodeError):
-                self.terminalManager.queueMessage("Failed message decode. [{0}:{1}]. ".format(exc.msg, exc.doc))
-                self.terminalManager.queueMessage("Data stream corrupted, you should probably close/reopen")
-                self.currentState = ControllerState.INIT
-            elif isinstance(exc, trio.BrokenResourceError) or \
-                isinstance(exc, trio.ClosedResourceError):
-                    pass #Everything is fine, do nothing
-            else:
-                breakpoint()
-
-                self.terminalManager.queueMessage(exc.msg)
-            
     def plusTipButtonPushed(self):
         self.terminalManager.queueMessage(' Tip [+' + str(self.deviceInterface._tipTiltStepSize_as) + ' as]')
         self.nursery.start_soon(self.deviceInterface.TipRelative, DIRECTION.FORWARD)

@@ -1,5 +1,5 @@
 #:kivy 2.2.0
-#:import ControllerRequest tip_tilt_control_widget.ControllerRequest
+#:import TtfControllerRequest tip_tilt_control_widget.TtfControllerRequest
 #:import FloatInput numeric_widgets
 
 <TipTiltControlWidget>:
@@ -24,7 +24,7 @@
                 size_hint_x: None
                 width:110
                 background_color: (1,0,0,1)
-                # on_release: app.tipTiltController.ControllerRequestList.append(ControllerRequest.TOGGLE_CONNECTION)
+                # on_release: app.tipTiltController.TtfControllerRequestList.append(TtfControllerRequest.TOGGLE_CONNECTION)
                 on_release: app.tipTiltController.requestConnectionToggle()
             Button:
                 text:'Enable Steppers'
@@ -33,7 +33,7 @@
                 height: 30
                 size_hint_x: None
                 width:140
-                on_release: app.tipTiltController.ControllerRequestList.append(ControllerRequest.TOGGLE_STEPPER_ENABLE)
+                on_release: app.tipTiltController.TtfControllerRequestList.append(TtfControllerRequest.TOGGLE_STEPPER_ENABLE)
                 disabled: True     
             Button:
                 text:'STOP'
@@ -44,7 +44,7 @@
                 size_hint_x: None
                 width:80
                 background_color: (1,0,0,1)
-                on_release: app.tipTiltController.ControllerRequestList.append(ControllerRequest.STOP_REQUESTED), app.stopButtonPushed()
+                on_release: app.tipTiltController.TtfControllerRequestList.append(TtfControllerRequest.STOP_REQUESTED), app.stopButtonPushed()
                 disabled: True
         BorderGridLayout:
             border_width: 1
@@ -349,7 +349,7 @@
                                 height: 30
                                 width:160
                                 disabled: True
-                                on_release: app.tipTiltController.ControllerRequestList.append(ControllerRequest.GO_HOME_REQUESTED)
+                                on_release: app.tipTiltController.TtfControllerRequestList.append(TtfControllerRequest.GO_HOME_REQUESTED)
                             Label:
                                 size_hint: None, None
                                 height: 30
@@ -362,7 +362,7 @@
                                 height: 30
                                 width:160
                                 disabled: True
-                                on_release: app.tipTiltController.ControllerRequestList.append(ControllerRequest.BOTTOM_FOUND_REQUESTED)
+                                on_release: app.tipTiltController.TtfControllerRequestList.append(TtfControllerRequest.BOTTOM_FOUND_REQUESTED)
             BorderGridLayout:
                 border_width: 1
                 border_color: (1,1,1,1)

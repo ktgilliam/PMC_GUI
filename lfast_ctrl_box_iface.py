@@ -36,8 +36,9 @@ class LFASTControllerInterface:
     def reset(self):
         self._disconnectCommandEvent = trio.Event()
         
-    def setDebugMode(self, dm):
-        self._debug_mode = dm
+    @staticmethod
+    def setDebugMode(dm):
+        LFASTControllerInterface._debug_mode = dm
         
     async def startNewMessage(self):
         self._outgoingJsonMessage[self._messageTypeLabel] = {}
@@ -98,10 +99,11 @@ class LFASTControllerInterface:
                     for chunk in chunks:
                         if len(chunk) > 0:
                             recvStr = chunk.decode('utf-8')
-                            pprint.pprint(recvStr)
+                            # pprint.pprint(recvStr)
                             self._receiveBuffer = self._receiveBuffer[len(chunk):]
                             async with self._incomingDataTxChannel.clone() as chan:
                                 await chan.send(recvStr)
+                                await trio.sleep(0)
                         else:
                             self._receiveBuffer = self._receiveBuffer[1:]   
                 
@@ -152,13 +154,12 @@ class LFASTControllerInterface:
                                 raise Exception('Connection failed - handshake mismatch')
                         else:
                             if hasattr(self, "checkMessages"):
-                                self.checkMessages(replyJson)
+                                await self.checkMessages(replyJson)
                             else:
                                 # print(replyStr)
                                 pass
-                            
                             await trio.sleep(0)
-                    await trio.sleep(0.1)
+                    await trio.sleep(0)
             pass
             # self.Disonnect()
 

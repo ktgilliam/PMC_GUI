@@ -15,13 +15,40 @@ from lfast_ctrl_box_iface import *
 default_timeout = 5
 rx_buff_size = 1024
 
+class TECConfig:
+    tecNo = 0
+    boxNo = 0
+    boardNo = 0
+    channelNo = 0
+    
+    def __init__(self, tecNo, boxNo, boardNo, channelNo):
+        self.tecNo = tecNo
+        self.boxNo = boxNo
+        self.boardNo = boardNo
+        self.channelNo = channelNo
+
+    
+# class TECList:
+    
+#     tecConfigList = None
+    
+#     def contains(self, tecNo):
+#         for tec in self.tecConfigList:
+#             if filter(tec)
 
 class TecControllerInterface(LFASTControllerInterface):
     
+    tecConfigList = []
     tecsConfigsReceived = 0
+    boxId = -1
+    tecConfigListChanged = trio.Event()
+    
     def __init__(self, msgTypeLabel="default"):
         super().__init__()
         self._messageTypeLabel = msgTypeLabel
+        
+    def setBoxId(self, id):
+        self.boxId = id
         
     async def setHeater(self, tec, pwmPct):
         # This routine decodes to which box, board, and channel to send the
@@ -47,7 +74,6 @@ class TecControllerInterface(LFASTControllerInterface):
     
     async def getTecConfigFromTeensy(self):
         if self._connected:
-            self.tecsConfigsReceived = 0
             await self.startNewMessage()
             await self.addKvCommandPairs(SendAll=True)
             await trio.sleep(0) 
@@ -70,17 +96,6 @@ class TecControllerInterface(LFASTControllerInterface):
         #     sent_size = self.connectionA.sendall(enc_txStr)
         # if (box == 2):
         #     sent_size = self.connectionB.sendall(enc_txStr)
-
-
-    def sendBlankCommand(myConnection):
-        """ This routine sends just a TECCommand Json message to keep the loop in the TEC box going """
-        myJsonMsg = {}
-        myJsonMsg["TECCommand"] = {}
-        myJsonMsgStr = json.dumps(myJsonMsg)
-        txStr = myJsonMsgStr
-        myConnection.sendall(txStr.encode('utf-8'))
-    #    print("finished sending a blank message to TECs")
-        return
 
     async def getTecByBoxBoard(self, box, board):
         """ This routine will keep getting data from the socket connection until there is a termination character.  The termination character is x """
@@ -131,16 +146,31 @@ class TecControllerInterface(LFASTControllerInterface):
 #        self.closeTec()
 
         return recvStr
+    
+    @staticmethod
+    def getTecList():
+        TecControllerInterface.tecConfigList.sort(key=lambda x: x.tecNo, reverse=False)
+        TecControllerInterface.tecConfigListChanged = trio.Event()
+        return TecControllerInterface.tecConfigList
+    
 
-    numtimes = 0
-    def checkMessages(self, replyJson):
+    # numtimes = 0
+    async def checkMessages(self, replyJson):
         # print('\n')
-        self.numtimes = self.numtimes+1
+        # self.numtimes = self.numtimes+1
+        listLengthPrev = TecControllerInterface.tecsConfigsReceived
         if "tecConfigList" in replyJson:
             tec_list = replyJson['tecConfigList']
             for tec in tec_list:
-                self.tecsConfigsReceived = self.tecsConfigsReceived + 1
-                # print(str(tec['ID']) + ', '+str(tec['BRD']) + ', ' + str(tec['CHN']))
-            print(str(self.tecsConfigsReceived) + " tec configs received.")
+                if len(TecControllerInterface.tecConfigList) > 0:
+                    if any(x for x in TecControllerInterface.tecConfigList if x.tecNo == tec['ID']):
+                        print('DUPLICATE TEC ID FOUND: '+str(tec['ID']))
+                        continue
+                TecControllerInterface.tecsConfigsReceived = TecControllerInterface.tecsConfigsReceived + 1
+                newTecCfg = TECConfig(tec['ID'], self.boxId, tec['BRD'], tec['CHN'])
+                TecControllerInterface.tecConfigList.append(newTecCfg)
                 
-        pass
+        if "SentConfigs" in replyJson:
+            if listLengthPrev != TecControllerInterface.tecsConfigsReceived:
+                TecControllerInterface.tecConfigListChanged.set()
+            await trio.sleep(0)
