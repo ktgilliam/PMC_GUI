@@ -47,8 +47,9 @@ class TECFieldList(GridLayout):
             self.add_widget(tf)
             
     def clearFields(self):
-        for tf in self.children:
-            pass
+        self.clear_widgets()
+        # for tf in self.children:
+        #     pass
         pass
             
 class TECControlWidget(GridLayout):

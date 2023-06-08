@@ -171,6 +171,9 @@ class TecControllerInterface(LFASTControllerInterface):
                 TecControllerInterface.tecConfigList.append(newTecCfg)
                 
         if "SentConfigs" in replyJson:
+            sentReported = replyJson['SentConfigs']
+            if sentReported != TecControllerInterface.tecsConfigsReceived:
+                pass
             if listLengthPrev != TecControllerInterface.tecsConfigsReceived:
                 TecControllerInterface.tecConfigListChanged.set()
             await trio.sleep(0)
