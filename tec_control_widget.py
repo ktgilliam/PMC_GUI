@@ -72,9 +72,9 @@ class TECBoxController(DeviceController):
     def __init__(self, ctrlWidget, nursery, debugMode = False, **kwargs): 
         super().__init__(ctrlWidget, nursery, debugMode)
         TECBoxController.ControllerRequestList = deque([])
-        TECBoxController.deviceInterface = TecControllerInterface("TECCommand")
-        TECBoxController.deviceInterface.setBoxId(len(TECBoxController._instances)+1)
-        TECBoxController.deviceInterface.setDebugMode(debugMode)
+        self.deviceInterface = TecControllerInterface("TECCommand")
+        self.deviceInterface.setBoxId(len(TECBoxController._instances)+1)
+        self.deviceInterface.setDebugMode(debugMode)
         TECBoxController._instances.append(self)
         
     # There are two TEC boxes, so the kivy callbacks are going to be static methods which use 
@@ -90,7 +90,7 @@ class TECBoxController(DeviceController):
     async def connectedStateHandler():
         for box in TECBoxController._instances:
             if box.deviceInterface.tecConfigListChanged.is_set(): #TODO find a better way to do this
-                box.controllerWidget.loadList(TECBoxController.deviceInterface.getTecList())
+                box.controllerWidget.loadList(box.deviceInterface.getTecList())
         await trio.sleep(0)
             
         if len(TECBoxController.ControllerRequestList) > 0:

@@ -41,12 +41,13 @@
         FloatInput:
             canvas.before:
                 Color:
-                    rgba: 1, 1, 1, 1
+                    rgba: 0, 0, 0, 1
                 Line:
                     width: 1
                     rectangle: self.x, self.y, self.width, self.height
             size_hint: 0.25, None
             height: 30
+
         BorderLabel:
             border_width: 2
             size_hint: 0.25, None
@@ -139,15 +140,15 @@
                 width:110
                 background_color: (1,0,0,1)
                 on_release: app.tecBox_A.requestConnectionToggle()
-            # Button:
-            #     id: tec_connect_b_btn
-            #     text:'Connect B'
-            #     size_hint_y: None
-            #     height: 30
-            #     size_hint_x: None
-            #     width:110
-            #     background_color: (1,0,0,1)
-            #     on_release: app.tecBox_B.requestConnectionToggle()
+            Button:
+                id: tec_connect_b_btn
+                text:'Connect B'
+                size_hint_y: None
+                height: 30
+                size_hint_x: None
+                width:110
+                background_color: (1,0,0,1)
+                on_release: app.tecBox_B.requestConnectionToggle()
             Button:
                 id: read_tec_cfg_btn
                 text:'Read Config'

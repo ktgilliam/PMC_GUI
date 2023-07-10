@@ -20,7 +20,7 @@ from terminal_widget import *
 from tip_tilt_control_widget import *
 from tec_control_widget import *
 
-from numeric_widgets import FloatInput
+from util_widgets import FloatInput
 
 Window.size = (1100, 700)
 Window.minimum_width, Window.minimum_height = Window.size
@@ -187,11 +187,11 @@ class PMC_APP(App):
         self.tecBox_A.setDeviceLabel('A')
         self.tecBox_A.connectTerminal(self.terminalManager)
         
-        # self.tecBox_B = TECBoxController(self.root.ids.tecCtrl, self.nursery, self.debug_mode_prop)
-        # self.tecBox_B.setConnectionInfo(self.ip_addr_prop, self.tec_b_port_prop)
-        # self.tecBox_B.registerConnectButtonId('tec_connect_b_btn')
-        # self.tecBox_B.setDeviceLabel('B')
-        # self.tecBox_B.connectTerminal(self.terminalManager)
+        self.tecBox_B = TECBoxController(self.root.ids.tecCtrl, self.nursery, self.debug_mode_prop)
+        self.tecBox_B.setConnectionInfo(self.ip_addr_prop, self.tec_b_port_prop)
+        self.tecBox_B.registerConnectButtonId('tec_connect_b_btn')
+        self.tecBox_B.setDeviceLabel('B')
+        self.tecBox_B.connectTerminal(self.terminalManager)
          
          
 from task_tracer import Tracer, FilterType

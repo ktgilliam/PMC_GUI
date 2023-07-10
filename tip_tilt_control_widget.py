@@ -9,7 +9,7 @@ from kivy.properties import ObjectProperty
 from kivy.lang import Builder
 
 from terminal_widget import *
-from numeric_widgets import FloatInput
+from util_widgets import FloatInput
 from ttf_iface import DIRECTION, TipTiltFocusControlInterface
 import re
 from enum import IntEnum

@@ -1,10 +1,20 @@
+from kivy.uix.label import Label
 from kivy.uix.gridlayout import GridLayout
+from kivy.uix.bubble import Bubble
 from kivy.uix.textinput import TextInput
 from kivy.properties import BoundedNumericProperty, NumericProperty, BooleanProperty, StringProperty, ObjectProperty
+from kivy.lang import Builder
+from kivy.uix.widget import Widget
+from kivy.core.window import Window
+from kivy.uix.label import Label
+from kivy.clock import Clock
 
 import re
 
 #  Support functions
+class ToolTip(Label):
+    text = StringProperty('Hello World')
+    pass
 
 def isSignChar(s):
     if s == '-' or s == '+':
@@ -12,8 +22,34 @@ def isSignChar(s):
     else:
         return False
     
+    
+class InputWithToolTip(TextInput):
+    mytooltip = ToolTip()
+    
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        Window.bind(mouse_pos=self.on_mouseover)
+
+    def on_mouseover(self, window, pos):
+        test = self.x <= pos[0] <= self.right and self.y <= pos[1] <= self.top
+        if self.collide_point(*pos):
+            # desired behaviour    
+            pass
+        
+    # def show_bubble(self, *l):
+    #     if not hasattr(self, 'bubb'):
+    #         self.bubb = bubb = Tooltip()
+    #         self.add_widget(bubb)
+    #     else:
+    #         values = ('left_top', 'left_mid', 'left_bottom', 'top_left',
+    #             'top_mid', 'top_right', 'right_top', 'right_mid',
+    #             'right_bottom', 'bottom_left', 'bottom_mid', 'bottom_right')
+    #         index = values.index(self.bubb.arrow_pos)
+    #         self.bubb.arrow_pos = values[(index + 1) % len(values)]
+    
 #  Widgets
-class FloatInput(TextInput):
+class FloatInput(InputWithToolTip):
+    
     pat = re.compile('[^0-9]') 
     def on_focus(self, instance, value):
         if not value:
@@ -42,6 +78,7 @@ class FloatInput(TextInput):
         return super().insert_text(s, from_undo=from_undo)
 
 
+            
 class IntegerInput(TextInput):
     unsigned = BooleanProperty(False)
     num_digits = BoundedNumericProperty(99, min=0, max=99, errorvalue=99)
