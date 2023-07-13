@@ -60,10 +60,11 @@ class TECControlWidget(GridLayout):
         list = self.ids['tec_field_list']
         list.clearFields()
         list.createFields(tecList)
-        a = 5        
-
-
         
+    def enableCommandButtons(self):
+        all2ZeroBtn = self.ids['all_to_zero_btn']
+        all2ZeroBtn.disabled = False
+    
 class TECBoxController(DeviceController):
     _instances = []
     ControllerRequestList = deque([])
@@ -91,14 +92,20 @@ class TECBoxController(DeviceController):
         for box in TECBoxController._instances:
             if box.deviceInterface.tecConfigListChanged.is_set(): #TODO find a better way to do this
                 box.controllerWidget.loadList(box.deviceInterface.getTecList())
+
         await trio.sleep(0)
             
         if len(TECBoxController.ControllerRequestList) > 0:
             pass
-        
+    
+    async def connectionSucceededHandler(self):
+        TECBoxController.readConfigsFromBoxes()
+        self.controllerWidget.enableCommandButtons()
+    
     def setAllToZero():
         for box in TECBoxController._instances:
-           pass 
+            box.nursery.start_soon(box.deviceInterface.sendAllToZeroCommand)
+            pass 
     
     def sendAll():
         for box in TECBoxController._instances:

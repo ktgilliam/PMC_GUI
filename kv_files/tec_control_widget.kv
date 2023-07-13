@@ -124,7 +124,6 @@
             padding: [4, 4, 4, 4]
             size_hint_y: None
             height: 36
-            id: top_btns
             canvas.before:
                 Color:
                     rgba: 1, 1, 1, 1
@@ -149,15 +148,6 @@
                 width:110
                 background_color: (1,0,0,1)
                 on_release: app.tecBox_B.requestConnectionToggle()
-            Button:
-                id: read_tec_cfg_btn
-                text:'Read Config'
-                size_hint_y: None
-                height: 30
-                size_hint_x: None
-                width:140
-                # background_color: (1,0,0,1)
-                on_release: TECBoxController.readConfigsFromBoxes()
             Button:
                 id: all_to_zero_btn
                 text:'All to Zero'

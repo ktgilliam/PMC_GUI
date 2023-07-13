@@ -96,7 +96,11 @@ class TecControllerInterface(LFASTControllerInterface):
         #     sent_size = self.connectionA.sendall(enc_txStr)
         # if (box == 2):
         #     sent_size = self.connectionB.sendall(enc_txStr)
-
+    async def sendAllToZeroCommand(self):
+        await self.addKvCommandPairs(AllToZero=1)
+        await trio.sleep(0)
+        await self.sendCommands()  
+        
     async def getTecByBoxBoard(self, box, board):
         """ This routine will keep getting data from the socket connection until there is a termination character.  The termination character is x """
         # Need to ask for data from the TEC box
