@@ -79,9 +79,9 @@ class TecControllerInterface(LFASTControllerInterface):
             await trio.sleep(0) 
             await self.sendCommands()
             
-    async def sendTecCommand(self, box, board, channel, pwmPct):
+    async def sendTecCommand(self, tecNo, current):
         """ This routine will send a heater setting to the TEC master board.  First it sends the board number.  Then it sends the channel number.  Then it sends the setHeater commmand with the pwmPct number which will set the heater using the previously sent board and channel number.  The master will parse out the data to the appropriate card in the box depending on boards number """
-        await self.addKvCommandPairs(Board=int(board), Channel=int(channel-1), setHeater=float(pwmPct))
+        await self.addKvCommandPairs(TecNo=tecNo, setTecAmps=float(current))
         await trio.sleep(0)
         await self.sendCommands()  
         # myJsonMsg = {}
@@ -101,55 +101,55 @@ class TecControllerInterface(LFASTControllerInterface):
         await trio.sleep(0)
         await self.sendCommands()  
         
-    async def getTecByBoxBoard(self, box, board):
-        """ This routine will keep getting data from the socket connection until there is a termination character.  The termination character is x """
-        # Need to ask for data from the TEC box
-        await self.addKvCommandPairs(Board=int(board), Channel=int(channel-1), setHeater=float(pwmPct))
-        myJsonMsg = {}
-        myJsonMsg["TECCommand"] = {}
-        myJsonMsg["TECCommand"]["GetTECByBoard"] = board
-        myJsonMsgStr = json.dumps(myJsonMsg)
-        txStr = myJsonMsgStr
-        if (box == 1):
-            self.connectionA.sendall(txStr.encode('utf-8'))
-            # now let's receive the stuff
-            recvBuf = b''
-            recvComplete = False
-            while (recvComplete == False):
-                try:
-#                    print("Time A recv")
-#                    start = time.time()
-                    data = self.connectionA.recv(512)
-#                    end = time.time()
-#                    print(end - start)
-                    recvBuf += data
-                    if data[-1] == 0:
-                        recvComplete = True
-                except TimeoutError:
-                    recvComplete = True
-
-        if (box == 2):
-            self.connectionB.sendall(txStr.encode('utf-8'))
-            # now let's receive the stuff
-            recvBuf = b''
-            recvComplete = False
-            while (recvComplete == False):
-                try:
-#                    print("Time B recv")
-#                    start = time.time()
-                    data = self.connectionB.recv(512)
-#                    end = time.time()
-#                    print(end - start)
-                    recvBuf += data
-                    if data[-1] == 0:
-                        recvComplete = True
-                except TimeoutError:
-                    recvComplete = True
-                
-        recvStr = recvBuf[:-1].decode('utf-8')
+#     async def getTecByBoxBoard(self, box, board):
+#         """ This routine will keep getting data from the socket connection until there is a termination character.  The termination character is x """
+#         # Need to ask for data from the TEC box
+#         await self.addKvCommandPairs(Board=int(board), Channel=int(channel-1), setHeater=float(pwmPct))
+#         myJsonMsg = {}
+#         myJsonMsg["TECCommand"] = {}
+#         myJsonMsg["TECCommand"]["GetTECByBoard"] = board
+#         myJsonMsgStr = json.dumps(myJsonMsg)
+#         txStr = myJsonMsgStr
+#         if (box == 1):
+#             self.connectionA.sendall(txStr.encode('utf-8'))
+#             # now let's receive the stuff
+#             recvBuf = b''
+#             recvComplete = False
+#             while (recvComplete == False):
+#                 try:
+# #                    print("Time A recv")
+# #                    start = time.time()
+#                     data = self.connectionA.recv(512)
+# #                    end = time.time()
+# #                    print(end - start)
+#                     recvBuf += data
+#                     if data[-1] == 0:
+#                         recvComplete = True
+#                 except TimeoutError:
+#                     recvComplete = True
+#
+#         if (box == 2):
+#             self.connectionB.sendall(txStr.encode('utf-8'))
+#             # now let's receive the stuff
+#             recvBuf = b''
+#             recvComplete = False
+#             while (recvComplete == False):
+#                 try:
+# #                    print("Time B recv")
+# #                    start = time.time()
+#                     data = self.connectionB.recv(512)
+# #                    end = time.time()
+# #                    print(end - start)
+#                     recvBuf += data
+#                     if data[-1] == 0:
+#                         recvComplete = True
+#                 except TimeoutError:
+#                     recvComplete = True
+# 
+#        recvStr = recvBuf[:-1].decode('utf-8')
 #        self.closeTec()
 
-        return recvStr
+#        return recvStr
     
     @staticmethod
     def getTecList():

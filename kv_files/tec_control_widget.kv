@@ -180,6 +180,18 @@
                 disabled: True
                 # background_color: (1,0,0,1)
                 on_release: TECBoxController.startSendAll()
+
+            Button:
+                id: save_all_btn
+                text:'Save to CSV'
+                size_hint_y: None
+                height: 30
+                size_hint_x: None
+                width:140
+                disabled: True
+                # background_color: (1,0,0,1)
+                on_release: TECBoxController.readCsv()
+                
         BorderGridLayout:
             border_width: 1
             border_color: 1,1,1,1

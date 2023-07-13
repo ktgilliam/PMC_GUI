@@ -20,8 +20,6 @@ from terminal_widget import *
 from tip_tilt_control_widget import *
 from tec_control_widget import *
 
-from util_widgets import FloatInput
-
 Window.size = (1100, 700)
 Window.minimum_width, Window.minimum_height = Window.size
 
@@ -31,8 +29,6 @@ Window.minimum_width, Window.minimum_height = Window.size
 # Logger.setLevel(logging.TRACE)
 
 # for integrated settings panel: https://kivy.org/doc/stable/api-kivy.app.html?highlight=resize
-
-
 
 class PMC_GUI(GridLayout):
     def __init__(self, **kwargs): 

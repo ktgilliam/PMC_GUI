@@ -178,6 +178,7 @@ class TECBoxController(DeviceController):
         for tec in list:
             val = self.controllerWidget.getFieldValue(tec.tecNo)
             if val is not None:
+                await self.deviceInterface.sendTecCommand(tec.tecNo, val)
                 print("send: " + str(val))
             pass
     
