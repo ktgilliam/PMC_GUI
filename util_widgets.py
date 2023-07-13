@@ -77,7 +77,11 @@ class FloatInput(InputWithToolTip):
             s = '.'.join( re.sub(self.pat, '', s) for s in substring.split('.', 1) )
         return super().insert_text(s, from_undo=from_undo)
 
-
+    def setValue(self, value):
+        self.cursor_index(0)
+        self.text = ''
+        for ch in str(value):
+            self.insert_text(ch)
             
 class IntegerInput(TextInput):
     unsigned = BooleanProperty(False)
