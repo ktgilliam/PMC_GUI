@@ -1,0 +1,38 @@
+#:kivy 2.2.0
+
+<TerminalWidget>:
+    cols: 1
+    id: id: id.__self__
+    # padding: [5, 5, 5, 5]
+    # term_id: root.id
+    canvas.before:
+        Color:
+            rgba: 1, 1, 1, 1
+        Line:
+            width: 2
+            rectangle: self.x, self.y, self.width, self.height
+    BackgroundLabel:
+        id: title_label
+        text: root.label
+        size_hint_y: None
+        height: 30
+        background_color: (0,0,0,1)
+    BorderGridLayout:
+        border_color: 1,1,1,1
+        border_width: 3
+        cols: 1
+        padding: [10, 10, 10, 10]
+        size_hint: 1, None
+        height: root.height-title_label.height
+        # background_color: ( 0.1, 0.1, 0.1, 1)
+        ScrollView:
+            id: scrlv
+            BackgroundLabel:
+                background_color: (0,0,0,1)
+                markup: True
+                halign: 'left'
+                valign: 'top'
+                size_hint: None,None
+                size: self.texture_size
+                readonly: True
+                text: root.text
