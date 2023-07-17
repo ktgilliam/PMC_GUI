@@ -100,9 +100,9 @@ class TECControlWidget(GridLayout):
         super().__init__(**kwargs)
 
     def loadList(self, tecList):
-        list = self.ids['tec_field_list']
-        list.clearFields()
-        list.createFields(tecList)
+        self.list = self.ids['tec_field_list']
+        self.list.clearFields()
+        self.list.createFields(tecList)
 
     def enableCommandButtons(self):
         all2ZeroBtn = self.ids['all_to_zero_btn']
@@ -113,16 +113,16 @@ class TECControlWidget(GridLayout):
         sendAllBtn.disabled = False
         
     def fillFieldsWithZeros(self):
-        list = self.ids['tec_field_list']
-        list.setAllFieldValues(0.0)
+        # list = self.ids['tec_field_list']
+        self.list.setAllFieldValues(0.0)
         
     def setFieldValue(self, tecNo, val):
-        list = self.ids['tec_field_list']
-        list.setFieldValue(tecNo, val)
+        # list = self.ids['tec_field_list']
+        self.list.setFieldValue(tecNo, val)
         
     def getFieldValue(self, tecNo):
-        list = self.ids['tec_field_list']
-        val = list.getFieldValue(tecNo)
+        # list = self.ids['tec_field_list']
+        val = self.list.getFieldValue(tecNo)
         return val
         
 class TECBoxController(DeviceController):
@@ -218,8 +218,4 @@ class TECBoxController(DeviceController):
                         break
                 if found:
                     tec_cmds.pop(idx)
-                        
-                # if any(i for i in tec_cmds if i[0] == tec.tecNo):
-                #     print("set tec: " + str(tec.tecNo))
-                #     box.controllerWidget.setFieldValue(tec.tecNo, i[1])
             pass

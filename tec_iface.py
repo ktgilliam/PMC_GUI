@@ -84,72 +84,11 @@ class TecControllerInterface(LFASTControllerInterface):
         await self.addKvCommandPairs(TecNo=tecNo, setTecAmps=float(current))
         await trio.sleep(0)
         await self.sendCommands()  
-        # myJsonMsg = {}
-        # myJsonMsg["TECCommand"] = {}
-        # myJsonMsg["TECCommand"]["Board"] = board
-        # myJsonMsg["TECCommand"]["Channel"] = channel-1 # Channels are 0 index
-        # myJsonMsg["TECCommand"]["setHeater"] = pwmPct
-        # myJsonMsgStr = json.dumps(myJsonMsg)
-        # txStr = myJsonMsgStr
-        # enc_txStr = txStr.encode('utf-8')
-        # if (box == 1):
-        #     sent_size = self.connectionA.sendall(enc_txStr)
-        # if (box == 2):
-        #     sent_size = self.connectionB.sendall(enc_txStr)
+        
     async def sendAllToZeroCommand(self):
         await self.addKvCommandPairs(AllToZero=1)
         await trio.sleep(0)
         await self.sendCommands()  
-        
-#     async def getTecByBoxBoard(self, box, board):
-#         """ This routine will keep getting data from the socket connection until there is a termination character.  The termination character is x """
-#         # Need to ask for data from the TEC box
-#         await self.addKvCommandPairs(Board=int(board), Channel=int(channel-1), setHeater=float(pwmPct))
-#         myJsonMsg = {}
-#         myJsonMsg["TECCommand"] = {}
-#         myJsonMsg["TECCommand"]["GetTECByBoard"] = board
-#         myJsonMsgStr = json.dumps(myJsonMsg)
-#         txStr = myJsonMsgStr
-#         if (box == 1):
-#             self.connectionA.sendall(txStr.encode('utf-8'))
-#             # now let's receive the stuff
-#             recvBuf = b''
-#             recvComplete = False
-#             while (recvComplete == False):
-#                 try:
-# #                    print("Time A recv")
-# #                    start = time.time()
-#                     data = self.connectionA.recv(512)
-# #                    end = time.time()
-# #                    print(end - start)
-#                     recvBuf += data
-#                     if data[-1] == 0:
-#                         recvComplete = True
-#                 except TimeoutError:
-#                     recvComplete = True
-#
-#         if (box == 2):
-#             self.connectionB.sendall(txStr.encode('utf-8'))
-#             # now let's receive the stuff
-#             recvBuf = b''
-#             recvComplete = False
-#             while (recvComplete == False):
-#                 try:
-# #                    print("Time B recv")
-# #                    start = time.time()
-#                     data = self.connectionB.recv(512)
-# #                    end = time.time()
-# #                    print(end - start)
-#                     recvBuf += data
-#                     if data[-1] == 0:
-#                         recvComplete = True
-#                 except TimeoutError:
-#                     recvComplete = True
-# 
-#        recvStr = recvBuf[:-1].decode('utf-8')
-#        self.closeTec()
-
-#        return recvStr
     
     @staticmethod
     def getTecList():
@@ -157,11 +96,7 @@ class TecControllerInterface(LFASTControllerInterface):
         TecControllerInterface.tecConfigListChanged = trio.Event()
         return TecControllerInterface.tecConfigList
     
-
-    # numtimes = 0
     async def checkMessages(self, replyJson):
-        # print('\n')
-        # self.numtimes = self.numtimes+1
         listLengthPrev = TecControllerInterface.tecsConfigsReceived
         if "tecConfigList" in replyJson:
             tec_list = replyJson['tecConfigList']
