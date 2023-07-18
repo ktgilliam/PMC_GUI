@@ -6,6 +6,7 @@ from kivy.uix import tabbedpanel
 from kivy.uix.settings import SettingsWithSidebar
 from kivy.lang import Builder
 from kivy.uix.gridlayout import GridLayout
+from kivy.uix.boxlayout import BoxLayout
 from kivy.properties import ObjectProperty, StringProperty, NumericProperty, BooleanProperty
 from kivy.core.window import Window
 # from kivy.clock import Clock
@@ -19,9 +20,10 @@ from json_settings import *
 from terminal_widget import *
 from tip_tilt_control_widget import *
 from tec_control_widget import *
+from mirror_view_widget import *
 
 Window.size = (1100, 700)
-Window.minimum_width, Window.minimum_height = Window.size
+# Window.minimum_width, Window.minimum_height = Window.size
 
 # Uncomment these lines to see all the messages
 # from kivy.logger import Logger
@@ -30,7 +32,7 @@ Window.minimum_width, Window.minimum_height = Window.size
 
 # for integrated settings panel: https://kivy.org/doc/stable/api-kivy.app.html?highlight=resize
 
-class PMC_GUI(GridLayout):
+class PMC_GUI(BoxLayout):
     def __init__(self, **kwargs): 
         super().__init__(**kwargs)
     
@@ -61,6 +63,7 @@ class PMC_APP(App):
         Builder.load_file('kv_files/util_widgets.kv')
         Builder.load_file('kv_files/tip_tilt_control_widget.kv')
         Builder.load_file('kv_files/tec_control_widget.kv')
+        Builder.load_file('kv_files/mirror_view_widget.kv')
         Builder.load_file('kv_files/terminal_widget.kv')
         gui = Builder.load_file('kv_files/pmc_gui.kv')
         return gui
