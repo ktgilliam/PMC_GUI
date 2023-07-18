@@ -5,7 +5,12 @@ from kivy.properties import ObjectProperty, StringProperty, NumericProperty, Boo
 from kivy.uix.widget import Widget
 
 class TecWidget(Widget):
-    pass
+    diameter = NumericProperty(15)
+    rho = NumericProperty()
+    theta = NumericProperty(0)
+    x_loc = NumericProperty()
+    y_loc = NumericProperty()
+    
 
 class MirrorWidget(Widget):
     diameter = NumericProperty(100)

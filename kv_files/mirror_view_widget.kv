@@ -1,49 +1,58 @@
 #:kivy 2.2.0
+#:import math math
 # <MirrorViewWidget_tmp@RelativeLayout+Border>
 #     border_width: 1
 #     border_color: 1,0,0,1
+<TecWidget>:
+    diameter:15
+    x_loc: self.rho*math.cos(self.theta)
+    y_loc: self.rho*math.sin(self.theta)
+    canvas.before:
+        Color:
+            rgb: 1, 0, 0
+        Ellipse:
+            size: self.diameter, self.diameter
+            # pos: (self.center_x - self.diameter/2) + self.x_loc, (self.center_y - self.diameter/2) + self.y_loc
+            pos: (self.center_x - self.diameter/2) + self.x_loc, (self.center_y - self.diameter/2) + self.y_loc
+    size_hint: None,None
+    # RelativeLayout:
+        # Label:
+        #     text:'test'
 
 <MirrorViewWidget>:
     # border_color: 1,0,0,1
-    
     anchor_x: 'center'
     anchor_y: 'center'
     # Widget:
     # pos: self.parent.pos
-    
+    rho_scale: 1
     MirrorWidget:
-        diameter: self.parent.height*0.9
+        id: mirror_circle
+        diameter: self.parent.height*0.95
         # dia: 400
         canvas.before:
             Color:
-                rgba: 1, 1, 1, 1  # white
+                rgba: 1, 1, 1, 1
             Ellipse:
                 size: self.diameter, self.diameter
                 pos: self.center_x - self.diameter/2, self.center_y - self.diameter/2
-                # pos: self.pos[1], self.pos_y
         size_hint: None,None
 
+    TecWidget:
+        rho: 100
+        theta: 100*math.pi/180
 
+    TecWidget:
+        rho: 60
+        theta: 45*math.pi/180
+        # pos: mirror_circle.center_x, mirror_circle.center_y
     # size: self.parent.size
+
     # Button:
     #     pos_hint: {'center_x': 0.5, 'center_y': 0.5}
-    #     text:'*'
+    #     text:'2'
     #     size_hint: None, None
-    #     size: 30,30
-
-    # # diameter: self.height * 0.9
-    # Widget:
-    #     # pos_hint: {'center_x': 0.5, 'center_y': 0.5}
-    #     canvas.before:
-    #         Color:
-    #             rgb: 1, 0, 1
-    #         Ellipse:
-    #             size: 100, 100
-    #             pos: self.center_X, self.center_y
-    #             # pos: self.parent.pos
-    #             # pos: 50, (self.height-self.diameter)/2
-    #             # size: self.diameter, self.diameter
-    #     size_hint: None, None
+        # size: 30,30
 
 <MirrorViewControlPanel>:
     cols: 2
