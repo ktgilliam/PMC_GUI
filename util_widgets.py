@@ -127,4 +127,3 @@ class IntegerInput(TextInput):
             
         if len(self.text) < max_len:
             return super().insert_text(re.sub(self.pat, '', substring), from_undo=from_undo)
-

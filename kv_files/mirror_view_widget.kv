@@ -1,23 +1,36 @@
 #:kivy 2.2.0
 #:import math math
 # <MirrorViewWidget_tmp@RelativeLayout+Border>
-#     border_width: 1
-#     border_color: 1,0,0,1
+#:import TECBoxController tec_control_widget.TECBoxController
+
 <TecWidget>:
     diameter:15
+    rho: self.rho_norm * self.rho_max
     x_loc: self.rho*math.cos(self.theta)
     y_loc: self.rho*math.sin(self.theta)
+    x_loc_abs: (self.center_x - self.diameter/2) + self.x_loc
+    y_loc_abs: (self.center_y - self.diameter/2) + self.y_loc
     canvas.before:
         Color:
-            rgb: 1, 0, 0
+            rgb: self.spot_rgb
         Ellipse:
             size: self.diameter, self.diameter
             # pos: (self.center_x - self.diameter/2) + self.x_loc, (self.center_y - self.diameter/2) + self.y_loc
-            pos: (self.center_x - self.diameter/2) + self.x_loc, (self.center_y - self.diameter/2) + self.y_loc
+            pos: self.x_loc_abs, self.y_loc_abs
     size_hint: None,None
-    # RelativeLayout:
-        # Label:
-        #     text:'test'
+
+    Button:
+        background_color: 0,0,0,0
+        color: 0,0,0,1
+        font_size: 12
+        size_hint: None, None
+        size: 30,30
+        text: '#'+str(self.parent.id_no)
+        # pos: self.parent.x_loc_abs+self.texture_size[0]/2, self.parent.y_loc_abs+self.texture_size[1]/2
+        pos: self.parent.x_loc_abs, self.parent.y_loc_abs
+        
+        on_release: TECBoxController.readCsv()
+        # disabled: False
 
 <MirrorViewWidget>:
     # border_color: 1,0,0,1
@@ -26,8 +39,9 @@
     # Widget:
     # pos: self.parent.pos
     rho_scale: 1
-    MirrorWidget:
+    MirrorCircleWidget:
         id: mirror_circle
+        phys_diameter: 0.8776
         diameter: self.parent.height*0.95
         # dia: 400
         canvas.before:
@@ -39,30 +53,73 @@
         size_hint: None,None
 
     TecWidget:
-        rho: 100
+        id_no: 1
+        rho_max: mirror_circle.diameter/2
+        rho_norm: 0.9
         theta: 100*math.pi/180
+        spot_rgb: 0,1,0
 
     TecWidget:
-        rho: 60
-        theta: 45*math.pi/180
-        # pos: mirror_circle.center_x, mirror_circle.center_y
-    # size: self.parent.size
+        id_no: 2
+        rho_max: mirror_circle.diameter/2
+        rho_norm: 0.7
+        theta: 270*math.pi/180
 
-    # Button:
-    #     pos_hint: {'center_x': 0.5, 'center_y': 0.5}
-    #     text:'2'
-    #     size_hint: None, None
-        # size: 30,30
+    TecWidget:
+        id_no: 3
+        rho_max: mirror_circle.diameter/2
+        rho_norm: 0.5
+        theta: 200*math.pi/180
+        spot_rgb: 0,1,0
+
+    TecWidget:
+        id_no: 4
+        rho_max: mirror_circle.diameter/2
+        rho_norm: 0.3
+        theta: 45*math.pi/180
+        spot_rgb: 0,1,0
+
+    TecWidget:
+        id_no: 5
+        rho_max: mirror_circle.diameter/2
+        rho_norm: 0.1
+        theta: 125*math.pi/180
+        spot_rgb: 0,1,0
 
 <MirrorViewControlPanel>:
     cols: 2
     MirrorViewWidget:
-    GridLayout:
+    TecInfoPanel:
         cols: 1
+        size_hint_x: None
+        width:300
         Button:
-            text: '1'
+            size_hint_y: None
+            height: 40
+            text: 'Load Config'
+        Label:
+            text: 'TEC Config Options:'
+            halign: 'center'
+            size_hint_y: None
+            height: 40
+        BorderedLabeledFloatInput:
+            size_hint_y: None
+            height: 40
+            label_text: 'Some value:'     
         Button:
-            text: '2'
+            size_hint_y: None
+            height: 40
+            text: 'A button'
         Button:
-            text: '3'
-        
+            size_hint_y: None
+            height: 40
+            text: 'Another Button'
+        GridLayout:
+            cols: 2
+            Label:
+                size_hint_y: None
+                height: 40
+                text:'Enabled: '
+            CheckBox:
+                size_hint_y: None
+                height: 40

@@ -22,9 +22,10 @@ from tip_tilt_control_widget import *
 from tec_control_widget import *
 from mirror_view_widget import *
 
-Window.size = (1100, 700)
-Window.minimum_width, Window.minimum_height = Window.size
-
+# from kivy.config import Config
+# # Config.set('graphics', 'resizable', False)
+# Window.size = (1100, 700)
+# Window.minimum_width, Window.minimum_height = Window.system_size
 # Uncomment these lines to see all the messages
 # from kivy.logger import Logger
 # import logging
@@ -66,6 +67,8 @@ class PMC_APP(App):
         Builder.load_file('kv_files/mirror_view_widget.kv')
         Builder.load_file('kv_files/terminal_widget.kv')
         gui = Builder.load_file('kv_files/pmc_gui.kv')
+        Window.size = (1100, 700)
+        Window.minimum_width, Window.minimum_height = Window.system_size
         return gui
 
     def build_config(self, config):
