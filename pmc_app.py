@@ -69,6 +69,7 @@ class PMC_APP(App):
         gui = Builder.load_file('kv_files/pmc_gui.kv')
         Window.size = (1100, 700)
         Window.minimum_width, Window.minimum_height = Window.system_size
+        Window.size = (1100, 700)
         return gui
 
     def build_config(self, config):
