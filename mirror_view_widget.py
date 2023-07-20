@@ -16,9 +16,10 @@ class TecConfiguration():
 class TecWidget(Widget):
     id_no = NumericProperty(0)
     spot_diameter = NumericProperty(15)
-    rho_norm = BoundedNumericProperty(0, min=-0.5, max=0.5)
-    rho_max = NumericProperty(rebind=True, allownone=True)
+    # rho_norm = BoundedNumericProperty(0, min=-0.5, max=0.5)
+    rho_norm = NumericProperty()
     rho = NumericProperty()
+    rho_phys = NumericProperty(0)
     theta = NumericProperty(0)
     x_loc = NumericProperty()
     y_loc = NumericProperty()
@@ -27,22 +28,27 @@ class TecWidget(Widget):
     spot_rgb = ListProperty([0,1,0])
     mirror_circle_prop = ObjectProperty(rebind=True)
     # mirror_circle_prop = ObjectProperty()
+    mirror_dia = NumericProperty()
+    _firstTime = True
+    rho_max = NumericProperty(0, rebind=True, allownone=True)
     
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        tmp = 0
+        
+        if TecWidget._firstTime:
+            TecWidget.rho_max = 0
+            TecWidget._firstTime = False
+            
+        if self.rho_phys > TecWidget.rho_max:
+            TecWidget.rho_max = self.rho_phys
+        
     def connect_mirror_circle(self, mc):
         self.mirror_circle_prop = mc
-        tmp = mc.property('diameter')
-        # test = self.mirror_circle_prop.diameter
-        # self.bind(rho_max=self.mirror_circle_prop.setter('diameter'))
-        self.bind(rho_max=mc.setter('diameter'))
-        pass
     
-    def on_rho_max(self, instance, value):
-        pass
-    
-    
-    # def on_mirror_circle_prop(self, instance, mcw):
-    #     self.rho_max = mcw.diameter
+    # def on_rho_max(self, instance, value):
     #     pass
+    
     
 class MirrorCircleWidget(Widget):
     diameter = NumericProperty(0)
@@ -82,19 +88,17 @@ class MirrorViewWidget(AnchorLayout):
             return
         MirrorViewWidget.instance.tec_centroid_list = centroid_list
         MirrorViewWidget.instance.populateTecWidgets()
-        
+
+    
     def populateTecWidgets(self):
-        mc = MirrorViewWidget.instance.ids['mirror_circle']
         for tec in self.tec_centroid_list:
-            tf = TecWidget(id_no=tec[0], theta=tec[1], rho_norm=tec[2])
-            # tf.rho_max = self.diameter
-            # tf.bind(rho_max=self.setter('diameter'))
+            tf = TecWidget(id_no=tec[0], theta=tec[1], rho_phys=tec[2])
             tf.connect_mirror_circle(self)
             self.ids['TEC'+str(tec[0])] = tf
             self.add_widget(tf)
             
-    # def on_height(self, instance, value):
-    #     pass
+    def on_height(self, instance, value):
+        pass
     
 class MirrorViewControlPanel(GridLayout):
     pass

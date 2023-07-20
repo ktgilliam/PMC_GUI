@@ -2,16 +2,14 @@
 #:import math math
 # <MirrorViewWidget_tmp@RelativeLayout+Border>
 #:import MirrorViewWidget mirror_view_widget.MirrorViewWidget
+#:import TecWidget mirror_view_widget.TecWidget
 
 <TecWidget>:
     spot_diameter:18
-    # rho_max: 100 if 1==0 else 200
-    rho_max: self.mirror_circle_prop.diameter if self.mirror_circle_prop!= None else 200
-    # rho_max: self.mirror_circle_prop.diameter
-    # rho_max: self.parent.height*0.9
-    rho: self.rho_norm * self.rho_max
-    x_loc: self.rho*math.cos(self.theta)
-    y_loc: self.rho*math.sin(self.theta)
+    mirror_dia: self.mirror_circle_prop.diameter if self.mirror_circle_prop!= None else 200
+    rho_norm: self.mirror_dia*self.rho_phys/TecWidget.rho_max/2 if type(TecWidget.rho_max) == float else 0.5
+    x_loc: self.rho_norm*math.cos(self.theta)
+    y_loc: self.rho_norm*math.sin(self.theta)
     x_loc_abs: (self.center_x - self.spot_diameter/2) + self.x_loc
     y_loc_abs: (self.center_y - self.spot_diameter/2) + self.y_loc
     canvas.before:
