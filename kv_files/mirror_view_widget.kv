@@ -1,0 +1,136 @@
+#:kivy 2.2.0
+#:import math math
+# <MirrorViewWidget_tmp@RelativeLayout+Border>
+#:import MirrorViewWidget mirror_view_widget.MirrorViewWidget
+#:import TecWidget mirror_view_widget.TecWidget
+
+<TecWidget>:
+    spot_diameter:18
+    mirror_dia: self.mirror_circle_prop.diameter if self.mirror_circle_prop!= None else 200
+    rho_norm: self.mirror_dia*self.rho_phys/TecWidget.rho_max/2 if type(TecWidget.rho_max) == float else 0.5
+    x_loc: self.rho_norm*math.cos(self.theta)
+    y_loc: self.rho_norm*math.sin(self.theta)
+    x_loc_abs: (self.center_x - self.spot_diameter/2) + self.x_loc
+    y_loc_abs: (self.center_y - self.spot_diameter/2) + self.y_loc
+    canvas.before:
+        Color:
+            rgb: self.spot_rgb
+        Ellipse:
+            size: self.spot_diameter, self.spot_diameter
+            # pos: (self.center_x - self.diameter/2) + self.x_loc, (self.center_y - self.diameter/2) + self.y_loc
+            pos: self.x_loc_abs, self.y_loc_abs
+    size_hint: None,None
+
+    Button:
+        background_color: 0,0,0,0
+        color: 0,0,0,1
+        font_size: 14
+        size_hint: None, None
+        size: 30,30
+        text: ''+str(self.parent.id_no)
+        bold: True
+        # pos: self.parent.x_loc_abs+self.texture_size[0]/2, self.parent.y_loc_abs+self.texture_size[1]/2
+        pos: self.parent.x_loc_abs-5, self.parent.y_loc_abs-5
+        
+        # on_release: TECBoxController.readCsv()
+        # disabled: False
+
+<MirrorViewWidget>:
+    # border_color: 1,0,0,1
+    anchor_x: 'center'
+    anchor_y: 'center'
+    # Widget:
+    # pos: self.parent.pos
+    rho_scale: 1
+    MirrorCircleWidget:
+        id: mirror_circle
+        diameter: self.parent.diameter
+        # dia: 400
+        canvas.before:
+            Color:
+                rgba: 1, 1, 1, 1
+            Ellipse:
+                size: self.diameter, self.diameter
+                pos: self.center_x - self.diameter/2, self.center_y - self.diameter/2
+        size_hint: None,None
+
+    # TecWidget:
+    #     id_no: 1
+    #     rho_max: mirror_circle.diameter
+    #     rho_norm: 0.9/2
+    #     theta: 100*math.pi/180
+
+    # TecWidget:
+    #     id_no: 2
+    #     rho_max: mirror_circle.diameter
+    #     rho_norm: 0.7/2
+    #     theta: 270*math.pi/180
+
+    # TecWidget:
+    #     id_no: 3
+    #     rho_max: mirror_circle.diameter
+    #     rho_norm: 0.5/2
+    #     theta: 200*math.pi/180
+
+    # TecWidget:
+    #     id_no: 45
+    #     rho_max: mirror_circle.diameter
+    #     rho_norm: 0.3/2
+    #     theta: 45*math.pi/180
+    #     spot_rgb: 0.7, 0.7, 0.7
+
+    # TecWidget:
+    #     id_no: 132
+    #     rho_max: mirror_circle.diameter
+    #     rho_norm: 0.1/2
+    #     theta: 125*math.pi/180
+
+<MirrorViewControlPanel>:
+    cols: 2
+    MirrorViewWidget:
+        diameter: self.height*0.9
+    GridLayout:
+        cols: 1
+        size_hint_x: None
+        width:300
+        Button:
+            size_hint_y: None
+            height: 40
+            text: 'Load Config'
+            on_release: MirrorViewWidget.readCsv()
+        BorderGridLayout:
+            border_color: 1,1,1,1
+            border_width: 1
+            cols: 1
+            Label:
+                text: 'TEC Config Options:'
+                halign: 'center'
+                size_hint_y: None
+                height: 40
+            BorderGridLayout:
+                cols: 1
+                BorderedLabeledFloatInput:
+                    size_hint_y: None
+                    height: 40
+                    label_text: 'Some value:'     
+                BorderedLabeledFloatInput:
+                    size_hint_y: None
+                    height: 40
+                    label_text: 'Some other value:'    
+                Button:
+                    size_hint_y: None
+                    height: 40
+                    text: 'A button'
+                Button:
+                    size_hint_y: None
+                    height: 40
+                    text: 'Another Button'
+                GridLayout:
+                    cols: 2
+                    Label:
+                        size_hint_y: None
+                        height: 40
+                        text:'Enabled: '
+                    CheckBox:
+                        size_hint_y: None
+                        height: 40

@@ -36,6 +36,8 @@
     border_width: 1
     # border_color: (0,0,0,0)
 
+<BorderRelativeLayout@RelativeLayout+Border>
+    border_width: 1
 
 <BorderLabel@Label+Border>
     border_width: 1
@@ -57,3 +59,14 @@
     #     Rectangle:
     #         size: self.size
     #         pos: self.pos
+<BorderedLabeledFloatInput@GridLayout+Border>
+    cols: 2
+    label_text: ''
+    Label:
+        id: blfi_label
+        size_hint: None, None
+        size: self.texture_size[0]+10, self.texture_size[1]+5
+        text:root.label_text
+    FloatInput:
+        size_hint_y: None
+        height: blfi_label.height
