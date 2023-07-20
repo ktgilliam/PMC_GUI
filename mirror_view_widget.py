@@ -34,12 +34,9 @@ class TecWidget(Widget):
     
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        tmp = 0
-        
         if TecWidget._firstTime:
             TecWidget.rho_max = 0
             TecWidget._firstTime = False
-            
         if self.rho_phys > TecWidget.rho_max:
             TecWidget.rho_max = self.rho_phys
         
@@ -71,6 +68,8 @@ class MirrorViewWidget(AnchorLayout):
             filetypes=[("CSV File", ".csv")])
         print(file_path)
         centroid_list = []
+        if len(MirrorViewWidget.instance.tec_centroid_list) > 0:
+            MirrorViewWidget.resetTecWidgets()
         try:
             with open(file_path, newline='') as csvfile:
                 spamreader = csv.reader(csvfile, delimiter=',', quotechar='|')
@@ -89,12 +88,22 @@ class MirrorViewWidget(AnchorLayout):
         MirrorViewWidget.instance.tec_centroid_list = centroid_list
         MirrorViewWidget.instance.populateTecWidgets()
 
-    
+    def resetTecWidgets():
+        MirrorViewWidget.instance.tec_centroid_list = []
+        # [tec for tec in MirrorViewWidget.instance.children if tec.id.startswith('TEC')]:
+        rmList = []
+        for child in MirrorViewWidget.instance.children:
+            if type(child) == TecWidget:
+                rmList.append(child)
+        for child in rmList:
+            MirrorViewWidget.instance.remove_widget(child)
+            
     def populateTecWidgets(self):
+        
         for tec in self.tec_centroid_list:
             tf = TecWidget(id_no=tec[0], theta=tec[1], rho_phys=tec[2])
             tf.connect_mirror_circle(self)
-            self.ids['TEC'+str(tec[0])] = tf
+            tf.id = 'TEC'+str(tec[0])
             self.add_widget(tf)
             
     def on_height(self, instance, value):
