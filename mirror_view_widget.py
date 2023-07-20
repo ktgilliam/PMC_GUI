@@ -90,7 +90,6 @@ class MirrorViewWidget(AnchorLayout):
 
     def resetTecWidgets():
         MirrorViewWidget.instance.tec_centroid_list = []
-        # [tec for tec in MirrorViewWidget.instance.children if tec.id.startswith('TEC')]:
         rmList = []
         for child in MirrorViewWidget.instance.children:
             if type(child) == TecWidget:
