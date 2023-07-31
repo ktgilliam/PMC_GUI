@@ -1,7 +1,6 @@
 from kivy.uix.gridlayout import GridLayout
-from kivy.uix.relativelayout import RelativeLayout
 from kivy.uix.anchorlayout import AnchorLayout
-from kivy.properties import ObjectProperty, StringProperty, NumericProperty, BooleanProperty, ListProperty, DictProperty, BoundedNumericProperty
+from kivy.properties import ObjectProperty, NumericProperty, BooleanProperty, ListProperty, BoundedNumericProperty
 from kivy.uix.widget import Widget
 
 import tkinter as tk
@@ -16,8 +15,7 @@ class TecConfiguration():
 class TecWidget(Widget):
     id_no = NumericProperty(0)
     spot_diameter = NumericProperty(15)
-    # rho_norm = BoundedNumericProperty(0, min=-0.5, max=0.5)
-    rho_norm = NumericProperty()
+    rho_norm = BoundedNumericProperty(0, min=0, max=1)
     rho = NumericProperty()
     rho_phys = NumericProperty(0)
     theta = NumericProperty(0)
@@ -27,10 +25,9 @@ class TecWidget(Widget):
     y_loc_abs = NumericProperty()
     spot_rgb = ListProperty([0,1,0])
     mirror_circle_prop = ObjectProperty(rebind=True)
-    # mirror_circle_prop = ObjectProperty()
-    mirror_dia = NumericProperty()
-    _firstTime = True
+    mirror_px_dia = NumericProperty(rebind=True)
     rho_max = NumericProperty(0, rebind=True, allownone=True)
+    _firstTime = True
     
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -42,10 +39,6 @@ class TecWidget(Widget):
         
     def connect_mirror_circle(self, mc):
         self.mirror_circle_prop = mc
-    
-    # def on_rho_max(self, instance, value):
-    #     pass
-    
     
 class MirrorCircleWidget(Widget):
     diameter = NumericProperty(0)
@@ -72,17 +65,12 @@ class MirrorViewWidget(AnchorLayout):
             MirrorViewWidget.resetTecWidgets()
         try:
             with open(file_path, newline='') as csvfile:
-                spamreader = csv.reader(csvfile, delimiter=',', quotechar='|')
-                headerRow = True
-                for row in spamreader:
-                    if headerRow:
-                        headerRow = False
-                        continue
-                    tec_no = int(row[0])
-                    theta = float(row[1])
-                    rho_norm = float(row[2])
-                    centroid_list.append((tec_no, theta, rho_norm))
-                    pass
+                reader = csv.DictReader(csvfile)
+                for row in reader:
+                    tec_no = int(row['TEC'])
+                    theta = float(row['theta'])
+                    rho_phys = float(row['rho'])
+                    centroid_list.append((tec_no, theta, rho_phys))
         except FileNotFoundError:
             return
         MirrorViewWidget.instance.tec_centroid_list = centroid_list
