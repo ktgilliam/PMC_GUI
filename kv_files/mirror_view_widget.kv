@@ -58,33 +58,59 @@
 
 <Zernike_Widget>:
     cols: 1
+    n: math.ceil((-3+math.sqrt(9+8*self.j))/2)
+    m: 2*self.j-self.n*(self.n+2)
     Label:
         size_hint_y: None
         height: 40
         text: 'Zernike Parameters'
+    BoxLayout:
+        # cols: 3
+        size_hint_y: None
+        height: 40
+        Label:
+            text: 'Index [ j ]:'
+            # bold: True 
+            font_size: 18
+        Button:
+            size_hint_x: None
+            width: 40
+            text: '+'
+            on_release: root.increment(); j_input.set_value(root.j)
+        IntegerInput:
+            id: j_input
+            size_hint_x: None
+            width: 50
+            unsigned: True
+            font_size: 18
+            text: '0'
+            on_text: root.j = self.value; 
+        Button:
+            size_hint_x: None
+            width: 40
+            text: '-'
+            on_release: root.decrement(); j_input.set_value(root.j) 
+        Label:
+    BoxLayout:
+        # cols: 3
+        size_hint_y: None
+        height: 40    
+        Label:
+        Label:
+            size_hint: None, None
+            size: 130, 40
+            text: '[n, m] = ['+str(root.n) +', '+ str(root.m)+']'
+            bold: True 
+        Label:
     GridLayout:
         cols: 2
-        # size_hint_y: None
-        # height: 50
-        Label:
-            size_hint: None, None
-            size: 130, 40
-            text: 'm:'
-        IntegerInput:
-            size_hint: None, None
-            size: 80, 40
-            # height: 40
-            # disabled: root.opts_disabled
-        Label:
-            size_hint: None, None
-            size: 130, 40
-            text: 'n:'
-        IntegerInput:
-            size_hint: None, None
-            size: 80, 40
-            # height: 40
-            initial_value: 0
-            # disabled: root.opts_disabled
+        size_hint_y: None
+        height: 100
+
+        # Label:
+        #     size_hint: None, None
+        #     size: 130, 40
+        #     text: 'n:'
         Label:
             size_hint: None, None
             size: 180, 40
@@ -104,10 +130,22 @@
             size_hint: None, None
             size: 100, 40
             # disabled: root.opts_disabled
+    BoxLayout:    
+        # canvas.before:
+        #     Color:
+        #         rgb: 1,0,0
+        #     Rectangle:
+        #         size: self.size
+        #         pos: self.pos
+        orientation: 'horizontal'
+        size_hint_y: None
+        height: 40
+        Label:
         Button:
             size_hint: None, None
             size: 80, 40
             text: 'Map'
+        Label:
 
 <MirrorViewControlPanel>:
     cols: 2

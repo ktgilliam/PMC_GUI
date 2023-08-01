@@ -63,7 +63,7 @@
 <IntegerInput>:
     font_size: 14
     multiline: False
-    value: 0 if len(self.text) == 0 else int(self.text)
+    value: 0 if len(self.text) == 0 else (int(self.text) if self.text != '-' else 0)
 
 <BorderedLabeledFloatInput@GridLayout+Border>
     cols: 2

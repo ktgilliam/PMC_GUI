@@ -153,4 +153,17 @@ class MirrorViewControlPanel(GridLayout):
         cmd_fld.text = str(tec.mag_value)
         
 class Zernike_Widget(GridLayout):
-    pass
+    j = NumericProperty(0)
+    n = NumericProperty(0)
+    m = NumericProperty(0)
+    def check_inputs(self):
+        pass
+    
+    def increment(self):
+        self.j = self.j+1
+        
+    def decrement(self):
+        if self.j > 0:
+            self.j = self.j-1
+        else:
+            self.j = 0
