@@ -16,13 +16,13 @@ from kivy.core.window import Window
 from json_settings import *
 
 
-# from pmc_iface import DIRECTION, PrimaryMirrorControl
 from terminal_widget import *
 from tip_tilt_control_widget import *
 from tec_control_widget import *
 from mirror_view_widget import *
 
-# from kivy.config import Config
+from kivy.config import Config
+Config.set('input', 'mouse', 'mouse,multitouch_on_demand')
 # # Config.set('graphics', 'resizable', False)
 # Window.size = (1100, 700)
 # Window.minimum_width, Window.minimum_height = Window.system_size
@@ -69,7 +69,7 @@ class PMC_APP(App):
         gui = Builder.load_file('kv_files/pmc_gui.kv')
         Window.size = (1100, 700)
         Window.minimum_width, Window.minimum_height = Window.system_size
-        Window.size = (1100, 700)
+        # Window.size = (1100, 700)
         return gui
 
     def build_config(self, config):

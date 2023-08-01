@@ -49,7 +49,7 @@ class InputWithToolTip(TextInput):
     
 #  Widgets
 class FloatInput(InputWithToolTip):
-    
+    value = NumericProperty()
     pat = re.compile('[^0-9]') 
     def on_focus(self, instance, value):
         if not value:

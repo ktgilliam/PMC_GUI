@@ -2,6 +2,7 @@
 #:import math math
 #:import MirrorViewWidget mirror_view_widget.MirrorViewWidget
 #:import TecWidget mirror_view_widget.TecWidget
+#:import ColorMap colormap.ColorMap
 
 <TecWidget>:
     spot_diameter:18
@@ -11,10 +12,12 @@
     y_loc: self.mirror_px_dia*self.rho_norm*math.sin(self.theta)
     x_loc_abs: (self.center_x - self.spot_diameter/2) + self.x_loc
     y_loc_abs: (self.center_y - self.spot_diameter/2) + self.y_loc
-
+    spot_rgb: ColorMap.get_rgb(self.mag_value, [-10, 10]) if self.enabled else ([0.7, 0.7, 0.7])
+    
     canvas.before:
         Color:
             rgb: self.spot_rgb
+            # rgb:  if self.enabled else ([0.7, 0.7, 0.7])
         Ellipse:
             size: self.spot_diameter, self.spot_diameter
             # pos: (self.center_x - self.diameter/2) + self.x_loc, (self.center_y - self.diameter/2) + self.y_loc
@@ -31,8 +34,7 @@
         bold: True
         # pos: self.parent.x_loc_abs+self.texture_size[0]/2, self.parent.y_loc_abs+self.texture_size[1]/2
         pos: self.parent.x_loc_abs-5, self.parent.y_loc_abs-5
-        
-        # on_release: TECBoxController.readCsv()
+        on_release: TecWidget.activate_self(self.parent)
         # disabled: False
 
 <MirrorViewWidget>:
@@ -54,52 +56,180 @@
                 pos: self.center_x - self.diameter/2, self.center_y - self.diameter/2
         size_hint: None,None
 
+<Zernike_Widget>:
+    cols: 1
+    Label:
+        size_hint_y: None
+        height: 40
+        text: 'Zernike Parameters'
+    GridLayout:
+        cols: 2
+        # size_hint_y: None
+        # height: 50
+        Label:
+            size_hint: None, None
+            size: 130, 40
+            text: 'm:'
+        IntegerInput:
+            size_hint: None, None
+            size: 80, 40
+            # height: 40
+            # disabled: root.opts_disabled
+        Label:
+            size_hint: None, None
+            size: 130, 40
+            text: 'n:'
+        IntegerInput:
+            size_hint: None, None
+            size: 80, 40
+            # height: 40
+            initial_value: 0
+            # disabled: root.opts_disabled
+        Label:
+            size_hint: None, None
+            size: 180, 40
+            text: 'Angle Offset [deg]: '
+        FloatInput:
+            id: angle_flt
+            size_hint: None, None
+            size: 100, 40
+            initial_value: 0.0
+            # disabled: root.opts_disabled
+        Label:
+            size_hint: None, None
+            size: 180, 40
+            text: 'Scale: '
+        FloatInput:
+            id: scale_flt
+            size_hint: None, None
+            size: 100, 40
+            # disabled: root.opts_disabled
+        Button:
+            size_hint: None, None
+            size: 80, 40
+            text: 'Map'
+
 <MirrorViewControlPanel>:
     cols: 2
+    opts_disabled: True if root.active_tec == None else False
+    # GridLayout: 
+    #     cols: 1
     MirrorViewWidget:
+        id: mvw
         diameter: self.height*0.9
+        # GridLayout:
+        #     cols: 2
+        #     size_hint: None, None
+        #     size: 200, 50
+        #     CheckBox:
+        #         id: cb1
+        #         size_hint_y: None
+        #         height: 40
+        #     CheckBox:
+        #         id: cb2
+        #         size_hint_y: None
+        #         height: 40
+
+
     GridLayout:
-        cols: 1
+        cols: 2
         size_hint_x: None
-        width:300
+        width:600
         Button:
             size_hint_y: None
             height: 40
-            text: 'Load Config'
+            text: 'Load Mirror Config'
             on_release: MirrorViewWidget.readCsv()
+        Button:
+            size_hint_y: None
+            height: 40
+            text: 'Save Mirror Config'
+            disabled: not root.cfg_loaded
+
         BorderGridLayout:
             border_color: 1,1,1,1
             border_width: 1
             cols: 1
-            Label:
-                text: 'TEC Config Options:'
+            Label: 
+                text: root.active_tec.id if root.active_tec != None else '--'
+                bold: True
                 halign: 'center'
                 size_hint_y: None
                 height: 40
-            BorderGridLayout:
+                disabled: root.opts_disabled
+            GridLayout:
                 cols: 1
-                BorderedLabeledFloatInput:
-                    size_hint_y: None
-                    height: 40
-                    label_text: 'Some value:'     
-                BorderedLabeledFloatInput:
-                    size_hint_y: None
-                    height: 40
-                    label_text: 'Some other value:'    
-                Button:
-                    size_hint_y: None
-                    height: 40
-                    text: 'A button'
-                Button:
-                    size_hint_y: None
-                    height: 40
-                    text: 'Another Button'
                 GridLayout:
                     cols: 2
+                    # border_color: 1,1,1,1
+                    # border_width: 1
+                    Label:
+                        text: 'Command [W]:'  
+                        size_hint: None, None
+                        size: 150, 40
+                        halign: 'left'
+                        disabled: root.opts_disabled
+                    FloatInput:
+                        id: cmd_input
+                        size_hint: None, None
+                        size: 130, 40
+                        disabled: root.opts_disabled
+                        on_text: root.update_tec_color(self.value)
+                        # on_focus: #print(args); print(self.value)
+                    Label:
+                        text: 'Temp [C]:' 
+                        size_hint: None, None
+                        size: 150, 40
+                        disabled: root.opts_disabled
+                    FloatInput:
+                        size_hint: None, None
+                        size: 130, 40
+                        disabled: True #root.opts_disabled
                     Label:
                         size_hint_y: None
                         height: 40
                         text:'Enabled: '
+                        disabled: root.opts_disabled
                     CheckBox:
+                        id: tec_enabled_cb
                         size_hint_y: None
                         height: 40
+                        disabled: root.opts_disabled
+                        active: root.active_tec.enabled if root.active_tec != None else False
+                        on_release : root.setTecEnabledState(self.active)
+                BorderGridLayout:
+                    border_color: 1,1,1,1
+                    border_width: 1
+                    cols: 2
+                    Button:
+                        id: enable_all_btn
+                        size_hint_y: None
+                        height: 40
+                        text: 'Enable All'
+                        disabled: not root.cfg_loaded
+                        on_release: mvw.enableAll(True)
+                    Button:
+                        id: disable_all_btn
+                        size_hint_y: None
+                        height: 40
+                        text: 'Disable All'
+                        disabled: not root.cfg_loaded
+                        on_release: mvw.enableAll(False)
+                    Button:
+                        size_hint_y: None
+                        height: 40
+                        text: 'All to Zero'
+                        disabled: not root.cfg_loaded
+                        on_release: mvw.all_to_zero(); cmd_input.setValue(0.0)
+
+                    Button:
+                        size_hint_y: None
+                        height: 40
+                        text: 'Send Commands'
+                        disabled: not root.cfg_loaded
+                        on_release: mvw.update_tec_map(); print('### Send commands here?')
+        BorderGridLayout:
+            border_color: 1,1,1,1
+            cols: 1
+            Zernike_Widget:
+                # on_release: 
