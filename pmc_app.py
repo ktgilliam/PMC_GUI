@@ -21,7 +21,8 @@ from tip_tilt_control_widget import *
 from tec_control_widget import *
 from mirror_view_widget import *
 
-# from kivy.config import Config
+from kivy.config import Config
+Config.set('input', 'mouse', 'mouse,multitouch_on_demand')
 # # Config.set('graphics', 'resizable', False)
 # Window.size = (1100, 700)
 # Window.minimum_width, Window.minimum_height = Window.system_size

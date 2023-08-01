@@ -75,10 +75,22 @@
         #         id: cb2
         #         size_hint_y: None
         #         height: 40
+
+
     GridLayout:
         cols: 2
         size_hint_x: None
         width:600
+        Button:
+            size_hint_y: None
+            height: 40
+            text: 'Load Mirror Config'
+            on_release: MirrorViewWidget.readCsv()
+        Button:
+            size_hint_y: None
+            height: 40
+            text: 'Save Mirror Config'
+            disabled: not root.cfg_loaded
         BorderGridLayout:
             border_color: 1,1,1,1
             cols: 1
@@ -117,11 +129,7 @@
         BorderGridLayout:
             border_color: 1,1,1,1
             cols: 1
-            Button:
-                size_hint_y: None
-                height: 40
-                text: 'Load Mirror Config'
-                on_release: MirrorViewWidget.readCsv()
+
             BorderGridLayout:
                 border_color: 1,1,1,1
                 border_width: 1
@@ -149,23 +157,20 @@
                             disabled: root.opts_disabled
                             on_text: root.update_tec_color(self.value)
                             # on_focus: #print(args); print(self.value)
-
                         Label:
                             text: 'Temp [C]:' 
                             # halign: 'left'
                             size_hint_y: None
-                            height: 30
+                            height: 40
                         FloatInput:
                             size_hint_y: None
                             height: 40
                             disabled: True #root.opts_disabled
-                    Button:
-                        size_hint_y: None
-                        height: 40
-                        text: 'Another Button'
-                        disabled: root.opts_disabled
-                    GridLayout:
-                        cols: 2
+                    # Button:
+                    #     size_hint_y: None
+                    #     height: 40
+                    #     text: 'Another Button'
+                    #     disabled: root.opts_disabled
                         Label:
                             size_hint_y: None
                             height: 40
@@ -178,10 +183,6 @@
                             disabled: root.opts_disabled
                             active: root.active_tec.enabled if root.active_tec != None else False
                             on_release : root.setTecEnabledState(self.active)
-                    BorderGridLayout:
-                        cols: 2
-                        border_color: 1,1,1,1
-                        border_width: 1
                         Button:
                             id: enable_all_btn
                             size_hint_y: None
@@ -196,18 +197,20 @@
                             text: 'Disable All'
                             disabled: not root.cfg_loaded
                             on_release: mvw.enableAll(False)
-            
             Button:
                 size_hint_y: None
                 height: 40
-                text: 'Update Commands'
+                text: 'All to Zero'
+                disabled: not root.cfg_loaded
+                on_release: mvw.all_to_zero(); cmd_input.setValue(0.0)
+
+            Button:
+                size_hint_y: None
+                height: 40
+                text: 'Send Commands'
                 disabled: not root.cfg_loaded
                 on_release: mvw.update_tec_map(); print('pushed2')
 
-            Button:
-                size_hint_y: None
-                height: 40
-                text: 'Save Mirror Config'
-                disabled: not root.cfg_loaded
 
-                # on_release: MirrorViewWidget.readCsv()
+
+                    # on_release: MirrorViewWidget.readCsv()

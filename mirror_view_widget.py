@@ -126,7 +126,12 @@ class MirrorViewWidget(AnchorLayout):
         for child in MirrorViewWidget.instance.children:
             if type(child) == TecWidget:
                 pass
-                
+            
+    def all_to_zero(self):
+        for child in self.children:
+            if type(child) == TecWidget:
+                child.mag_value = 0.0
+             
 class MirrorViewControlPanel(GridLayout):
     active_tec = ObjectProperty(None,  allownone=True)
     opts_disabled = BooleanProperty(True)
@@ -141,9 +146,8 @@ class MirrorViewControlPanel(GridLayout):
         
     def clear_fields(self):
         cmd_fld = self.ids['cmd_input']
-        cmd_fld.text = ''
+        cmd_fld.text = '0.0'
         
     def load_field_values(self, tec):
         cmd_fld = self.ids['cmd_input']
         cmd_fld.text = str(tec.mag_value)
-        pass
