@@ -40,6 +40,11 @@ class TecWidget(Widget):
     def connect_mirror_circle(self, mc):
         self.mirror_circle_prop = mc
     
+    def printTecNo(ref):
+        ctrlPanel = ref.parent.parent
+        ctrlPanel.activeTec = ref
+        pass
+    
 class MirrorCircleWidget(Widget):
     diameter = NumericProperty(0)
     def on_diameter(self, instance, value):
@@ -86,7 +91,6 @@ class MirrorViewWidget(AnchorLayout):
             MirrorViewWidget.instance.remove_widget(child)
             
     def populateTecWidgets(self):
-        
         for tec in self.tec_centroid_list:
             tf = TecWidget(id_no=tec[0], theta=tec[1], rho_phys=tec[2])
             tf.connect_mirror_circle(self)
@@ -96,5 +100,10 @@ class MirrorViewWidget(AnchorLayout):
     def on_height(self, instance, value):
         pass
     
+    def printTecNo():
+        pass
+    
 class MirrorViewControlPanel(GridLayout):
+    activeTec = ObjectProperty(None)
+    opts_disabled = BooleanProperty(True)
     pass

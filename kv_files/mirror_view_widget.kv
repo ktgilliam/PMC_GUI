@@ -31,8 +31,7 @@
         bold: True
         # pos: self.parent.x_loc_abs+self.texture_size[0]/2, self.parent.y_loc_abs+self.texture_size[1]/2
         pos: self.parent.x_loc_abs-5, self.parent.y_loc_abs-5
-        
-        # on_release: TECBoxController.readCsv()
+        on_release: TecWidget.printTecNo(self.parent)
         # disabled: False
 
 <MirrorViewWidget>:
@@ -56,50 +55,67 @@
 
 <MirrorViewControlPanel>:
     cols: 2
+    opts_disabled: True if root.activeTec == None else False
     MirrorViewWidget:
         diameter: self.height*0.9
     GridLayout:
-        cols: 1
+        cols: 2
         size_hint_x: None
-        width:300
-        Button:
-            size_hint_y: None
-            height: 40
-            text: 'Load Config'
-            on_release: MirrorViewWidget.readCsv()
+        width:600
         BorderGridLayout:
             border_color: 1,1,1,1
-            border_width: 1
             cols: 1
             Label:
-                text: 'TEC Config Options:'
-                halign: 'center'
                 size_hint_y: None
                 height: 40
+                text: 'Zernike Parameters'
+        BorderGridLayout:
+            border_color: 1,1,1,1
+            cols: 1
+            Button:
+                size_hint_y: None
+                height: 40
+                text: 'Load Mirror Config'
+                on_release: MirrorViewWidget.readCsv()
             BorderGridLayout:
+                border_color: 1,1,1,1
+                border_width: 1
                 cols: 1
-                BorderedLabeledFloatInput:
+                Label: 
+                    text: (root.activeTec.id if root.activeTec != None else 'TEC#') + ' Config Options'
+                    halign: 'center'
                     size_hint_y: None
                     height: 40
-                    label_text: 'Some value:'     
-                BorderedLabeledFloatInput:
-                    size_hint_y: None
-                    height: 40
-                    label_text: 'Some other value:'    
-                Button:
-                    size_hint_y: None
-                    height: 40
-                    text: 'A button'
-                Button:
-                    size_hint_y: None
-                    height: 40
-                    text: 'Another Button'
-                GridLayout:
-                    cols: 2
-                    Label:
+                BorderGridLayout:
+                    cols: 1
+                    BorderedLabeledFloatInput:
                         size_hint_y: None
                         height: 40
-                        text:'Enabled: '
-                    CheckBox:
+                        label_text: 'Some value:'  
+                        disabled: root.opts_disabled
+                    BorderedLabeledFloatInput:
                         size_hint_y: None
                         height: 40
+                        label_text: 'Some other value:'
+                        disabled: root.opts_disabled
+                    Button:
+                        size_hint_y: None
+                        height: 40
+                        text: 'A button'
+                        disabled: root.opts_disabled
+                    Button:
+                        size_hint_y: None
+                        height: 40
+                        text: 'Another Button'
+                        disabled: root.opts_disabled
+                    GridLayout:
+                        cols: 2
+                        Label:
+                            size_hint_y: None
+                            height: 40
+                            text:'Enabled: '
+                            disabled: root.opts_disabled
+                        CheckBox:
+                            size_hint_y: None
+                            height: 40
+                            disabled: root.opts_disabled

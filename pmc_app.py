@@ -16,7 +16,6 @@ from kivy.core.window import Window
 from json_settings import *
 
 
-# from pmc_iface import DIRECTION, PrimaryMirrorControl
 from terminal_widget import *
 from tip_tilt_control_widget import *
 from tec_control_widget import *
