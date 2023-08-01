@@ -90,6 +90,7 @@ class IntegerInput(TextInput):
     upper_lim = NumericProperty()
     lower_lim = NumericProperty()
     pat = re.compile('[^0-9]') 
+    value = NumericProperty()
     
     def on_focus(self, instance, value):
         if not value:
@@ -127,3 +128,10 @@ class IntegerInput(TextInput):
             
         if len(self.text) < max_len:
             return super().insert_text(re.sub(self.pat, '', substring), from_undo=from_undo)
+
+
+    def set_value(self, value):
+        self.cursor_index(0)
+        self.text = ''
+        for ch in str(value):
+            self.insert_text(ch)
