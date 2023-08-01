@@ -3,6 +3,7 @@
 #:import MirrorViewWidget mirror_view_widget.MirrorViewWidget
 #:import TecWidget mirror_view_widget.TecWidget
 #:import ColorMap colormap.ColorMap
+
 <TecWidget>:
     spot_diameter:18
     mirror_px_dia: self.mirror_circle_prop.diameter if self.mirror_circle_prop!= None else 200
@@ -55,6 +56,59 @@
                 pos: self.center_x - self.diameter/2, self.center_y - self.diameter/2
         size_hint: None,None
 
+<Zernike_Widget>:
+    cols: 1
+    Label:
+        size_hint_y: None
+        height: 40
+        text: 'Zernike Parameters'
+    GridLayout:
+        cols: 2
+        # size_hint_y: None
+        # height: 50
+        Label:
+            size_hint: None, None
+            size: 130, 40
+            text: 'm:'
+        IntegerInput:
+            size_hint: None, None
+            size: 80, 40
+            # height: 40
+            # disabled: root.opts_disabled
+        Label:
+            size_hint: None, None
+            size: 130, 40
+            text: 'n:'
+        IntegerInput:
+            size_hint: None, None
+            size: 80, 40
+            # height: 40
+            initial_value: 0
+            # disabled: root.opts_disabled
+        Label:
+            size_hint: None, None
+            size: 180, 40
+            text: 'Angle Offset [deg]: '
+        FloatInput:
+            id: angle_flt
+            size_hint: None, None
+            size: 100, 40
+            initial_value: 0.0
+            # disabled: root.opts_disabled
+        Label:
+            size_hint: None, None
+            size: 180, 40
+            text: 'Scale: '
+        FloatInput:
+            id: scale_flt
+            size_hint: None, None
+            size: 100, 40
+            # disabled: root.opts_disabled
+        Button:
+            size_hint: None, None
+            size: 80, 40
+            text: 'Map'
+
 <MirrorViewControlPanel>:
     cols: 2
     opts_disabled: True if root.active_tec == None else False
@@ -91,126 +145,91 @@
             height: 40
             text: 'Save Mirror Config'
             disabled: not root.cfg_loaded
-        BorderGridLayout:
-            border_color: 1,1,1,1
-            cols: 1
-            Label:
-                size_hint_y: None
-                height: 40
-                text: 'Zernike Parameters'
-            BorderedLabeledIntegerInput:
-                size_hint_y: None
-                height: 40
-                label_text: 'm index: '
-                # disabled: root.opts_disabled
-            BorderedLabeledIntegerInput:
-                size_hint_y: None
-                height: 40
-                label_text: 'n index: '
-                initial_value: 0
-                # disabled: root.opts_disabled
-            BorderedLabeledFloatInput:
-                size_hint_y: None
-                height: 40
-                label_text: 'Angle Offset: '
-                initial_value: 0.0
-                # disabled: root.opts_disabled
-            BorderedLabeledFloatInput:
-                size_hint_y: None
-                height: 40
-                label_text: 'Scale: '
-                # disabled: root.opts_disabled
-            Button:
-                size_hint_y: None
-                height: 40
-                text: 'Apply Zernike'
-                # on_release: 
 
         BorderGridLayout:
             border_color: 1,1,1,1
+            border_width: 1
             cols: 1
-
-            BorderGridLayout:
-                border_color: 1,1,1,1
-                border_width: 1
+            Label: 
+                text: root.active_tec.id if root.active_tec != None else '--'
+                bold: True
+                halign: 'center'
+                size_hint_y: None
+                height: 40
+                disabled: root.opts_disabled
+            GridLayout:
                 cols: 1
-                Label: 
-                    text: root.active_tec.id if root.active_tec != None else 'TEC#'
-                    bold: True
-                    halign: 'center'
-                    size_hint_y: None
-                    height: 40
-                    disabled: root.opts_disabled
+                GridLayout:
+                    cols: 2
+                    # border_color: 1,1,1,1
+                    # border_width: 1
+                    Label:
+                        text: 'Command [W]:'  
+                        size_hint: None, None
+                        size: 150, 40
+                        halign: 'left'
+                        disabled: root.opts_disabled
+                    FloatInput:
+                        id: cmd_input
+                        size_hint: None, None
+                        size: 130, 40
+                        disabled: root.opts_disabled
+                        on_text: root.update_tec_color(self.value)
+                        # on_focus: #print(args); print(self.value)
+                    Label:
+                        text: 'Temp [C]:' 
+                        size_hint: None, None
+                        size: 150, 40
+                        disabled: root.opts_disabled
+                    FloatInput:
+                        size_hint: None, None
+                        size: 130, 40
+                        disabled: True #root.opts_disabled
+                    Label:
+                        size_hint_y: None
+                        height: 40
+                        text:'Enabled: '
+                        disabled: root.opts_disabled
+                    CheckBox:
+                        id: tec_enabled_cb
+                        size_hint_y: None
+                        height: 40
+                        disabled: root.opts_disabled
+                        active: root.active_tec.enabled if root.active_tec != None else False
+                        on_release : root.setTecEnabledState(self.active)
                 BorderGridLayout:
-                    cols: 1
-                    GridLayout:
-                        cols: 2
-                        Label:
-                            text: 'Command [W]:'  
-                            size_hint_y: None
-                            height: 40
-                            halign: 'left'
-                        FloatInput:
-                            id: cmd_input
-                            size_hint_y: None
-                            height: 40
-                            disabled: root.opts_disabled
-                            on_text: root.update_tec_color(self.value)
-                            # on_focus: #print(args); print(self.value)
-                        Label:
-                            text: 'Temp [C]:' 
-                            # halign: 'left'
-                            size_hint_y: None
-                            height: 40
-                        FloatInput:
-                            size_hint_y: None
-                            height: 40
-                            disabled: True #root.opts_disabled
-                    # Button:
-                    #     size_hint_y: None
-                    #     height: 40
-                    #     text: 'Another Button'
-                    #     disabled: root.opts_disabled
-                        Label:
-                            size_hint_y: None
-                            height: 40
-                            text:'Enabled: '
-                            disabled: root.opts_disabled
-                        CheckBox:
-                            id: tec_enabled_cb
-                            size_hint_y: None
-                            height: 40
-                            disabled: root.opts_disabled
-                            active: root.active_tec.enabled if root.active_tec != None else False
-                            on_release : root.setTecEnabledState(self.active)
-                        Button:
-                            id: enable_all_btn
-                            size_hint_y: None
-                            height: 40
-                            text: 'Enable All'
-                            disabled: not root.cfg_loaded
-                            on_release: mvw.enableAll(True)
-                        Button:
-                            id: disable_all_btn
-                            size_hint_y: None
-                            height: 40
-                            text: 'Disable All'
-                            disabled: not root.cfg_loaded
-                            on_release: mvw.enableAll(False)
-            Button:
-                size_hint_y: None
-                height: 40
-                text: 'All to Zero'
-                disabled: not root.cfg_loaded
-                on_release: mvw.all_to_zero(); cmd_input.setValue(0.0)
+                    border_color: 1,1,1,1
+                    border_width: 1
+                    cols: 2
+                    Button:
+                        id: enable_all_btn
+                        size_hint_y: None
+                        height: 40
+                        text: 'Enable All'
+                        disabled: not root.cfg_loaded
+                        on_release: mvw.enableAll(True)
+                    Button:
+                        id: disable_all_btn
+                        size_hint_y: None
+                        height: 40
+                        text: 'Disable All'
+                        disabled: not root.cfg_loaded
+                        on_release: mvw.enableAll(False)
+                    Button:
+                        size_hint_y: None
+                        height: 40
+                        text: 'All to Zero'
+                        disabled: not root.cfg_loaded
+                        on_release: mvw.all_to_zero(); cmd_input.setValue(0.0)
 
-            Button:
-                size_hint_y: None
-                height: 40
-                text: 'Send Commands'
-                disabled: not root.cfg_loaded
-                on_release: mvw.update_tec_map(); print('pushed2')
-
-
-
-                    # on_release: MirrorViewWidget.readCsv()
+                    Button:
+                        size_hint_y: None
+                        height: 40
+                        text: 'Send Commands'
+                        disabled: not root.cfg_loaded
+                        on_release: mvw.update_tec_map(); print('### Send commands here?')
+        BorderGridLayout:
+            border_color: 1,1,1,1
+            cols: 1
+            Zernike_Widget:
+                # on_release: 

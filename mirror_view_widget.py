@@ -151,3 +151,6 @@ class MirrorViewControlPanel(GridLayout):
     def load_field_values(self, tec):
         cmd_fld = self.ids['cmd_input']
         cmd_fld.text = str(tec.mag_value)
+        
+class Zernike_Widget(GridLayout):
+    pass
