@@ -62,11 +62,29 @@
 <BorderedLabeledFloatInput@GridLayout+Border>
     cols: 2
     label_text: ''
+    initial_value: 0
     Label:
         id: blfi_label
         size_hint: None, None
-        size: self.texture_size[0]+10, self.texture_size[1]+5
+        size: self.texture_size[0]+10, self.texture_size[1]+10
         text:root.label_text
     FloatInput:
-        size_hint_y: None
+        size_hint: None, None
         height: blfi_label.height
+        width: root.width - blfi_label.width-10
+        text: str(root.initial_value)
+
+<BorderedLabeledIntegerInput@GridLayout+Border>
+    cols: 2
+    label_text: ''
+    initial_value: 0
+    Label:
+        id: blii_label
+        size_hint: None, None
+        size: self.texture_size[0]+10, self.texture_size[1]+10
+        text:root.label_text
+    IntegerInput:
+        size_hint: None, None
+        height: blii_label.height
+        width: root.width - blii_label.width-10
+        text: str(root.initial_value)

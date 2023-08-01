@@ -1,6 +1,6 @@
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.anchorlayout import AnchorLayout
-from kivy.properties import ObjectProperty, NumericProperty, BooleanProperty, ListProperty, BoundedNumericProperty
+from kivy.properties import ObjectProperty, NumericProperty, BooleanProperty, ListProperty, BoundedNumericProperty, StringProperty
 from kivy.uix.widget import Widget
 
 import tkinter as tk
@@ -27,6 +27,7 @@ class TecWidget(Widget):
     mirror_circle_prop = ObjectProperty(rebind=True)
     mirror_px_dia = NumericProperty(rebind=True)
     rho_max = NumericProperty(0, rebind=True, allownone=True)
+    enabled = BooleanProperty(False)
     _firstTime = True
     
     def __init__(self, **kwargs):
@@ -40,9 +41,10 @@ class TecWidget(Widget):
     def connect_mirror_circle(self, mc):
         self.mirror_circle_prop = mc
     
-    def printTecNo(ref):
+    def activateSelf(ref):
         ctrlPanel = ref.parent.parent
-        ctrlPanel.activeTec = ref
+        ctrlPanel.active_tec = ref
+        
         pass
     
 class MirrorCircleWidget(Widget):
@@ -51,9 +53,10 @@ class MirrorCircleWidget(Widget):
         pass
     
 class MirrorViewWidget(AnchorLayout):
-    tec_centroid_list = ListProperty([])
+    tec_cfg_list = ListProperty([])
     diameter = NumericProperty()
-    # tec_centroid_list = []
+    cfg_file_path = StringProperty('')
+    # tec_cfg_list = []
     
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -65,8 +68,8 @@ class MirrorViewWidget(AnchorLayout):
         file_path = filedialog.askopenfilename(
             filetypes=[("CSV File", ".csv")])
         print(file_path)
-        centroid_list = []
-        if len(MirrorViewWidget.instance.tec_centroid_list) > 0:
+        cfg_list = []
+        if len(MirrorViewWidget.instance.tec_cfg_list) > 0:
             MirrorViewWidget.resetTecWidgets()
         try:
             with open(file_path, newline='') as csvfile:
@@ -75,35 +78,46 @@ class MirrorViewWidget(AnchorLayout):
                     tec_no = int(row['TEC'])
                     theta = float(row['theta'])
                     rho_phys = float(row['rho'])
-                    centroid_list.append((tec_no, theta, rho_phys))
+                    enabled = bool(row['enabled'])
+                    cfg_list.append((tec_no, theta, rho_phys, enabled))
         except FileNotFoundError:
             return
-        MirrorViewWidget.instance.tec_centroid_list = centroid_list
+        MirrorViewWidget.cfg_file_path = file_path
+        MirrorViewWidget.instance.tec_cfg_list = cfg_list
         MirrorViewWidget.instance.populateTecWidgets()
 
     def resetTecWidgets():
-        MirrorViewWidget.instance.tec_centroid_list = []
+        MirrorViewWidget.instance.tec_cfg_list = []
         rmList = []
         for child in MirrorViewWidget.instance.children:
             if type(child) == TecWidget:
                 rmList.append(child)
         for child in rmList:
             MirrorViewWidget.instance.remove_widget(child)
-            
+        MirrorViewWidget.instance.parent.cfg_loaded = False
+        MirrorViewWidget.instance.parent.active_tec = None
+        
     def populateTecWidgets(self):
-        for tec in self.tec_centroid_list:
-            tf = TecWidget(id_no=tec[0], theta=tec[1], rho_phys=tec[2])
-            tf.connect_mirror_circle(self)
-            tf.id = 'TEC'+str(tec[0])
-            self.add_widget(tf)
-            
+        for tec in self.tec_cfg_list:
+            tw = TecWidget(id_no=tec[0], theta=tec[1], rho_phys=tec[2], enabled=tec[3])
+            tw.connect_mirror_circle(self)
+            tw.id = 'TEC'+str(tec[0])
+            self.add_widget(tw)
+        self.parent.cfg_loaded = True
+        
     def on_height(self, instance, value):
         pass
     
-    def printTecNo():
-        pass
+    def enableAll(self, flag):
+        for child in MirrorViewWidget.instance.children:
+            if type(child) == TecWidget:
+                child.enabled = flag
     
 class MirrorViewControlPanel(GridLayout):
-    activeTec = ObjectProperty(None)
+    active_tec = ObjectProperty(None,  allownone=True)
     opts_disabled = BooleanProperty(True)
-    pass
+    cfg_loaded = BooleanProperty(False)
+    
+    def setTecEnabledState(self, active):
+        self.active_tec.enabled = active
+        

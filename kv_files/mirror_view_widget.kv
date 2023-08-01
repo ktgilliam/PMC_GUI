@@ -11,10 +11,12 @@
     y_loc: self.mirror_px_dia*self.rho_norm*math.sin(self.theta)
     x_loc_abs: (self.center_x - self.spot_diameter/2) + self.x_loc
     y_loc_abs: (self.center_y - self.spot_diameter/2) + self.y_loc
+    # spot_rgb: ([0 1 0]) if self.enabled else ([1 0 0])
 
     canvas.before:
         Color:
-            rgb: self.spot_rgb
+            # rgb: self.spot_rgb
+            rgb: ([0, 1, 0]) if self.enabled else ([0.7, 0.7, 0.7])
         Ellipse:
             size: self.spot_diameter, self.spot_diameter
             # pos: (self.center_x - self.diameter/2) + self.x_loc, (self.center_y - self.diameter/2) + self.y_loc
@@ -31,7 +33,7 @@
         bold: True
         # pos: self.parent.x_loc_abs+self.texture_size[0]/2, self.parent.y_loc_abs+self.texture_size[1]/2
         pos: self.parent.x_loc_abs-5, self.parent.y_loc_abs-5
-        on_release: TecWidget.printTecNo(self.parent)
+        on_release: TecWidget.activateSelf(self.parent)
         # disabled: False
 
 <MirrorViewWidget>:
@@ -55,9 +57,24 @@
 
 <MirrorViewControlPanel>:
     cols: 2
-    opts_disabled: True if root.activeTec == None else False
+    opts_disabled: True if root.active_tec == None else False
+    # GridLayout: 
+    #     cols: 1
     MirrorViewWidget:
+        id: mvw
         diameter: self.height*0.9
+        # GridLayout:
+        #     cols: 2
+        #     size_hint: None, None
+        #     size: 200, 50
+        #     CheckBox:
+        #         id: cb1
+        #         size_hint_y: None
+        #         height: 40
+        #     CheckBox:
+        #         id: cb2
+        #         size_hint_y: None
+        #         height: 40
     GridLayout:
         cols: 2
         size_hint_x: None
@@ -69,6 +86,34 @@
                 size_hint_y: None
                 height: 40
                 text: 'Zernike Parameters'
+            BorderedLabeledIntegerInput:
+                size_hint_y: None
+                height: 40
+                label_text: 'm index: '
+                # disabled: root.opts_disabled
+            BorderedLabeledIntegerInput:
+                size_hint_y: None
+                height: 40
+                label_text: 'n index: '
+                initial_value: 0
+                # disabled: root.opts_disabled
+            BorderedLabeledFloatInput:
+                size_hint_y: None
+                height: 40
+                label_text: 'Angle Offset: '
+                initial_value: 0.0
+                # disabled: root.opts_disabled
+            BorderedLabeledFloatInput:
+                size_hint_y: None
+                height: 40
+                label_text: 'Scale: '
+                # disabled: root.opts_disabled
+            Button:
+                size_hint_y: None
+                height: 40
+                text: 'Apply Zernike'
+                # on_release: 
+
         BorderGridLayout:
             border_color: 1,1,1,1
             cols: 1
@@ -82,22 +127,24 @@
                 border_width: 1
                 cols: 1
                 Label: 
-                    text: (root.activeTec.id if root.activeTec != None else 'TEC#') + ' Config Options'
+                    text: (root.active_tec.id if root.active_tec != None else 'TEC#')
                     halign: 'center'
                     size_hint_y: None
                     height: 40
+                    disabled: root.opts_disabled
                 BorderGridLayout:
                     cols: 1
                     BorderedLabeledFloatInput:
+                        id: cmd_input
                         size_hint_y: None
                         height: 40
-                        label_text: 'Some value:'  
+                        label_text: 'Command [W]:'  
                         disabled: root.opts_disabled
                     BorderedLabeledFloatInput:
                         size_hint_y: None
                         height: 40
-                        label_text: 'Some other value:'
-                        disabled: root.opts_disabled
+                        label_text: 'Temp [C]:'
+                        disabled: True #root.opts_disabled
                     Button:
                         size_hint_y: None
                         height: 40
@@ -116,6 +163,34 @@
                             text:'Enabled: '
                             disabled: root.opts_disabled
                         CheckBox:
+                            id: tec_enabled_cb
                             size_hint_y: None
                             height: 40
                             disabled: root.opts_disabled
+                            active: root.active_tec.enabled if root.active_tec != None else False
+                            on_release : root.setTecEnabledState(self.active)
+                    BorderGridLayout:
+                        cols: 2
+                        border_color: 1,1,1,1
+                        border_width: 1
+                        Button:
+                            id: enable_all_btn
+                            size_hint_y: None
+                            height: 40
+                            text: 'Enable All'
+                            disabled: not root.cfg_loaded
+                            on_release: mvw.enableAll(True)
+                        Button:
+                            id: disable_all_btn
+                            size_hint_y: None
+                            height: 40
+                            text: 'Disable All'
+                            disabled: not root.cfg_loaded
+                            on_release: mvw.enableAll(False)
+            Button:
+                size_hint_y: None
+                height: 40
+                text: 'Save Mirror Config'
+                disabled: not root.cfg_loaded
+
+                # on_release: MirrorViewWidget.readCsv()
