@@ -6,7 +6,9 @@ from kivy.uix.widget import Widget
 import tkinter as tk
 from tkinter import filedialog
 import csv
+from colormap import ColorMap as cmap
 
+    
 class TecConfiguration():
     tec_enabled = BooleanProperty()
     tec_power_cmd = NumericProperty()
@@ -29,6 +31,7 @@ class TecWidget(Widget):
     rho_max = NumericProperty(0, rebind=True, allownone=True)
     enabled = BooleanProperty(False)
     _firstTime = True
+    mag_value = NumericProperty(0, rebind=True)
     
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -41,12 +44,18 @@ class TecWidget(Widget):
     def connect_mirror_circle(self, mc):
         self.mirror_circle_prop = mc
     
-    def activateSelf(ref):
-        ctrlPanel = ref.parent.parent
-        ctrlPanel.active_tec = ref
-        
+    def activate_self(self):
+        ctrlPanel = self.parent.parent
+        ctrlPanel.active_tec = self
+        ctrlPanel.load_field_values(self)
         pass
     
+    # def on_mag_value(self, value):
+    #     pass
+    
+    # def update_value(self, value):
+    #     self.mag_value = value
+        
 class MirrorCircleWidget(Widget):
     diameter = NumericProperty(0)
     def on_diameter(self, instance, value):
@@ -112,7 +121,12 @@ class MirrorViewWidget(AnchorLayout):
         for child in MirrorViewWidget.instance.children:
             if type(child) == TecWidget:
                 child.enabled = flag
-    
+                
+    def update_tec_map():
+        for child in MirrorViewWidget.instance.children:
+            if type(child) == TecWidget:
+                pass
+                
 class MirrorViewControlPanel(GridLayout):
     active_tec = ObjectProperty(None,  allownone=True)
     opts_disabled = BooleanProperty(True)
@@ -121,3 +135,15 @@ class MirrorViewControlPanel(GridLayout):
     def setTecEnabledState(self, active):
         self.active_tec.enabled = active
         
+    def update_tec_color(self, val):
+        self.active_tec.mag_value = val
+        # pass
+        
+    def clear_fields(self):
+        cmd_fld = self.ids['cmd_input']
+        cmd_fld.text = ''
+        
+    def load_field_values(self, tec):
+        cmd_fld = self.ids['cmd_input']
+        cmd_fld.text = str(tec.mag_value)
+        pass

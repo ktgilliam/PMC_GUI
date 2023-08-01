@@ -53,26 +53,35 @@
 <FloatInput>:
     font_size: 14
     multiline: False
+    value: 0 if len(self.text) == 0 else (float(self.text) if self.text != '-' else 0)
     # canvas.before:
     #     Color:
     #         rgb: 0.2, 0.2, 0.2
     #     Rectangle:
     #         size: self.size
     #         pos: self.pos
+<IntegerInput>:
+    font_size: 14
+    multiline: False
+    value: 0 if len(self.text) == 0 else int(self.text)
+
 <BorderedLabeledFloatInput@GridLayout+Border>
     cols: 2
     label_text: ''
     initial_value: 0
+
     Label:
         id: blfi_label
         size_hint: None, None
         size: self.texture_size[0]+10, self.texture_size[1]+10
         text:root.label_text
     FloatInput:
+        id: fi
         size_hint: None, None
         height: blfi_label.height
         width: root.width - blfi_label.width-10
         text: str(root.initial_value)
+        on_text: root.cmd_update(fi)
 
 <BorderedLabeledIntegerInput@GridLayout+Border>
     cols: 2

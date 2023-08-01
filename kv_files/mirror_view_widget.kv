@@ -2,7 +2,7 @@
 #:import math math
 #:import MirrorViewWidget mirror_view_widget.MirrorViewWidget
 #:import TecWidget mirror_view_widget.TecWidget
-
+#:import ColorMap colormap.ColorMap
 <TecWidget>:
     spot_diameter:18
     mirror_px_dia: self.mirror_circle_prop.diameter if self.mirror_circle_prop!= None else 200
@@ -11,12 +11,12 @@
     y_loc: self.mirror_px_dia*self.rho_norm*math.sin(self.theta)
     x_loc_abs: (self.center_x - self.spot_diameter/2) + self.x_loc
     y_loc_abs: (self.center_y - self.spot_diameter/2) + self.y_loc
-    # spot_rgb: ([0 1 0]) if self.enabled else ([1 0 0])
-
+    spot_rgb: ColorMap.get_rgb(self.mag_value, [-10, 10]) if self.enabled else ([0.7, 0.7, 0.7])
+    
     canvas.before:
         Color:
-            # rgb: self.spot_rgb
-            rgb: ([0, 1, 0]) if self.enabled else ([0.7, 0.7, 0.7])
+            rgb: self.spot_rgb
+            # rgb:  if self.enabled else ([0.7, 0.7, 0.7])
         Ellipse:
             size: self.spot_diameter, self.spot_diameter
             # pos: (self.center_x - self.diameter/2) + self.x_loc, (self.center_y - self.diameter/2) + self.y_loc
@@ -33,7 +33,7 @@
         bold: True
         # pos: self.parent.x_loc_abs+self.texture_size[0]/2, self.parent.y_loc_abs+self.texture_size[1]/2
         pos: self.parent.x_loc_abs-5, self.parent.y_loc_abs-5
-        on_release: TecWidget.activateSelf(self.parent)
+        on_release: TecWidget.activate_self(self.parent)
         # disabled: False
 
 <MirrorViewWidget>:
@@ -127,29 +127,38 @@
                 border_width: 1
                 cols: 1
                 Label: 
-                    text: (root.active_tec.id if root.active_tec != None else 'TEC#')
+                    text: root.active_tec.id if root.active_tec != None else 'TEC#'
+                    bold: True
                     halign: 'center'
                     size_hint_y: None
                     height: 40
                     disabled: root.opts_disabled
                 BorderGridLayout:
                     cols: 1
-                    BorderedLabeledFloatInput:
-                        id: cmd_input
-                        size_hint_y: None
-                        height: 40
-                        label_text: 'Command [W]:'  
-                        disabled: root.opts_disabled
-                    BorderedLabeledFloatInput:
-                        size_hint_y: None
-                        height: 40
-                        label_text: 'Temp [C]:'
-                        disabled: True #root.opts_disabled
-                    Button:
-                        size_hint_y: None
-                        height: 40
-                        text: 'A button'
-                        disabled: root.opts_disabled
+                    GridLayout:
+                        cols: 2
+                        Label:
+                            text: 'Command [W]:'  
+                            size_hint_y: None
+                            height: 40
+                            halign: 'left'
+                        FloatInput:
+                            id: cmd_input
+                            size_hint_y: None
+                            height: 40
+                            disabled: root.opts_disabled
+                            on_text: root.update_tec_color(self.value)
+                            # on_focus: #print(args); print(self.value)
+
+                        Label:
+                            text: 'Temp [C]:' 
+                            # halign: 'left'
+                            size_hint_y: None
+                            height: 30
+                        FloatInput:
+                            size_hint_y: None
+                            height: 40
+                            disabled: True #root.opts_disabled
                     Button:
                         size_hint_y: None
                         height: 40
@@ -187,6 +196,14 @@
                             text: 'Disable All'
                             disabled: not root.cfg_loaded
                             on_release: mvw.enableAll(False)
+            
+            Button:
+                size_hint_y: None
+                height: 40
+                text: 'Update Commands'
+                disabled: not root.cfg_loaded
+                on_release: mvw.update_tec_map(); print('pushed2')
+
             Button:
                 size_hint_y: None
                 height: 40
