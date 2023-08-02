@@ -119,7 +119,7 @@
             id: angle_flt
             size_hint: None, None
             size: 100, 40
-            initial_value: 0.0
+            text: '0.0'
             # disabled: root.opts_disabled
         Label:
             size_hint: None, None
@@ -129,6 +129,7 @@
             id: scale_flt
             size_hint: None, None
             size: 100, 40
+            text: '1.0'
             # disabled: root.opts_disabled
     BoxLayout:    
         # canvas.before:
@@ -149,26 +150,12 @@
 
 <MirrorViewControlPanel>:
     cols: 2
-    opts_disabled: True if root.active_tec == None else False
+    opts_disabled: True if (root.active_tec == None) else False
     # GridLayout: 
     #     cols: 1
     MirrorViewWidget:
         id: mvw
         diameter: self.height*0.9
-        # GridLayout:
-        #     cols: 2
-        #     size_hint: None, None
-        #     size: 200, 50
-        #     CheckBox:
-        #         id: cb1
-        #         size_hint_y: None
-        #         height: 40
-        #     CheckBox:
-        #         id: cb2
-        #         size_hint_y: None
-        #         height: 40
-
-
     GridLayout:
         cols: 2
         size_hint_x: None
@@ -211,7 +198,7 @@
                         id: cmd_input
                         size_hint: None, None
                         size: 130, 40
-                        disabled: root.opts_disabled
+                        disabled: root.opts_disabled or not tec_enabled_cb.active
                         on_text: root.update_tec_color(self.value)
                         # on_focus: #print(args); print(self.value)
                     Label:
@@ -234,7 +221,7 @@
                         height: 40
                         disabled: root.opts_disabled
                         active: root.active_tec.enabled if root.active_tec != None else False
-                        on_release : root.setTecEnabledState(self.active)
+                        on_release : root.setTecEnabledState(self.active);
                 BorderGridLayout:
                     border_color: 1,1,1,1
                     border_width: 1

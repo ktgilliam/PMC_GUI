@@ -140,6 +140,7 @@ class MirrorViewControlPanel(GridLayout):
     def setTecEnabledState(self, active):
         self.active_tec.enabled = active
         
+        
     def update_tec_color(self, val):
         self.active_tec.mag_value = val
         # pass
