@@ -3,25 +3,21 @@
 #:import MirrorViewWidget mirror_view_widget.MirrorViewWidget
 #:import TecWidget mirror_view_widget.TecWidget
 #:import ColorMap colormap.ColorMap
-#:import ZernPol zernpy.ZernPol
 
 <TecWidget>:
     spot_diameter:18
     mirror_px_radius: self.mirror_circle_prop.diameter/2 if self.mirror_circle_prop!= None else 200
-    rho_norm: self.rho_phys/TecWidget.rho_phys_max if type(TecWidget.rho_phys_max) == float else 0.5
-    x_loc: self.mirror_px_radius*self.rho_norm*math.cos(self.theta)
-    y_loc: self.mirror_px_radius*self.rho_norm*math.sin(self.theta)
+    x_loc: 0.95*self.mirror_px_radius*self.rho_norm*math.cos(self.theta)
+    y_loc: 0.95*self.mirror_px_radius*self.rho_norm*math.sin(self.theta)
     x_loc_abs: (self.center_x - self.spot_diameter/2) + self.x_loc
     y_loc_abs: (self.center_y - self.spot_diameter/2) + self.y_loc
-    spot_rgb: ColorMap.get_rgb(self.mag_value, [-3, 3]) if self.enabled else ([0.7, 0.7, 0.7])
+    spot_rgb: ColorMap.get_rgb(self.mag_value, [-1.2, 1.2]) if self.enabled else ([0.7, 0.7, 0.7])
 
     canvas.before:
         Color:
             rgb: self.spot_rgb
-            # rgb:  if self.enabled else ([0.7, 0.7, 0.7])
         Ellipse:
             size: self.spot_diameter, self.spot_diameter
-            # pos: (self.center_x - self.diameter/2) + self.x_loc, (self.center_y - self.diameter/2) + self.y_loc
             pos: self.x_loc_abs, self.y_loc_abs
     size_hint: None,None
 
@@ -104,53 +100,57 @@
             # bold: True 
         Label:
     GridLayout:
-        cols: 2
-        size_hint_y: None
-        height: 100
-
-        # Label:
-        #     size_hint: None, None
-        #     size: 130, 40
-        #     text: 'n:'
+        cols: 3
         Label:
-            size_hint: None, None
-            size: 180, 40
-            text: 'Angle Offset [deg]: '
-            # halign: 'right'
-        FloatInput:
+            size_hint: 0.2, None
+            height: 50
+            text: 'Angle: '
+        Slider:
+            size_hint: 0.6, None
+            height:50
             id: angle_flt
-            size_hint: None, None
-            size: 100, 30
-            text: '0.0'
-            # disabled: root.opts_disabled
+            cursor_size: 20,20
+            min: 0
+            max: 360
+            step: 0.1
+            orientation: 'horizontal'
+            on_touch_move: root.theta_offset = self.value;
         Label:
-            size_hint: None, None
-            size: 180, 40
+            size_hint: 0.2, None
+            height: 50
+            text: "{:.3f}".format(angle_flt.value)
+        Label:
+            size_hint: 0.2, None
+            height: 50
             text: 'Scale: '
-            # halign: 'right'
-        FloatInput:
+        Slider:
+            size_hint: 0.6, None
+            height:50
             id: scale_flt
-            size_hint: None, None
-            size: 100, 30
-            text: '1.0'
+            cursor_size: 20,20
+            min: 0
+            max: 1
+            step: 0.01
+            orientation: 'horizontal'
+            value_normalized: 1.
+            on_touch_move: root.scale_coeff = self.value;
+        Label:
+            size_hint: 0.2, None
+            height: 50
+            text: "{:.3f}".format(scale_flt.value)
             # disabled: root.opts_disabled
-    BoxLayout:    
-        # canvas.before:
-        #     Color:
-        #         rgb: 1,0,0
-        #     Rectangle:
-        #         size: self.size
-        #         pos: self.pos
-        orientation: 'horizontal'
-        size_hint_y: None
-        height: 40
-        Label:
-        # Button:
-        #     size_hint: None, None
-        #     size: 80, 40
-        #     text: 'Map'
-        #     on_release: root.test_fun()
-        Label:
+    # BoxLayout:    
+
+    #     orientation: 'horizontal'
+    #     size_hint_y: None
+    #     height: 40
+    #     Label:
+    #     # Button:
+    #     #     size_hint: None, None
+    #     #     size: 80, 40
+    #     #     text: 'Map'
+    #     #     on_release: root.test_fun()
+    #     Label:
 
 <MirrorViewControlPanel>:
     cols: 2
@@ -193,7 +193,7 @@
                     # border_color: 1,1,1,1
                     # border_width: 1
                     Label:
-                        text: 'Command [W]:'  
+                        text: 'Command:'  
                         size_hint: None, None
                         size: 150, 40
                         halign: 'left'
@@ -274,4 +274,4 @@
                 size_hint: None, None
                 size: 80, 40
                 text: 'Map'
-                on_release: root.test_fun()
+                on_release: root.map_zernike()
