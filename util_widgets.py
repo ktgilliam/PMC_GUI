@@ -49,8 +49,10 @@ class InputWithToolTip(TextInput):
     
 #  Widgets
 class FloatInput(InputWithToolTip):
+    max_len = NumericProperty(0)
     value = NumericProperty()
     pat = re.compile('[^0-9]') 
+    
     def on_focus(self, instance, value):
         if not value:
             if len(self.text) == 0:
