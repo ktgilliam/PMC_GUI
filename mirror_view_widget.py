@@ -8,7 +8,8 @@ from tkinter import filedialog
 import csv
 from colormap import ColorMap as cmap
 
-    
+from zernpy import ZernPol
+
 class TecConfiguration():
     tec_enabled = BooleanProperty()
     tec_power_cmd = NumericProperty()
@@ -27,8 +28,8 @@ class TecWidget(Widget):
     y_loc_abs = NumericProperty()
     spot_rgb = ListProperty([0,1,0])
     mirror_circle_prop = ObjectProperty(rebind=True)
-    mirror_px_dia = NumericProperty(rebind=True)
-    rho_max = NumericProperty(0, rebind=True, allownone=True)
+    mirror_px_radius = NumericProperty(rebind=True)
+    rho_phys_max = NumericProperty(0, rebind=True, allownone=True)
     enabled = BooleanProperty(False)
     _firstTime = True
     mag_value = NumericProperty(0, rebind=True)
@@ -36,10 +37,10 @@ class TecWidget(Widget):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         if TecWidget._firstTime:
-            TecWidget.rho_max = 0
+            TecWidget.rho_phys_max = 0
             TecWidget._firstTime = False
-        if self.rho_phys > TecWidget.rho_max:
-            TecWidget.rho_max = self.rho_phys
+        if self.rho_phys >= TecWidget.rho_phys_max:
+            TecWidget.rho_phys_max = self.rho_phys+0.001
         
     def connect_mirror_circle(self, mc):
         self.mirror_circle_prop = mc
@@ -53,6 +54,9 @@ class TecWidget(Widget):
     # def on_mag_value(self, value):
     #     pass
     
+    def update_mag_value(self, value):
+        self.mag_value = float(value)
+        
     # def update_value(self, value):
     #     self.mag_value = value
         
@@ -107,10 +111,10 @@ class MirrorViewWidget(AnchorLayout):
         MirrorViewWidget.instance.parent.active_tec = None
         
     def populateTecWidgets(self):
-        for tec in self.tec_cfg_list:
-            tw = TecWidget(id_no=tec[0], theta=tec[1], rho_phys=tec[2], enabled=tec[3])
+        for cfg in self.tec_cfg_list:
+            tw = TecWidget(id_no=cfg[0], theta=cfg[1], rho_phys=cfg[2], enabled=cfg[3])
             tw.connect_mirror_circle(self)
-            tw.id = 'TEC'+str(tec[0])
+            tw.id = 'TEC'+str(cfg[0])
             self.add_widget(tw)
         self.parent.cfg_loaded = True
         
@@ -131,7 +135,41 @@ class MirrorViewWidget(AnchorLayout):
         for child in self.children:
             if type(child) == TecWidget:
                 child.mag_value = 0.0
-             
+    
+    def get_tec_polar_centroids(self):
+        centroid_list = []
+        for child in self.children:
+            if type(child) == TecWidget:
+                centroid = [child.rho_norm*2, child.theta]
+                centroid_list.append(centroid)
+        return centroid_list
+    
+    # def get_tec_cart_centroids(self):
+    #     centroid_list = []
+    #     for child in self.children:
+    #         if type(child) == TecWidget:
+    #             centroid = pol2cart(child.rho_norm*2, child.theta)
+    #             centroid = [centroid[0], centroid[1]]
+    #             centroid_list.append(centroid)
+    #     return centroid_list
+         
+    def zernike_command(self, osa_idx, scale=1):
+        zp = ZernPol(osa_index=osa_idx)
+        cnt = 0
+        for child in self.children:
+            if type(child) == TecWidget:
+                Z = zp.polynomial_value(child.rho_norm, child.theta, use_exact_eq=True)
+                new_mag = Z*scale
+                # child.mag_value = Z*scale
+                child.update_mag_value(new_mag)
+                cnt = cnt + 1
+        pass
+    
+# def pol2cart(rho, phi):
+#     x = rho * np.cos(phi)
+#     y = rho * np.sin(phi)
+#     return(x, y)
+   
 class MirrorViewControlPanel(GridLayout):
     active_tec = ObjectProperty(None,  allownone=True)
     opts_disabled = BooleanProperty(True)
@@ -142,7 +180,7 @@ class MirrorViewControlPanel(GridLayout):
         
         
     def update_tec_color(self, val):
-        self.active_tec.mag_value = val
+        self.active_tec.update_mag_value(val)
         # pass
         
     def clear_fields(self):
@@ -153,10 +191,19 @@ class MirrorViewControlPanel(GridLayout):
         cmd_fld = self.ids['cmd_input']
         cmd_fld.text = str(tec.mag_value)
         
+    def test_fun(self):
+        mvw = self.ids['mvw']
+        zp = self.ids['zernike_panel']
+        mvw.zernike_command(zp.j)
+        
+        pass
+    
 class Zernike_Widget(GridLayout):
     j = NumericProperty(0)
     n = NumericProperty(0)
     m = NumericProperty(0)
+    name = StringProperty(' (Piston)')
+    
     def check_inputs(self):
         pass
     
@@ -168,3 +215,15 @@ class Zernike_Widget(GridLayout):
             self.j = self.j-1
         else:
             self.j = 0
+            
+    def update_name(self):
+        if self.j == 0:
+            name_str = 'Piston'
+        else:
+            zp = ZernPol(osa_index=self.j)
+            name_str = zp.get_polynomial_name()
+        self.name = " (" + name_str + ")"
+    # def test_fun(self):
+    #     mvw = self.parent
+    #     tmp = mvw.get_tec_polar_centroids()
+    #     pass
