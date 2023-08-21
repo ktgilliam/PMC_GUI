@@ -229,6 +229,20 @@
                 BorderGridLayout:
                     border_color: 1,1,1,1
                     border_width: 1
+                    size_hint_y: None
+                    height: 40
+                    cols: 2
+                    Label:
+                        text: "Cmd Gain: "
+                    FloatInput:
+                        id: gain_input
+                        size_hint: None, None
+                        size: 140, 40
+                        text: '1.0'
+                        font_size: 15
+                BorderGridLayout:
+                    border_color: 1,1,1,1
+                    border_width: 1
                     cols: 2
                     Button:
                         id: enable_all_btn
