@@ -154,7 +154,7 @@
 
 <MirrorViewControlPanel>:
     cols: 2
-    opts_disabled: True if (root.active_tec == None) else False
+    opts_disabled: True if (root.active_tec == None) else not root.active_tec.tec_found
     # GridLayout: 
     #     cols: 1
     MirrorViewWidget:
@@ -164,11 +164,43 @@
         cols: 2
         size_hint_x: None
         width:600
+        GridLayout:
+            cols: 2
+            # size_hint_x: None
+            # width:300
+            size_hint_y: None
+            height: 30
+            Button:
+                id: tec_connect_a_btn
+                text:'Connect A'
+                size_hint_y: None
+                height: 30
+                size_hint_x: None
+                width:110
+                background_color: (1,0,0,1)
+                on_release: app.tecBox_A.requestConnectionToggle()
+                disabled: not root.cfg_loaded
+            Button:
+                id: tec_connect_b_btn
+                text:'Connect B'
+                size_hint_y: None
+                height: 30
+                size_hint_x: None
+                width:110
+                background_color: (1,0,0,1)
+                on_release: app.tecBox_B.requestConnectionToggle()
+                disabled: not root.cfg_loaded
+        Button:
+            text: "Read Command CSV"
+            size_hint_y: None
+            height: 30
+            disabled: True
+            on_release: MirrorViewWidget.readCommandCsv()
         Button:
             size_hint_y: None
             height: 40
             text: 'Load Mirror Config'
-            on_release: MirrorViewWidget.readCsv()
+            on_release: MirrorViewWidget.readMirrorConfigCsv()
         Button:
             size_hint_y: None
             height: 40
@@ -236,8 +268,8 @@
                         text: "Cmd Gain: "
                     FloatInput:
                         id: gain_input
-                        size_hint: None, None
-                        size: 140, 40
+                        # size_hint: None, None
+                        # size: 140, 30
                         text: '1.0'
                         font_size: 15
                 BorderGridLayout:
