@@ -233,3 +233,6 @@ class DeviceController():
             else:
                 breakpoint()
                 self.terminalManager.queueMessage(exc.msg)
+                
+    def isConnected(self):
+        return self.deviceInterface.isConnected()

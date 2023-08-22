@@ -41,6 +41,8 @@ class LFASTControllerInterface:
         LFASTControllerInterface._debug_mode = dm
         
     async def startNewMessage(self):
+        while self._newCommandDataEvent.is_set():
+            await trio.sleep(0)
         self._outgoingJsonMessage[self._messageTypeLabel] = {}
         self._newCommandDataEvent = trio.Event()
         
@@ -49,13 +51,14 @@ class LFASTControllerInterface:
             kvp = {key: val}
             self._outgoingJsonMessage[self._messageTypeLabel].update(kvp)
         self._newCommandDataEvent.set()
-            
+        pass
+    
     async def sendHandshake(self):
         await self.startNewMessage()
         await self.addKvCommandPairs(Handshake=0xDEAD)
         self._handshakeReceived = trio.Event()
         await trio.sleep(0)
-        await self.sendCommands()
+        await self.addCommandsToOutgoing()
         
     async def waitForHandshakeReply(self, secondsToWait=default_timeout):
         with trio.fail_after(secondsToWait) as cancelScope:
@@ -64,13 +67,15 @@ class LFASTControllerInterface:
             await self._handshakeReceived.wait()
             
         
-    async def sendCommands(self):
+    async def addCommandsToOutgoing(self):
         if self._debug_mode:
             return
         if self._newCommandDataEvent.is_set():
             async with self._outgoingDataTxChannel.clone() as outgoing:
                 await outgoing.send(json.dumps(self._outgoingJsonMessage))
-            
+            self._newCommandDataEvent = trio.Event()
+            pass
+        
     async def aSendMessages(self, task_status=trio.TASK_STATUS_IGNORED):
         if self._debug_mode:
             return
@@ -78,6 +83,7 @@ class LFASTControllerInterface:
             print("inside aSendMessages with")
             async for message in chan:
                 await self._client_stream.send_all(message.encode('utf-8'))
+                await trio.sleep(0)
                 print('Sent: ' + message)
                 await self.startNewMessage()
             pass

@@ -253,6 +253,11 @@ class MirrorViewControlPanel(GridLayout):
         tec = mvw.get_tec_by_no(tecNo)
         return tec.tec_found
     
+    def check_if_tec_is_enabled(self, tecNo):
+        mvw = self.ids['mvw']
+        tec = mvw.get_tec_by_no(tecNo)
+        return tec.enabled
+        
     def getFieldValue(self, tecNo):
         mvw = self.ids['mvw']
         val = mvw.get_tec_val(tecNo)

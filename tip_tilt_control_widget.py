@@ -127,7 +127,7 @@ class TipTiltController(DeviceController):
                     enableStepBtn.text = "Disable Steppers"
             elif request == TtfControllerRequest.STOP_REQUESTED:
                 await self.deviceInterface.sendStopCommand() 
-        await self.deviceInterface.sendCommands()
+        await self.deviceInterface.addCommandsToOutgoing()
             
     async def disconnectInProgressHandler(self):
         enableStepBtn = self.controllerWidget.ids['enable_steppers_btn']

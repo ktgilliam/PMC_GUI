@@ -70,12 +70,23 @@ class TECBoxController(DeviceController):
     @staticmethod
     def startSendAll():
         for box in TECBoxController._instances:
-            box.nursery.start_soon(box.sendAll)
+            if box.isConnected():
+                box.nursery.start_soon(box.sendAll)
             
     async def sendAll(self):
-        list = self.deviceInterface.getTecList()
+        boxId = self.deviceInterface.boxId
+        list = TecControllerInterface.getTecList(boxId)
+        count = 0
         for tec in list:
-            val = self.controllerWidget.getFieldValue(tec.tecNo)
+            if self.controllerWidget.check_if_tec_is_enabled(tec.tecNo):
+                val = self.controllerWidget.getFieldValue(tec.tecNo)
+            else:
+                val = 0.0
             if val is not None:
                 await self.deviceInterface.sendTecCommand(tec.tecNo, val)
-                # print("send: " + str(val))
+                # await self.deviceInterface.addCommandsToOutgoing()  
+                count = count + 1
+                await trio.sleep(0.01)
+        # await self.deviceInterface.startSending()
+        await self.terminalManager.addMessage("Sent: "+str(count)+" TEC commands.")
+        
