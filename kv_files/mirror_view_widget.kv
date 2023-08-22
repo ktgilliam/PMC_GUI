@@ -3,6 +3,7 @@
 #:import MirrorViewWidget mirror_view_widget.MirrorViewWidget
 #:import TecWidget mirror_view_widget.TecWidget
 #:import ColorMap colormap.ColorMap
+#:import TECBoxController tec_box_controller.TECBoxController
 
 <TecWidget>:
     spot_diameter:18
@@ -266,12 +267,14 @@
                     cols: 2
                     Label:
                         text: "Cmd Gain: "
+                        disabled: not root.cfg_loaded
                     FloatInput:
                         id: gain_input
                         # size_hint: None, None
                         # size: 140, 30
                         text: '1.0'
                         font_size: 15
+                        disabled: not root.cfg_loaded
                 BorderGridLayout:
                     border_color: 1,1,1,1
                     border_width: 1
@@ -302,7 +305,7 @@
                         height: 40
                         text: 'Send Commands'
                         disabled: not root.cfg_loaded
-                        on_release: mvw.update_tec_map(); print('### Send commands here?')
+                        on_release: mvw.update_tec_map(); TECBoxController.startSendAll();
                     Button:
                         size_hint_y: None
                         height: 40

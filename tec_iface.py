@@ -79,16 +79,20 @@ class TecControllerInterface(LFASTControllerInterface):
             await trio.sleep(0) 
             await self.sendCommands()
             
-    async def sendTecCommand(self, tecNo, current):
+    async def sendTecCommand(self, tecNo, duty):
         """ This routine will send a heater setting to the TEC master board.  First it sends the board number.  Then it sends the channel number.  Then it sends the setHeater commmand with the pwmPct number which will set the heater using the previously sent board and channel number.  The master will parse out the data to the appropriate card in the box depending on boards number """
-        await self.addKvCommandPairs(TecNo=tecNo, setTecAmps=float(current))
-        await trio.sleep(0)
-        await self.sendCommands()  
+        if self._connected:
+            await self.startNewMessage()
+            await self.addKvCommandPairs(TECNo=tecNo, SetDuty=float(duty))
+            await trio.sleep(0)
+            await self.sendCommands()  
         
     async def sendAllToZeroCommand(self):
-        await self.addKvCommandPairs(AllToZero=1)
-        await trio.sleep(0)
-        await self.sendCommands()  
+        if self._connected:
+            await self.startNewMessage()
+            await self.addKvCommandPairs(AllToZero=1)
+            await trio.sleep(0)
+            await self.sendCommands()  
     
     @staticmethod
     def getTecList():

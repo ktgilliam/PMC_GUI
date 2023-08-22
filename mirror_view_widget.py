@@ -61,6 +61,7 @@ class MirrorViewWidget(AnchorLayout):
     tec_cfg_list = ListProperty([])
     diameter = NumericProperty()
     cfg_file_path = StringProperty('')
+    tec_widget_list = []
     # tec_cfg_list = []
     
     def __init__(self, **kwargs):
@@ -114,7 +115,6 @@ class MirrorViewWidget(AnchorLayout):
                     print(', '.join(row))
         except FileNotFoundError:
             return
-        
         # for box in TECBoxController._instances:
         #     list = box.deviceInterface.getTecList()
         #     for tec in list:
@@ -155,6 +155,7 @@ class MirrorViewWidget(AnchorLayout):
             tw.id = 'TEC'+str(cfg[0])
             tw.enabled = False
             self.add_widget(tw)
+            self.tec_widget_list.append(tw)
         self.parent.cfg_loaded = True
         
     def on_height(self, instance, value):
@@ -165,7 +166,7 @@ class MirrorViewWidget(AnchorLayout):
             if type(child) == TecWidget:
                 child.enabled = flag
                 
-    def update_tec_map():
+    def update_tec_map(self):
         for child in MirrorViewWidget.instance.children:
             if type(child) == TecWidget:
                 pass
@@ -183,13 +184,18 @@ class MirrorViewWidget(AnchorLayout):
                 centroid_list.append(centroid)
         return centroid_list
 
-    def get_tec_no(self, no):
+    def get_tec_by_no(self, no):
         for child in self.children:
             if type(child) == TecWidget:
                 if child.id_no == no:
                     return child
         return None
-         
+    
+    def get_tec_val(self, no):
+        tec = self.get_tec_by_no(no)
+        if tec is not None:
+            return tec.mag_value
+        
     def zernike_command(self, osa_idx, theta_offs=0.0, scale=1):
         # Note: This is not that simple - the mag_value will need to come from a surface fit with the influence functions
         theta_offs = theta_offs*math.pi/180
@@ -202,9 +208,6 @@ class MirrorViewWidget(AnchorLayout):
                 new_mag = 0.5*Z*scale
                 child.update_mag_value(new_mag)
                 cnt = cnt + 1
-        pass
-
-
     
 class MirrorViewControlPanel(GridLayout):
     active_tec = ObjectProperty(None,  allownone=True)
@@ -219,7 +222,7 @@ class MirrorViewControlPanel(GridLayout):
         mvw = self.ids['mvw']
         for found_tec_cfg in found_tec_cfg_list:
             found_tec_no = found_tec_cfg.tecNo
-            tec_widget = mvw.get_tec_no(found_tec_no)
+            tec_widget = mvw.get_tec_by_no(found_tec_no)
             if tec_widget is not None:
                 tec_widget.tec_config = found_tec_cfg
                 tec_widget.tec_found = True
@@ -244,6 +247,18 @@ class MirrorViewControlPanel(GridLayout):
         mvw = self.ids['mvw']
         zp = self.ids['zernike_panel']
         mvw.zernike_command(zp.j, zp.theta_offset, zp.scale_coeff)
+    
+    def check_if_tec_is_found(self, tecNo):
+        mvw = self.ids['mvw']
+        tec = mvw.get_tec_by_no(tecNo)
+        return tec.tec_found
+    
+    def getFieldValue(self, tecNo):
+        mvw = self.ids['mvw']
+        val = mvw.get_tec_val(tecNo)
+        gain_fld = self.ids['gain_input']
+        cmd = val * gain_fld.value
+        return cmd
     
 class Zernike_Widget(GridLayout):
     j = NumericProperty(0)
@@ -272,3 +287,4 @@ class Zernike_Widget(GridLayout):
             zp = ZernPol(osa_index=self.j)
             name_str = zp.get_polynomial_name()
         self.name = " (" + name_str + ")"
+        

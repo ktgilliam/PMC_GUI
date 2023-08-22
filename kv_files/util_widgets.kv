@@ -53,7 +53,7 @@
 <FloatInput>:
     font_size: 14
     multiline: False
-    value: 0 if len(self.text) == 0 else (float(self.text) if self.text != '-' else 0)
+    value: 0 if len(self.text) == 0 else (float(self.text) if (self.text != '-' and self.text != '.') else 0)
     # canvas.before:
     #     Color:
     #         rgb: 0.2, 0.2, 0.2

@@ -67,6 +67,7 @@ class TECBoxController(DeviceController):
             # box.controllerWidget.fillFieldsWithZeros()
             pass
 
+    @staticmethod
     def startSendAll():
         for box in TECBoxController._instances:
             box.nursery.start_soon(box.sendAll)
@@ -77,6 +78,4 @@ class TECBoxController(DeviceController):
             val = self.controllerWidget.getFieldValue(tec.tecNo)
             if val is not None:
                 await self.deviceInterface.sendTecCommand(tec.tecNo, val)
-                print("send: " + str(val))
-            pass
-    
+                # print("send: " + str(val))
