@@ -106,7 +106,7 @@ class LFASTControllerInterface:
                         if len(chunk) > 0:
                             recvStr = chunk.decode('utf-8')
                             # pprint.pprint(recvStr)
-                            self._receiveBuffer = self._receiveBuffer[len(chunk):]
+                            self._receiveBuffer = self._receiveBuffer[len(chunk)+1:]
                             async with self._incomingDataTxChannel.clone() as chan:
                                 await chan.send(recvStr)
                                 await trio.sleep(0)
@@ -164,8 +164,8 @@ class LFASTControllerInterface:
                             else:
                                 # print(replyStr)
                                 pass
-                            await trio.sleep(0)
-                    await trio.sleep(0)
+                            # await trio.sleep(0)
+                    await trio.sleep(0.01)
             pass
             # self.Disonnect()
 

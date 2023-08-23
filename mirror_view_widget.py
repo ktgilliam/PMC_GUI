@@ -206,6 +206,7 @@ class MirrorViewWidget(AnchorLayout):
                 theta = (child.theta+theta_offs) % (2*math.pi)
                 Z = zp.polynomial_value(child.rho_norm, theta, use_exact_eq=True)
                 new_mag = 0.5*Z*scale
+                new_mag = round(new_mag, 12)
                 child.update_mag_value(new_mag)
                 cnt = cnt + 1
     
