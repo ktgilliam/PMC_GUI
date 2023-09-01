@@ -18,7 +18,7 @@ from json_settings import *
 
 from terminal_widget import *
 from tip_tilt_control_widget import *
-from tec_control_widget import *
+from tec_box_controller import *
 from mirror_view_widget import *
 
 from kivy.config import Config
@@ -63,7 +63,7 @@ class PMC_APP(App):
         self.use_kivy_settings = False
         Builder.load_file('kv_files/util_widgets.kv')
         Builder.load_file('kv_files/tip_tilt_control_widget.kv')
-        Builder.load_file('kv_files/tec_control_widget.kv')
+        # Builder.load_file('kv_files/tec_control_widget.kv')
         Builder.load_file('kv_files/mirror_view_widget.kv')
         Builder.load_file('kv_files/terminal_widget.kv')
         gui = Builder.load_file('kv_files/pmc_gui.kv')

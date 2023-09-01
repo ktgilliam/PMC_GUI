@@ -49,52 +49,64 @@ class TecControllerInterface(LFASTControllerInterface):
         
     def setBoxId(self, id):
         self.boxId = id
-        
-    async def setHeater(self, tec, pwmPct):
-        # This routine decodes to which box, board, and channel to send the
-        # heater setting.
-        mapIndex = np.squeeze(np.where(BOXMAP[:,0] == tec))
-        box = BOXMAP[mapIndex,1]
-        board = BOXMAP[mapIndex,2]
-        channel = BOXMAP[mapIndex,3]
-#        print(box) print(board) print(channel)
-        self.sendTecCommand(int(box), int(board), int(channel), pwmPct)
-        return
+    
+#     async def setHeater(self, tec, pwmPct):
+#         # This routine decodes to which box, board, and channel to send the
+#         # heater setting.
+#         mapIndex = np.squeeze(np.where(BOXMAP[:,0] == tec))
+#         box = BOXMAP[mapIndex,1]
+#         board = BOXMAP[mapIndex,2]
+#         channel = BOXMAP[mapIndex,3]
+# #        print(box) print(board) print(channel)
+#         self.sendTecCommand(int(box), int(board), int(channel), pwmPct)
+#         return
 
-    async def getHeater(self, tec):
-        mapIndex = np.squeeze(np.where(BOXMAP[:,0] == tec))
-        box = BOXMAP[mapIndex,1]
-        board = BOXMAP[mapIndex,2]
-        channel = BOXMAP[mapIndex,3]
-        bdData = self.getTecByBoxBoard(int(box), int(board))
-        # We now have the board's data, need to sort by channel
-        # The loads may be what is slowing everything down.  Use ujson instead and that may solve it
-        recvJsonMsg = json.loads(bdData)
-        return recvJsonMsg[TECAlias[int(channel-1)]]
+    # async def getHeater(self, tec):
+    #     mapIndex = np.squeeze(np.where(BOXMAP[:,0] == tec))
+    #     box = BOXMAP[mapIndex,1]
+    #     board = BOXMAP[mapIndex,2]
+    #     channel = BOXMAP[mapIndex,3]
+    #     bdData = self.getTecByBoxBoard(int(box), int(board))
+    #     # We now have the board's data, need to sort by channel
+    #     # The loads may be what is slowing everything down.  Use ujson instead and that may solve it
+    #     recvJsonMsg = json.loads(bdData)
+    #     return recvJsonMsg[TECAlias[int(channel-1)]]
     
     async def getTecConfigFromTeensy(self):
         if self._connected:
             await self.startNewMessage()
             await self.addKvCommandPairs(SendAll=True)
             await trio.sleep(0) 
-            await self.sendCommands()
+            await self.addCommandsToOutgoing()
             
-    async def sendTecCommand(self, tecNo, current):
+    async def sendTecCommand(self, tecNo, duty):
         """ This routine will send a heater setting to the TEC master board.  First it sends the board number.  Then it sends the channel number.  Then it sends the setHeater commmand with the pwmPct number which will set the heater using the previously sent board and channel number.  The master will parse out the data to the appropriate card in the box depending on boards number """
-        await self.addKvCommandPairs(TecNo=tecNo, setTecAmps=float(current))
-        await trio.sleep(0)
-        await self.sendCommands()  
+        if self.isConnected():
+            await self.startNewMessage()
+            await self.addKvCommandPairs(TECNo=tecNo, SetDuty=float(duty))
+            await self.addCommandsToOutgoing()
+            await trio.sleep(0)
+        else:
+            pass
         
     async def sendAllToZeroCommand(self):
-        await self.addKvCommandPairs(AllToZero=1)
-        await trio.sleep(0)
-        await self.sendCommands()  
+        if self._connected:
+            await self.startNewMessage()
+            await self.addKvCommandPairs(AllToZero=1)
+            await trio.sleep(0)
+            await self.addCommandsToOutgoing() 
+
     
     @staticmethod
-    def getTecList():
+    def getTecList(box_id=-1):
         TecControllerInterface.tecConfigList.sort(key=lambda x: x.tecNo, reverse=False)
         TecControllerInterface.tecConfigListChanged = trio.Event()
-        return TecControllerInterface.tecConfigList
+        if box_id == -1:
+            return TecControllerInterface.tecConfigList
+        else:
+            result = filter(lambda x: x.boxNo == box_id, TecControllerInterface.tecConfigList)
+            filtered_list = list(result)
+            return filtered_list
     
     async def checkMessages(self, replyJson):
         listLengthPrev = TecControllerInterface.tecsConfigsReceived
@@ -111,8 +123,9 @@ class TecControllerInterface(LFASTControllerInterface):
                 
         if "SentConfigs" in replyJson:
             sentReported = replyJson['SentConfigs']
+            print("Sent Reported: "+str(sentReported))
+            print("Actual Sent: "+str(len(TecControllerInterface.tecConfigList)))
             if sentReported != TecControllerInterface.tecsConfigsReceived:
                 pass
             if listLengthPrev != TecControllerInterface.tecsConfigsReceived:
                 TecControllerInterface.tecConfigListChanged.set()
-            await trio.sleep(0)

@@ -54,7 +54,7 @@ PMC_GUI:
         TabbedPanelItem:
             text: 'Mirror View'
             MirrorViewControlPanel:
-
+                id: tecCtrl
         TabbedPanelItem:
             # size_hint: 0.5, None
             # width: 160
@@ -62,18 +62,18 @@ PMC_GUI:
             TipTiltControlWidget:
                 label: 'TipTilt'
                 id: tipTiltCtrl
-        TabbedPanelItem:
-            # size_hint: 0.5, None
-            text: 'TEC Control'
-            TECControlWidget:
-                id: tecCtrl
+        # TabbedPanelItem:
+        #     # size_hint: 0.5, None
+        #     text: 'TEC Control'
+        #     TECControlWidget:
+        #         id: tecCtrl
         TabbedPanelItem:
             text: 'Wavefront Stuff'
             Label:
                 text: 'Wavefront Stuff'
     Splitter:
         sizable_from: 'top'
-        max_size: 350
+        max_size: 250
         size_hint: 1, None
         height: self.max_size
         TerminalWidget:

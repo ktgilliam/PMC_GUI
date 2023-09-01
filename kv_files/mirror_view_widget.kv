@@ -3,8 +3,10 @@
 #:import MirrorViewWidget mirror_view_widget.MirrorViewWidget
 #:import TecWidget mirror_view_widget.TecWidget
 #:import ColorMap colormap.ColorMap
+#:import TECBoxController tec_box_controller.TECBoxController
 
 <TecWidget>:
+    tec_label_str: self.tec_name_str if self.tec_found else self.tec_name_str+' [not found]'
     spot_diameter:18
     mirror_px_radius: self.mirror_circle_prop.diameter/2 if self.mirror_circle_prop!= None else 200
     x_loc: 0.95*self.mirror_px_radius*self.rho_norm*math.cos(self.theta)
@@ -154,9 +156,8 @@
 
 <MirrorViewControlPanel>:
     cols: 2
-    opts_disabled: True if (root.active_tec == None) else False
-    # GridLayout: 
-    #     cols: 1
+    opts_disabled: True if (root.active_tec == None) else not root.active_tec.tec_found
+
     MirrorViewWidget:
         id: mvw
         diameter: self.height*0.9
@@ -164,23 +165,57 @@
         cols: 2
         size_hint_x: None
         width:600
+        GridLayout:
+            cols: 2
+            # size_hint_x: None
+            # width:300
+            size_hint_y: None
+            height: 30
+            Button:
+                id: tec_connect_a_btn
+                text:'Connect A'
+                size_hint_y: None
+                height: 30
+                size_hint_x: None
+                width:110
+                background_color: (1,0,0,1)
+                on_release: app.tecBox_A.requestConnectionToggle()
+                disabled: not root.cfg_loaded
+            Button:
+                id: tec_connect_b_btn
+                text:'Connect B'
+                size_hint_y: None
+                height: 30
+                size_hint_x: None
+                width:110
+                background_color: (1,0,0,1)
+                on_release: app.tecBox_B.requestConnectionToggle()
+                disabled: not root.cfg_loaded
+        Button:
+            text: "Read Command CSV"
+            size_hint_y: None
+            height: 30
+            disabled: not root.cfg_loaded
+            on_release: MirrorViewWidget.readCommandCsv()
         Button:
             size_hint_y: None
             height: 40
             text: 'Load Mirror Config'
-            on_release: MirrorViewWidget.readCsv()
+            on_release: MirrorViewWidget.readMirrorConfigCsv()
         Button:
             size_hint_y: None
             height: 40
-            text: 'Save Mirror Config'
+            text: 'Save Mirror Commands'
             disabled: not root.cfg_loaded
+            on_release: MirrorViewWidget.saveCommandCsv()
 
         BorderGridLayout:
             border_color: 1,1,1,1
             border_width: 1
             cols: 1
             Label: 
-                text: root.active_tec.id if root.active_tec != None else '--'
+                id: active_tec_label
+                text: mvw.mirror_name+':'+root.active_tec.tec_label_str if root.active_tec != None else '--'
                 bold: True
                 halign: 'center'
                 size_hint_y: None
@@ -193,7 +228,7 @@
                     # border_color: 1,1,1,1
                     # border_width: 1
                     Label:
-                        text: 'Command:'  
+                        text: 'Command [0:1]:'  
                         size_hint: None, None
                         size: 150, 40
                         halign: 'left'
@@ -229,6 +264,22 @@
                 BorderGridLayout:
                     border_color: 1,1,1,1
                     border_width: 1
+                    size_hint_y: None
+                    height: 40
+                    cols: 2
+                    Label:
+                        text: "Cmd Gain: "
+                        disabled: not root.cfg_loaded
+                    FloatInput:
+                        id: gain_input
+                        # size_hint: None, None
+                        # size: 140, 30
+                        text: '1.0'
+                        font_size: 15
+                        disabled: not root.cfg_loaded
+                BorderGridLayout:
+                    border_color: 1,1,1,1
+                    border_width: 1
                     cols: 2
                     Button:
                         id: enable_all_btn
@@ -256,7 +307,7 @@
                         height: 40
                         text: 'Send Commands'
                         disabled: not root.cfg_loaded
-                        on_release: mvw.update_tec_map(); print('### Send commands here?')
+                        on_release: mvw.update_tec_map(); TECBoxController.startSendAll();
                     Button:
                         size_hint_y: None
                         height: 40

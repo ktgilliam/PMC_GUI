@@ -126,7 +126,7 @@ class DeviceController():
         #     if request == self.toggleConnectionRequested:
         if self.toggleConnectionRequested:
             self.connectionFailedEvent = trio.Event() #reset the failed connection flag
-            await self.terminalManager.addMessage(self._deviceLabel + ': Connecting...')
+            await self.terminalManager.addMessage(self._deviceLabel + ': Connecting '+ ": " + self.controllerIpAddr + ":" + str(self.controllerPort))
             await self.setControllerState(ControllerState.CONNECT_IN_PROGRESS)
             conBtn.text = 'Connecting ' + self._deviceLabel
             conBtn.background_color = (0.5,0.5,0.5,1)
@@ -233,3 +233,6 @@ class DeviceController():
             else:
                 breakpoint()
                 self.terminalManager.queueMessage(exc.msg)
+                
+    def isConnected(self):
+        return self.deviceInterface.isConnected()
