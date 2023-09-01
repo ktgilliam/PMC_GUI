@@ -7,10 +7,9 @@ import tkinter as tk
 from tkinter import filedialog
 import csv
 from colormap import ColorMap as cmap
-
 from zernpy import ZernPol
 import math
-
+import os
 from tec_iface import *
 
 class TecConfiguration():
@@ -35,6 +34,8 @@ class TecWidget(Widget):
     enabled = BooleanProperty(False)
     mag_value = NumericProperty(0, rebind=True)
     tec_found = BooleanProperty(False)
+    tec_name_str = StringProperty()
+    tec_label_str = StringProperty('--')
     tec_config = None
 
     def connect_mirror_circle(self, mc):
@@ -61,6 +62,7 @@ class MirrorViewWidget(AnchorLayout):
     tec_cfg_list = ListProperty([])
     diameter = NumericProperty()
     cfg_file_path = StringProperty('')
+    mirror_name = StringProperty('--')
     tec_widget_list = []
     # tec_cfg_list = []
     
@@ -74,6 +76,10 @@ class MirrorViewWidget(AnchorLayout):
         file_path = filedialog.askopenfilename(
             filetypes=[("CSV File", ".csv")])
         print(file_path)
+        mirror_file_name = os.path.basename(file_path)
+        parts = mirror_file_name.split('_')
+        MirrorViewWidget.instance.mirror_name = parts[0]
+        
         cfg_list = []
         if len(MirrorViewWidget.instance.tec_cfg_list) > 0:
             MirrorViewWidget.resetTecWidgets()
@@ -101,33 +107,32 @@ class MirrorViewWidget(AnchorLayout):
         print(file_path)
         try:
             with open(file_path, newline='') as csvfile:
-                spamreader = csv.reader(csvfile, delimiter=',', quotechar='|')
+                reader = csv.DictReader(csvfile)
                 tec_cmds = []
                 headerRow = True
-                for row in spamreader:
+                for row in reader:
                     if headerRow:
                         headerRow = False
                         continue
-                    tec_no = int(row[0])
-                    tec_cmd = float(row[1])
-                    tec_cmd = (tec_no, tec_cmd)
+                    tec_no = int(row['TEC'])
+                    tec_cmd = float(row['cmd'])
+                    enabled = bool(row['enabled'])
+                    tec_cmd = (tec_no, tec_cmd, enabled)
                     tec_cmds.append(tec_cmd)
                     print(', '.join(row))
         except FileNotFoundError:
             return
-        # for box in TECBoxController._instances:
-        #     list = box.deviceInterface.getTecList()
-        #     for tec in list:
-        #         found = False
-        #         for idx, cmd in enumerate(tec_cmds):
-        #             if cmd[0] == tec.tecNo:
-        #                 print("set tec: " + str(tec.tecNo) + " to " + str(cmd[1]))
-        #                 box.controllerWidget.setFieldValue(tec.tecNo, cmd[1])
-        #                 found = True
-        #                 break
-        #         if found:
-        #             tec_cmds.pop(idx)
-        #     pass
+        MirrorViewWidget.instance.applyTecMagnitudes(tec_cmds)
+        MirrorViewWidget.instance.parent.updateActiveTecFields()
+        
+    def applyTecCommands(self, cmds):
+        for cmd in cmds:
+            tecNo = cmd[0]
+            val = cmd[1]
+            tecWidget = self.get_tec_by_no(tecNo)
+            tecWidget.update_mag_value(val)
+            tecWidget.enabled = cmd[2]
+            pass
 
     def resetTecWidgets():
         MirrorViewWidget.instance.tec_cfg_list = []
@@ -153,6 +158,7 @@ class MirrorViewWidget(AnchorLayout):
             tw = TecWidget(id_no=cfg[0], theta=cfg[1],rho_norm=rho_norm , enabled=cfg[3])
             tw.connect_mirror_circle(self)
             tw.id = 'TEC'+str(cfg[0])
+            tw.tec_name_str = tw.id
             tw.enabled = False
             self.add_widget(tw)
             self.tec_widget_list.append(tw)
@@ -243,12 +249,14 @@ class MirrorViewControlPanel(GridLayout):
     def load_field_values(self, tec):
         cmd_fld = self.ids['cmd_input']
         cmd_fld.text = str(tec.mag_value)
+        cmd_fld.cursor = (0,0)
         
     def map_zernike(self):
         mvw = self.ids['mvw']
         zp = self.ids['zernike_panel']
         mvw.zernike_command(zp.j, zp.theta_offset, zp.scale_coeff)
-    
+        self.updateActiveTecFields()
+        
     def check_if_tec_is_found(self, tecNo):
         mvw = self.ids['mvw']
         tec = mvw.get_tec_by_no(tecNo)
@@ -265,6 +273,10 @@ class MirrorViewControlPanel(GridLayout):
         gain_fld = self.ids['gain_input']
         cmd = val * gain_fld.value
         return cmd
+    
+    def updateActiveTecFields(self):
+        if self.active_tec is not None:
+            self.load_field_values(self.active_tec)
     
 class Zernike_Widget(GridLayout):
     j = NumericProperty(0)
