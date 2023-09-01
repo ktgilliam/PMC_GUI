@@ -5,11 +5,13 @@ from kivy.uix.widget import Widget
 
 import tkinter as tk
 from tkinter import filedialog
+from tkinter.filedialog import asksaveasfile
 import csv
 from colormap import ColorMap as cmap
 from zernpy import ZernPol
 import math
 import os
+import time
 from tec_iface import *
 
 class TecConfiguration():
@@ -71,15 +73,14 @@ class MirrorViewWidget(AnchorLayout):
         MirrorViewWidget.instance = self
         
     def readMirrorConfigCsv():
-        root = tk.Tk()
-        root.withdraw()
+        # root = tk.Tk()
+        # root.withdraw()
         file_path = filedialog.askopenfilename(
             filetypes=[("CSV File", ".csv")])
         print(file_path)
         mirror_file_name = os.path.basename(file_path)
         parts = mirror_file_name.split('_')
         MirrorViewWidget.instance.mirror_name = parts[0]
-        
         cfg_list = []
         if len(MirrorViewWidget.instance.tec_cfg_list) > 0:
             MirrorViewWidget.resetTecWidgets()
@@ -100,8 +101,9 @@ class MirrorViewWidget(AnchorLayout):
 
         
     def readCommandCsv():
-        root = tk.Tk()
-        root.withdraw()
+        # root = tk.Tk()
+        # root.withdraw()
+        mvw = MirrorViewWidget.instance
         file_path = filedialog.askopenfilename(
             filetypes=[("CSV File", ".csv")])
         print(file_path)
@@ -109,11 +111,7 @@ class MirrorViewWidget(AnchorLayout):
             with open(file_path, newline='') as csvfile:
                 reader = csv.DictReader(csvfile)
                 tec_cmds = []
-                headerRow = True
                 for row in reader:
-                    if headerRow:
-                        headerRow = False
-                        continue
                     tec_no = int(row['TEC'])
                     tec_cmd = float(row['cmd'])
                     enabled = bool(row['enabled'])
@@ -122,8 +120,8 @@ class MirrorViewWidget(AnchorLayout):
                     print(', '.join(row))
         except FileNotFoundError:
             return
-        MirrorViewWidget.instance.applyTecMagnitudes(tec_cmds)
-        MirrorViewWidget.instance.parent.updateActiveTecFields()
+        mvw.applyTecCommands(tec_cmds)
+        mvw.parent.updateActiveTecFields()
         
     def applyTecCommands(self, cmds):
         for cmd in cmds:
@@ -131,9 +129,27 @@ class MirrorViewWidget(AnchorLayout):
             val = cmd[1]
             tecWidget = self.get_tec_by_no(tecNo)
             tecWidget.update_mag_value(val)
-            tecWidget.enabled = cmd[2]
+            tecWidget.enabled = cmd[2] and tecWidget.tec_found
             pass
-
+        
+    def saveCommandCsv():    
+        mvw = MirrorViewWidget.instance
+        date_str = time.strftime('%Y_%m_%d_%H_%M_%S')
+        newFileNameSuggestion = mvw.mirror_name+'_cmds_'+date_str
+        f = asksaveasfile(initialfile = newFileNameSuggestion, defaultextension=".csv",filetypes=[("All Files","*.*"),("CSV Documents","*.csv")])
+        rows = []
+        rows.append(['TEC', 'cmd', 'enabled'])
+        for cfg in mvw.tec_cfg_list:
+            tecNo = cfg[0]
+            tecWidget = mvw.get_tec_by_no(tecNo)
+            val = tecWidget.mag_value
+            en = int(tecWidget.enabled)
+            row = [tecNo, val, en]
+            rows.append(row)
+        with open(f.name, 'w', newline='') as file:
+            writer = csv.writer(file)
+            writer.writerows(rows)
+    
     def resetTecWidgets():
         MirrorViewWidget.instance.tec_cfg_list = []
         rmList = []
