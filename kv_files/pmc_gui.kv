@@ -11,7 +11,8 @@
 PMC_GUI:
 
     id: id: id.__self__
-    cols: 1     
+    # cols: 1     
+    orientation: 'vertical'
 
     ip_addr_prop:  app.config.get('Connection','ip_addr')
     tip_tilt_port_prop: int(app.config.get('Connection','tip_tilt_ip_port'))
@@ -34,6 +35,7 @@ PMC_GUI:
     #         rectangle: self.x, self.y, self.width, self.height
 
     # Top half is for inputs.
+
     BackgroundLabel:
         background_color: 0,0,0,1
         id: title_label
@@ -48,6 +50,11 @@ PMC_GUI:
         do_default_tab: False
         tab_height: 30
         tab_width: 200
+
+        TabbedPanelItem:
+            text: 'Mirror View'
+            MirrorViewControlPanel:
+                id: tecCtrl
         TabbedPanelItem:
             # size_hint: 0.5, None
             # width: 160
@@ -55,21 +62,25 @@ PMC_GUI:
             TipTiltControlWidget:
                 label: 'TipTilt'
                 id: tipTiltCtrl
-        TabbedPanelItem:
-            # size_hint: 0.5, None
-            text: 'TEC Control'
-            TECControlWidget:
-                id: tecCtrl
+        # TabbedPanelItem:
+        #     # size_hint: 0.5, None
+        #     text: 'TEC Control'
+        #     TECControlWidget:
+        #         id: tecCtrl
         TabbedPanelItem:
             text: 'Wavefront Stuff'
             Label:
                 text: 'Wavefront Stuff'
-
-    TerminalWidget:
-        label: 'Terminal'
-        id: terminal
-        # size_hint: 1, None
-        # height: 
+    Splitter:
+        sizable_from: 'top'
+        max_size: 250
+        size_hint: 1, None
+        height: self.max_size
+        TerminalWidget:
+            label: 'Terminal'
+            id: terminal
+            # size_hint_y: None
+            # height: 250
         # size: root.width, root.height/2
             
 

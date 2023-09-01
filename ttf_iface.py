@@ -128,13 +128,13 @@ class TipTiltFocusControlInterface(LFASTControllerInterface):
         self._currentFocus_um = 0.0 
         self._homingComplete = trio.Event()
         await trio.sleep(0)
-        await self.sendCommands()
+        await self.addCommandsToOutgoing()
         
     async def sendBottomFound(self):       
         await self.startNewMessage()
         await self.addKvCommandPairs(BottomFound=True)
         await trio.sleep(0)
-        await self.sendCommands()  
+        await self.addCommandsToOutgoing()  
         
     async def waitForHomingComplete(self, timeout=60):
         with trio.fail_after(timeout) as cancelScope:
@@ -153,7 +153,7 @@ class TipTiltFocusControlInterface(LFASTControllerInterface):
         await self.startNewMessage()
         await self.addKvCommandPairs(EnableSteppers=doEnable)
         await trio.sleep(0)
-        await self.sendCommands()
+        await self.addCommandsToOutgoing()
         self._steppersEnabled = doEnable
         
     # async def sendCommands(self):
@@ -166,7 +166,7 @@ class TipTiltFocusControlInterface(LFASTControllerInterface):
         await self.addKvCommandPairs(Stop=0)
         async with self._outgoingDataTxChannel.clone() as outgoing:
                 await outgoing.send(json.dumps(self._outgoingJsonMessage))
-        await self.sendCommands()
+        await self.addCommandsToOutgoing()
         await trio.sleep(0)
         if(self._cancelScope != None):
             self._cancelScope.cancel()

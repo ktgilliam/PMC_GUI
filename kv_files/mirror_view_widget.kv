@@ -1,0 +1,328 @@
+#:kivy 2.2.0
+#:import math math
+#:import MirrorViewWidget mirror_view_widget.MirrorViewWidget
+#:import TecWidget mirror_view_widget.TecWidget
+#:import ColorMap colormap.ColorMap
+#:import TECBoxController tec_box_controller.TECBoxController
+
+<TecWidget>:
+    tec_label_str: self.tec_name_str if self.tec_found else self.tec_name_str+' [not found]'
+    spot_diameter:18
+    mirror_px_radius: self.mirror_circle_prop.diameter/2 if self.mirror_circle_prop!= None else 200
+    x_loc: 0.95*self.mirror_px_radius*self.rho_norm*math.cos(self.theta)
+    y_loc: 0.95*self.mirror_px_radius*self.rho_norm*math.sin(self.theta)
+    x_loc_abs: (self.center_x - self.spot_diameter/2) + self.x_loc
+    y_loc_abs: (self.center_y - self.spot_diameter/2) + self.y_loc
+    spot_rgb: ColorMap.get_rgb(self.mag_value, [-1.2, 1.2]) if self.enabled else ([0.7, 0.7, 0.7])
+
+    canvas.before:
+        Color:
+            rgb: self.spot_rgb
+        Ellipse:
+            size: self.spot_diameter, self.spot_diameter
+            pos: self.x_loc_abs, self.y_loc_abs
+    size_hint: None,None
+
+    Button:
+        background_color: 0,0,0,0
+        color: 0,0,0,1
+        font_size: 14
+        size_hint: None, None
+        size: 30,30
+        text: ''+str(self.parent.id_no)
+        bold: True
+        # pos: self.parent.x_loc_abs+self.texture_size[0]/2, self.parent.y_loc_abs+self.texture_size[1]/2
+        pos: self.parent.x_loc_abs-5, self.parent.y_loc_abs-5
+        on_release: TecWidget.activate_self(self.parent)
+        # disabled: False
+
+<MirrorViewWidget>:
+    # border_color: 1,0,0,1
+    anchor_x: 'center'
+    anchor_y: 'center'
+    # Widget:
+    # pos: self.parent.pos
+    rho_scale: 1
+    MirrorCircleWidget:
+        id: mirror_circle
+        diameter: self.parent.diameter
+        # dia: 400
+        canvas.before:
+            Color:
+                rgba: 1, 1, 1, 1
+            Ellipse:
+                size: self.diameter, self.diameter
+                pos: self.center_x - self.diameter/2, self.center_y - self.diameter/2
+        size_hint: None,None
+
+<Zernike_Widget>:
+    cols: 1
+    n: math.ceil((-3+math.sqrt(9+8*self.j))/2)
+    m: 2*self.j-self.n*(self.n+2)
+    Label:
+        size_hint_y: None
+        height: 40
+        text: 'Zernike Parameters'
+    BoxLayout:
+        # cols: 3
+        size_hint_y: None
+        height: 30
+        Label:
+            text: 'Index [ j ]:'
+            # bold: True 
+            font_size: 18
+        Button:
+            size_hint_x: None
+            width: 40
+            text: '+'
+            on_release: root.increment(); j_input.set_value(root.j); root.update_name()
+        IntegerInput:
+            id: j_input
+            size_hint_x: None
+            width: 50
+            unsigned: True
+            font_size: 18
+            text: '0'
+            halign: 'center'
+            on_text: root.j = self.value; 
+        Button:
+            size_hint_x: None
+            width: 40
+            text: '-'
+            on_release: root.decrement(); j_input.set_value(root.j); root.update_name()
+        Label:
+    BoxLayout:
+        size_hint_y: None
+        height: 40    
+        Label:
+        Label:
+            size_hint: None, None
+            size: 130, 40
+            text: '[n, m] = ['+str(root.n) +', '+ str(root.m)+']'+root.name
+            # bold: True 
+        Label:
+    GridLayout:
+        cols: 3
+        Label:
+            size_hint: 0.2, None
+            height: 50
+            text: 'Angle: '
+        Slider:
+            size_hint: 0.6, None
+            height:50
+            id: angle_flt
+            cursor_size: 20,20
+            min: 0
+            max: 360
+            step: 0.1
+            orientation: 'horizontal'
+            on_touch_move: root.theta_offset = self.value;
+        Label:
+            size_hint: 0.2, None
+            height: 50
+            text: "{:.3f}".format(angle_flt.value)
+        Label:
+            size_hint: 0.2, None
+            height: 50
+            text: 'Scale: '
+        Slider:
+            size_hint: 0.6, None
+            height:50
+            id: scale_flt
+            cursor_size: 20,20
+            min: 0
+            max: 1
+            step: 0.01
+            orientation: 'horizontal'
+            value_normalized: 1.
+            on_touch_move: root.scale_coeff = self.value;
+        Label:
+            size_hint: 0.2, None
+            height: 50
+            text: "{:.3f}".format(scale_flt.value)
+            # disabled: root.opts_disabled
+    # BoxLayout:    
+
+    #     orientation: 'horizontal'
+    #     size_hint_y: None
+    #     height: 40
+    #     Label:
+    #     # Button:
+    #     #     size_hint: None, None
+    #     #     size: 80, 40
+    #     #     text: 'Map'
+    #     #     on_release: root.test_fun()
+    #     Label:
+
+<MirrorViewControlPanel>:
+    cols: 2
+    opts_disabled: True if (root.active_tec == None) else not root.active_tec.tec_found
+
+    MirrorViewWidget:
+        id: mvw
+        diameter: self.height*0.9
+    GridLayout:
+        cols: 2
+        size_hint_x: None
+        width:600
+        GridLayout:
+            cols: 2
+            # size_hint_x: None
+            # width:300
+            size_hint_y: None
+            height: 30
+            Button:
+                id: tec_connect_a_btn
+                text:'Connect A'
+                size_hint_y: None
+                height: 30
+                size_hint_x: None
+                width:110
+                background_color: (1,0,0,1)
+                on_release: app.tecBox_A.requestConnectionToggle()
+                disabled: not root.cfg_loaded
+            Button:
+                id: tec_connect_b_btn
+                text:'Connect B'
+                size_hint_y: None
+                height: 30
+                size_hint_x: None
+                width:110
+                background_color: (1,0,0,1)
+                on_release: app.tecBox_B.requestConnectionToggle()
+                disabled: not root.cfg_loaded
+        Button:
+            text: "Read Command CSV"
+            size_hint_y: None
+            height: 30
+            disabled: not root.cfg_loaded
+            on_release: MirrorViewWidget.readCommandCsv()
+        Button:
+            size_hint_y: None
+            height: 40
+            text: 'Load Mirror Config'
+            on_release: MirrorViewWidget.readMirrorConfigCsv()
+        Button:
+            size_hint_y: None
+            height: 40
+            text: 'Save Mirror Commands'
+            disabled: not root.cfg_loaded
+            on_release: MirrorViewWidget.saveCommandCsv()
+
+        BorderGridLayout:
+            border_color: 1,1,1,1
+            border_width: 1
+            cols: 1
+            Label: 
+                id: active_tec_label
+                text: mvw.mirror_name+':'+root.active_tec.tec_label_str if root.active_tec != None else '--'
+                bold: True
+                halign: 'center'
+                size_hint_y: None
+                height: 40
+                disabled: root.opts_disabled
+            GridLayout:
+                cols: 1
+                GridLayout:
+                    cols: 2
+                    # border_color: 1,1,1,1
+                    # border_width: 1
+                    Label:
+                        text: 'Command [0:1]:'  
+                        size_hint: None, None
+                        size: 150, 40
+                        halign: 'left'
+                        disabled: root.opts_disabled
+                    FloatInput:
+                        id: cmd_input
+                        size_hint: None, None
+                        size: 130, 40
+                        disabled: root.opts_disabled or not tec_enabled_cb.active
+                        on_text: root.update_tec_color(self.value)
+                        on_focus: print(args); print(self.value)
+                    Label:
+                        text: 'Temp [C]:' 
+                        size_hint: None, None
+                        size: 150, 40
+                        disabled: root.opts_disabled
+                    FloatInput:
+                        size_hint: None, None
+                        size: 130, 40
+                        disabled: True #root.opts_disabled
+                    Label:
+                        size_hint_y: None
+                        height: 40
+                        text:'Enabled: '
+                        disabled: root.opts_disabled
+                    CheckBox:
+                        id: tec_enabled_cb
+                        size_hint_y: None
+                        height: 40
+                        disabled: root.opts_disabled
+                        active: root.active_tec.enabled if root.active_tec != None else False
+                        on_release : root.setTecEnabledState(self.active);
+                BorderGridLayout:
+                    border_color: 1,1,1,1
+                    border_width: 1
+                    size_hint_y: None
+                    height: 40
+                    cols: 2
+                    Label:
+                        text: "Cmd Gain: "
+                        disabled: not root.cfg_loaded
+                    FloatInput:
+                        id: gain_input
+                        # size_hint: None, None
+                        # size: 140, 30
+                        text: '1.0'
+                        font_size: 15
+                        disabled: not root.cfg_loaded
+                BorderGridLayout:
+                    border_color: 1,1,1,1
+                    border_width: 1
+                    cols: 2
+                    Button:
+                        id: enable_all_btn
+                        size_hint_y: None
+                        height: 40
+                        text: 'Enable All'
+                        disabled: not root.cfg_loaded
+                        on_release: mvw.enableAll(True)
+                    Button:
+                        id: disable_all_btn
+                        size_hint_y: None
+                        height: 40
+                        text: 'Disable All'
+                        disabled: not root.cfg_loaded
+                        on_release: mvw.enableAll(False)
+                    Button:
+                        size_hint_y: None
+                        height: 40
+                        text: 'All to Zero'
+                        disabled: not root.cfg_loaded
+                        on_release: mvw.all_to_zero(); cmd_input.setValue(0.0)
+
+                    Button:
+                        size_hint_y: None
+                        height: 40
+                        text: 'Send Commands'
+                        disabled: not root.cfg_loaded
+                        on_release: mvw.update_tec_map(); TECBoxController.startSendAll();
+                    Button:
+                        size_hint_y: None
+                        height: 40
+                        text: 'debug'
+                        disabled: not root.cfg_loaded
+                        on_release: print(root.active_tec.id + ":" + str(root.active_tec.mag_value)) if root.active_tec != None else print('No active TEC')
+                        # on_release: print(root.active_tec.id + ":" ) if root.active_tec != None else print('No active TEC')
+        BorderGridLayout:
+            border_color: 1,1,1,1
+            cols: 1
+            Zernike_Widget:
+                id: zernike_panel
+                # on_release: 
+            Button:
+                size_hint: None, None
+                size: 80, 40
+                text: 'Map'
+                on_release: root.map_zernike()

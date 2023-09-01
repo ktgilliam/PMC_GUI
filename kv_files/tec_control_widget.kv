@@ -7,12 +7,6 @@
     # size: (self.parent.width*0.5, 40)
     height: 30
     id: thisField
-    # canvas.before:
-    #     Color:
-    #         rgba: 1, 1, 1, 1
-    #     Line:
-    #         width: 1
-    #         rectangle: self.x, self.y, self.width, self.height
     cols: 1
     BorderGridLayout:
         border_color: 1,1,1,1
@@ -169,7 +163,7 @@
                 width:140
                 disabled: True
                 # background_color: (1,0,0,1)
-                on_release: TECBoxController.readCsv()
+                on_release: TECBoxController.readCommandCsv()
             Button:
                 id: send_all_btn
                 text:'Send All'
