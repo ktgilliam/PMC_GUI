@@ -13,10 +13,10 @@ json_general_settings = json.dumps([
 json_connection_settings = json.dumps([
     {
         "type":"string",
-        "title":"IP Address",
-        "desc":"IP Address",
+        "title":"Tip/Tilt IP",
+        "desc":"IP",
         "section":"Connection",
-        "key": "ip_addr"
+        "key": "tip_tilt_ip_addr"
     },
     {
         "type":"numeric",
@@ -26,11 +26,25 @@ json_connection_settings = json.dumps([
         "key": "tip_tilt_ip_port"
     },
     {
+        "type":"string",
+        "title":"TEC A IP",
+        "desc":"IP",
+        "section":"Connection",
+        "key": "tec_a_ip_addr"
+    },
+    {
         "type":"numeric",
         "title":"TEC A Port",
         "desc":"Port",
         "section":"Connection",
         "key": "tec_a_ip_port"
+    },
+    {
+        "type":"string",
+        "title":"TEC B IP",
+        "desc":"IP",
+        "section":"Connection",
+        "key": "tec_b_ip_addr"
     },
     {
         "type":"numeric",
