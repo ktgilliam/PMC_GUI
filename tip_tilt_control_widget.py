@@ -161,7 +161,7 @@ class TipTiltController(DeviceController):
         self.nursery.start_soon(self.deviceInterface.FocusRelative,DIRECTION.REVERSE)
             
     def _angleStepSizeButtonPushed(self, stepSize):
-        gui = self.root
+        # gui = self.root
         self.deviceInterface._tipTiltStepSize_as = stepSize
         self.controllerWidget.resetTipTiltStepSizeButtons()
         if stepSize == 1.0:
@@ -175,7 +175,7 @@ class TipTiltController(DeviceController):
         btn.background_color = (0,1,0,1)
         
     def _focusStepSizeButtonPushed(self, stepSize):
-        gui = self.root
+        # gui = self.root
         self.deviceInterface._focusStepSize_um = stepSize
         self.controllerWidget.resetFocusStepSizeButtons()
         if stepSize == 0.2:
@@ -191,7 +191,7 @@ class TipTiltController(DeviceController):
         btn.background_color = (0,1,0,1)
             
     def AbsGoButtonPushed(self):
-        gui = self.root
+        # gui = self.root
         tipAbsTI = self.controllerWidget.ids['tip_abs']
         tiltAbsTI = self.controllerWidget.ids['tilt_abs']
         focusAbsTI = self.controllerWidget.ids['focus_abs']

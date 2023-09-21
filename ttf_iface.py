@@ -174,9 +174,9 @@ class TipTiltFocusControlInterface(LFASTControllerInterface):
     def isHomed(self):
         return self._isHomed
     
-    def checkMessages(self, replyJson):
+    async def checkMessages(self, replyJson):
         # print('\n')
-        self.numtimes = self.numtimes+1
+        # self.numtimes = self.numtimes+1
         if "HomingComplete" in replyJson:
             if replyJson["HomingComplete"] == True:
                 self._homingComplete.set()

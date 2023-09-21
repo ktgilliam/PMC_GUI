@@ -25,7 +25,7 @@
                 size_hint_x: None
                 width:110
                 background_color: (1,0,0,1)
-                # on_release: app.tipTiltController.TtfControllerRequestList.append(TtfControllerRequest.TOGGLE_CONNECTION)
+                # on_release: app.tipTiltController.ControllerRequestList.append(TtfControllerRequest.TOGGLE_CONNECTION)
                 on_release: app.tipTiltController.requestConnectionToggle()
             Button:
                 text:'Enable Steppers'
@@ -34,7 +34,7 @@
                 height: 30
                 size_hint_x: None
                 width:140
-                on_release: app.tipTiltController.TtfControllerRequestList.append(TtfControllerRequest.TOGGLE_STEPPER_ENABLE)
+                on_release: app.tipTiltController.ControllerRequestList.append(TtfControllerRequest.TOGGLE_STEPPER_ENABLE)
                 disabled: True     
             Button:
                 text:'STOP'
@@ -45,7 +45,7 @@
                 size_hint_x: None
                 width:80
                 background_color: (1,0,0,1)
-                on_release: app.tipTiltController.TtfControllerRequestList.append(TtfControllerRequest.STOP_REQUESTED), app.stopButtonPushed()
+                on_release: app.tipTiltController.ControllerRequestList.append(TtfControllerRequest.STOP_REQUESTED), app.tipTiltController.stopButtonPushed()
                 disabled: True
         BorderGridLayout:
             border_width: 1
@@ -90,25 +90,25 @@
                                 size_hint_y: None
                                 height: 30
                                 background_color: (0,1,0,1)
-                                on_press: app._angleStepSizeButtonPushed(1.0)
+                                on_press: app.tipTiltController._angleStepSizeButtonPushed(1.0)
                             Button:
                                 id: _10as_btn
                                 text: '10'
                                 size_hint_y: None
                                 height: 30
-                                on_press: app._angleStepSizeButtonPushed(10.0)
+                                on_press: app.tipTiltController._angleStepSizeButtonPushed(10.0)
                             Button:
                                 id: _100as_btn
                                 text: '100'
                                 size_hint_y: None
                                 height: 30
-                                on_press: app._angleStepSizeButtonPushed(100.0)
+                                on_press: app.tipTiltController._angleStepSizeButtonPushed(100.0)
                             Button:
                                 id: _1000as_btn
                                 text: '1000'
                                 size_hint_y: None
                                 height: 30
-                                on_press: app._angleStepSizeButtonPushed(1000.0)
+                                on_press: app.tipTiltController._angleStepSizeButtonPushed(1000.0)
                         GridLayout:
                             cols: 3
                             ##################
@@ -121,7 +121,7 @@
                                 size_hint_x: None
                                 width: 50
                                 disabled: True
-                                on_press: app.plusTipButtonPushed()
+                                on_press: app.tipTiltController.plusTipButtonPushed()
                             Label:
                             ##################
                             Button:
@@ -132,7 +132,7 @@
                                 size_hint_x: None
                                 width: 50
                                 disabled: True
-                                on_press: app.minusTiltButtonPushed()
+                                on_press: app.tipTiltController.minusTiltButtonPushed()
                             Label: # Would like to put an indicator light here.
                             Button:
                                 id: do_pos_tilt_btn
@@ -142,7 +142,7 @@
                                 size_hint_x: None
                                 width: 50
                                 disabled: True
-                                on_press: app.plusTiltButtonPushed()
+                                on_press: app.tipTiltController.plusTiltButtonPushed()
                             ##################
                             Label:
                             Button:
@@ -153,7 +153,7 @@
                                 size_hint_x: None
                                 width: 50
                                 disabled: True
-                                on_press: app.minusTipButtonPushed()
+                                on_press: app.tipTiltController.minusTipButtonPushed()
                             Label:
                             ##################
                             Label:
@@ -181,7 +181,7 @@
                                     height: 40
                                     width: 90
                                     disabled: True
-                                    on_press: app.plusFocusButtonPushed()
+                                    on_press: app.tipTiltController.plusFocusButtonPushed()
                                 Label:
                                 Label:
                                 Button:
@@ -191,7 +191,7 @@
                                     height: 40
                                     width: 90
                                     disabled: True
-                                    on_press: app.minusFocusButtonPushed()
+                                    on_press: app.tipTiltController.minusFocusButtonPushed()
                                 Label:
                                 Label:
                                 Label:
@@ -214,21 +214,21 @@
                                     height: 30
                                     width: 60
                                     background_color: (0,1,0,1)
-                                    on_press: app._focusStepSizeButtonPushed(0.2)
+                                    on_press: app.tipTiltController._focusStepSizeButtonPushed(0.2)
                                 Button:
                                     id: _2um_btn
                                     text: '2'
                                     size_hint: None, None
                                     height: 30
                                     width: 60
-                                    on_press: app._focusStepSizeButtonPushed(2)
+                                    on_press: app.tipTiltController._focusStepSizeButtonPushed(2)
                                 Button:
                                     id: _20um_btn
                                     text: '20'
                                     size_hint: None, None
                                     height: 30
                                     width: 60
-                                    on_press: app._focusStepSizeButtonPushed(20)
+                                    on_press: app.tipTiltController._focusStepSizeButtonPushed(20)
                                     # disabled: True
                                 Button:
                                     id: _200um_btn
@@ -236,7 +236,7 @@
                                     size_hint: None, None
                                     height: 30
                                     width: 60
-                                    on_press: app._focusStepSizeButtonPushed(200)
+                                    on_press: app.tipTiltController._focusStepSizeButtonPushed(200)
                                     # disabled: True
                                 Button:
                                     id: _2000um_btn
@@ -244,7 +244,7 @@
                                     size_hint: None, None
                                     height: 30
                                     width: 60
-                                    on_press: app._focusStepSizeButtonPushed(2000)
+                                    on_press: app.tipTiltController._focusStepSizeButtonPushed(2000)
                                     # disabled: True
                                 Label:
                                 Label:
@@ -350,7 +350,7 @@
                                 height: 30
                                 width:160
                                 disabled: True
-                                on_release: app.tipTiltController.TtfControllerRequestList.append(TtfControllerRequest.GO_HOME_REQUESTED)
+                                on_release: app.tipTiltController.ControllerRequestList.append(TtfControllerRequest.GO_HOME_REQUESTED)
                             Label:
                                 size_hint: None, None
                                 height: 30
@@ -363,7 +363,7 @@
                                 height: 30
                                 width:160
                                 disabled: True
-                                on_release: app.tipTiltController.TtfControllerRequestList.append(TtfControllerRequest.BOTTOM_FOUND_REQUESTED)
+                                on_release: app.tipTiltController.ControllerRequestList.append(TtfControllerRequest.BOTTOM_FOUND_REQUESTED)
             BorderGridLayout:
                 border_width: 1
                 border_color: (1,1,1,1)

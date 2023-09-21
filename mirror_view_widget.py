@@ -118,6 +118,8 @@ class MirrorViewWidget(AnchorLayout):
                     tec_cmd = (tec_no, tec_cmd, enabled)
                     tec_cmds.append(tec_cmd)
                     print(', '.join(row))
+        except TypeError:
+            return
         except FileNotFoundError:
             return
         mvw.applyTecCommands(tec_cmds)
