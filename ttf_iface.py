@@ -168,8 +168,8 @@ class TipTiltFocusControlInterface(LFASTControllerInterface):
         #         await outgoing.send(json.dumps(self._outgoingJsonMessage))
         await trio.sleep(0)
         await self.addCommandsToOutgoing()
-        # if(self._cancelScope != None):
-        #     self._cancelScope.cancel()
+        if(self._cancelScope != None):
+            self._cancelScope.cancel()
     
     def isHomed(self):
         return self._isHomed

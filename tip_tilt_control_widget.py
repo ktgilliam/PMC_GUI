@@ -99,7 +99,7 @@ class TipTiltController(DeviceController):
                 await self.deviceInterface.sendHomeAll(100)
                 await trio.sleep(0)
                 homeBtn.disabled = True
-                homeBtn.text = "Home All"
+                # homeBtn.text = "Home All"
                 goBtn.disabled = False
             elif request == TtfControllerRequest.BOTTOM_FOUND_REQUESTED:
                 await self.terminalManager.addMessage('Bottom found. Waiting for mirror to return to center...')
@@ -131,6 +131,10 @@ class TipTiltController(DeviceController):
                     enableStepBtn.text = "Disable Steppers"
             elif request == TtfControllerRequest.STOP_REQUESTED:
                 await self.deviceInterface.sendStopCommand() 
+                homeBtn.disabled = False
+                homeBtn.text = "Home All"
+                bottomFoundBtn.disabled = True
+                
         await self.deviceInterface.addCommandsToOutgoing()
             
     async def disconnectInProgressHandler(self):
