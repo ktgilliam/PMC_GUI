@@ -134,6 +134,7 @@ class TipTiltController(DeviceController):
                 homeBtn.disabled = False
                 homeBtn.text = "Home All"
                 bottomFoundBtn.disabled = True
+                self.deviceInterface.interruptAnything()
                 
         await self.deviceInterface.addCommandsToOutgoing()
             
