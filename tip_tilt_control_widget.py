@@ -94,7 +94,9 @@ class TipTiltController(DeviceController):
                 homeBtn.disabled = True
                 bottomFoundBtn.disabled = False
                 await self.terminalManager.addMessage('Homing. Press step 2 when all motors have bottomed out')
-                await self.deviceInterface.sendHomeAll(self.home_speed_prop)
+                # FIXME: Not sure why this worked before... hardcoding for now.
+                # await self.deviceInterface.sendHomeAll(self.home_speed_prop)
+                await self.deviceInterface.sendHomeAll(100)
                 await trio.sleep(0)
                 homeBtn.disabled = True
                 homeBtn.text = "Home All"
@@ -105,7 +107,9 @@ class TipTiltController(DeviceController):
                 await self.deviceInterface.sendBottomFound()
                 await trio.sleep(0)
                 try:
-                    await self.deviceInterface.waitForHomingComplete(self.homing_timeout_prop)
+                    # FIXME: Not sure why this worked before... hardcoding for now.
+                    # await self.deviceInterface.waitForHomingComplete(self.homing_timeout_prop)
+                    await self.deviceInterface.waitForHomingComplete(60)
                     await self.terminalManager.addMessage('Homing Complete.', MessageType.GOOD_NEWS)
                 except trio.TooSlowError as e:
                     await self.terminalManager.addMessage('Homing timed out.', MessageType.ERROR)
@@ -200,7 +204,9 @@ class TipTiltController(DeviceController):
 
     def stopButtonPushed(self):
         self.deviceInterface.interruptAnything()
-                 
+        
+        
+        
     def defaultButtonPushed(self):
         self.terminalManager.queueMessage('Button not assigned yet!')
         
