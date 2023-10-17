@@ -46,10 +46,15 @@ class PMC_APP(App):
     tecBox_A = None
     tecBox_B = None
     
-    ip_addr_prop = StringProperty()
-    tip_tilt_port_prop = NumericProperty()
-    tec_a_port_prop = NumericProperty()
+    tip_tilt_ip_addr_prop = StringProperty()
+    tip_tilt_ip_port_prop = NumericProperty()
+    
+    tec_a_ip_addr_prop = StringProperty()
+    tec_a_ip_port_prop = NumericProperty()
+    
+    tec_b_ip_addr_prop = StringProperty()
     tec_b_port_prop = NumericProperty()
+    
     fan_speed_prop = NumericProperty()
     home_speed_prop = NumericProperty()
     homing_timeout_prop = NumericProperty()
@@ -73,7 +78,12 @@ class PMC_APP(App):
         return gui
 
     def build_config(self, config):
-        config.setdefaults("Connection", {"ip_addr": "169.254.84.177", "tip_tilt_ip_port": 4400, "tec_a_ip_port": 4500, "tec_b_ip_port": 4600})
+        config.setdefaults("Connection", {"tip_tilt_ip_addr": "169.254.84.177",
+                                          "tip_tilt_ip_port": 4400, 
+                                          "tec_a_ip_addr": "169.254.84.178", 
+                                          "tec_a_ip_port": 4500,  
+                                          "tec_b_ip_addr": "169.254.84.179",
+                                          "tec_b_ip_port": 4600})
         config.setdefaults("Motion", {"fan_speed":50, "homing_speed":100, "homing_timeout":60, "rel_move": 100, "abs_move": 100})
         config.setdefaults("General", {"dbg_mode":False})
         return super().build_config(config)
@@ -91,15 +101,21 @@ class PMC_APP(App):
                 self.tipTiltController.setDebugMode(self.debug_mode_prop)
                 self.tecBox_A.setDebugMode(self.debug_mode_prop)
                 # self.tecBox_B.setDebugMode(self.debug_mode_prop)
+                
         elif section == "Connection":
-            if key == "ip_addr":
-                self.ip_addr_prop = value
+            if key == "tip_tilt_ip_addr":
+                self.tip_tilt_ip_addr_prop = value
             elif key == "tip_tilt_ip_port":
-                self.tip_tilt_port_prop = int(value)
-            elif key == "tecBoxA_ip_port":
-                self.tecBoxA_port_prop = int(value)
-            elif key == "tecBoxB_ip_port":
-                self.tecBoxB_port_prop = int(value)
+                self.tip_tilt_ip_port_prop = int(value)
+            if key == "tec_a_ip_addr":
+                self.tec_a_ip_addr_prop = value
+            elif key == "tec_a_ip_port":
+                self.tec_a_ip_port_prop = int(value)
+            if key == "tec_b_ip_addr":
+                self.tec_b_ip_addr_prop = value
+            elif key == "tec_b_ip_port":
+                self.tec_b_ip_port_prop = int(value)
+                
         elif section == "Motion":
             if key == "fan":
                 self.fan_speed_prop = int(value)
@@ -115,10 +131,16 @@ class PMC_APP(App):
     
     def load_config(self):
         config = super().load_config()
-        self.ip_addr_prop = config.get('Connection','ip_addr')
-        self.tip_tilt_port_prop = int(config.get('Connection','tip_tilt_ip_port'))
-        self.tec_a_port_prop = int(config.get('Connection','tec_a_ip_port'))
-        self.tec_b_port_prop = int(config.get('Connection','tec_b_ip_port'))
+        
+        self.tip_tilt_ip_addr_prop = config.get('Connection','tip_tilt_ip_addr')
+        self.tip_tilt_ip_port_prop = int(config.get('Connection','tip_tilt_ip_port'))
+        
+        self.tec_a_ip_addr_prop = config.get('Connection','tec_a_ip_addr')
+        self.tec_a_ip_port_prop = int(config.get('Connection','tec_a_ip_port'))
+        
+        self.tec_b_ip_addr_prop = config.get('Connection','tec_b_ip_addr')
+        self.tec_b_ip_port_prop = int(config.get('Connection','tec_b_ip_port'))
+        
         self.fan_speed_prop = int(config.get('Motion','fan_speed'))
         self.home_speed_prop = int(config.get('Motion','homing_speed'))
         self.homing_timeout_prop = int(config.get('Motion','homing_timeout'))
@@ -176,7 +198,7 @@ class PMC_APP(App):
         while (TipTiltControlWidget.singletonControlWidget is None):
             await trio.sleep(0) 
         self.tipTiltController = TipTiltController(self.root.ids.tipTiltCtrl, self.nursery, self.debug_mode_prop)
-        self.tipTiltController.setConnectionInfo(self.ip_addr_prop, self.tip_tilt_port_prop)
+        self.tipTiltController.setConnectionInfo(self.tip_tilt_ip_addr_prop, self.tip_tilt_ip_port_prop)
         self.tipTiltController.registerConnectButtonId('tip_tilt_connect_btn')
         self.tipTiltController.setDeviceLabel('Tip/Tilt/Focus')
         self.tipTiltController.connectTerminal(self.terminalManager)
@@ -185,13 +207,13 @@ class PMC_APP(App):
         # while (TECControlWidget.singletonControlWidget is None):
         #     await trio.sleep(0) 
         self.tecBox_A = TECBoxController(self.root.ids.tecCtrl, self.nursery, self.debug_mode_prop)
-        self.tecBox_A.setConnectionInfo(self.ip_addr_prop, self.tec_a_port_prop)
+        self.tecBox_A.setConnectionInfo(self.tec_a_ip_addr_prop, self.tec_a_ip_port_prop)
         self.tecBox_A.registerConnectButtonId('tec_connect_a_btn')
         self.tecBox_A.setDeviceLabel('A')
         self.tecBox_A.connectTerminal(self.terminalManager)
         
         self.tecBox_B = TECBoxController(self.root.ids.tecCtrl, self.nursery, self.debug_mode_prop)
-        self.tecBox_B.setConnectionInfo(self.ip_addr_prop, self.tec_b_port_prop)
+        self.tecBox_B.setConnectionInfo(self.tec_b_ip_addr_prop, self.tec_b_ip_port_prop)
         self.tecBox_B.registerConnectButtonId('tec_connect_b_btn')
         self.tecBox_B.setDeviceLabel('B')
         self.tecBox_B.connectTerminal(self.terminalManager)

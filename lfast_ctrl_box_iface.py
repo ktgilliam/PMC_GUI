@@ -20,18 +20,24 @@ class LFASTControllerInterface:
     _streamReady = False
     _receiveBuffer = b''
     _cancelScope = None
-    _outgoingDataTxChannel, _outgoingDataRxChannel = trio.open_memory_channel(0)
-    _incomingDataTxChannel, _incomingDataRxChannel = trio.open_memory_channel(0)
+    _outgoingDataTxChannel = None
+    _outgoingDataRxChannel = None
+    _incomingDataTxChannel = None
+    _incomingDataRxChannel = None
     
-    _disconnectCommandEvent = trio.Event()
-    _newCommandDataEvent = trio.Event()
-    _handshakeReceived = trio.Event()
+    _disconnectCommandEvent = None
+    _newCommandDataEvent = None
+    _handshakeReceived = None
     _outgoingJsonMessage = {}
     _messageTypeLabel = "default"
     _debug_mode = False
     
     def __init__(self):
-        pass
+        self._outgoingDataTxChannel, self._outgoingDataRxChannel = trio.open_memory_channel(0)
+        self._incomingDataTxChannel, self._incomingDataRxChannel = trio.open_memory_channel(0)
+        self._disconnectCommandEvent = trio.Event()
+        self._newCommandDataEvent = trio.Event()
+        self._handshakeReceived = trio.Event()
     
     def reset(self):
         self._disconnectCommandEvent = trio.Event()

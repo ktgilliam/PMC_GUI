@@ -25,8 +25,8 @@ class ControllerState(IntEnum):
     
 class DeviceController():
     nursery = None
-    ControllerState = ControllerState.INIT
-    ControllerStateLock = trio.Lock() 
+    ControllerState = None
+    ControllerStateLock = None
     controllerIpAddr = None
     controllerPort = None
     controllerWidget = None
@@ -41,6 +41,8 @@ class DeviceController():
     # deviceInterface = None
     
     def __init__(self, ctrlWidget, nursery, debugMode = False, **kwargs): 
+        self.ControllerState = ControllerState.INIT
+        self.ControllerStateLock = trio.Lock() 
         self.nursery = nursery
         self.controllerWidget = ctrlWidget
         self.debugMode = debugMode

@@ -94,10 +94,12 @@ class TipTiltController(DeviceController):
                 homeBtn.disabled = True
                 bottomFoundBtn.disabled = False
                 await self.terminalManager.addMessage('Homing. Press step 2 when all motors have bottomed out')
-                await self.deviceInterface.sendHomeAll(self.home_speed_prop)
+                # FIXME: Not sure why this worked before... hardcoding for now.
+                # await self.deviceInterface.sendHomeAll(self.home_speed_prop)
+                await self.deviceInterface.sendHomeAll(100)
                 await trio.sleep(0)
                 homeBtn.disabled = True
-                homeBtn.text = "Home All"
+                # homeBtn.text = "Home All"
                 goBtn.disabled = False
             elif request == TtfControllerRequest.BOTTOM_FOUND_REQUESTED:
                 await self.terminalManager.addMessage('Bottom found. Waiting for mirror to return to center...')
@@ -105,7 +107,9 @@ class TipTiltController(DeviceController):
                 await self.deviceInterface.sendBottomFound()
                 await trio.sleep(0)
                 try:
-                    await self.deviceInterface.waitForHomingComplete(self.homing_timeout_prop)
+                    # FIXME: Not sure why this worked before... hardcoding for now.
+                    # await self.deviceInterface.waitForHomingComplete(self.homing_timeout_prop)
+                    await self.deviceInterface.waitForHomingComplete(60)
                     await self.terminalManager.addMessage('Homing Complete.', MessageType.GOOD_NEWS)
                 except trio.TooSlowError as e:
                     await self.terminalManager.addMessage('Homing timed out.', MessageType.ERROR)
@@ -127,6 +131,11 @@ class TipTiltController(DeviceController):
                     enableStepBtn.text = "Disable Steppers"
             elif request == TtfControllerRequest.STOP_REQUESTED:
                 await self.deviceInterface.sendStopCommand() 
+                homeBtn.disabled = False
+                homeBtn.text = "Home All"
+                bottomFoundBtn.disabled = True
+                self.deviceInterface.interruptAnything()
+                
         await self.deviceInterface.addCommandsToOutgoing()
             
     async def disconnectInProgressHandler(self):
@@ -161,7 +170,7 @@ class TipTiltController(DeviceController):
         self.nursery.start_soon(self.deviceInterface.FocusRelative,DIRECTION.REVERSE)
             
     def _angleStepSizeButtonPushed(self, stepSize):
-        gui = self.root
+        # gui = self.root
         self.deviceInterface._tipTiltStepSize_as = stepSize
         self.controllerWidget.resetTipTiltStepSizeButtons()
         if stepSize == 1.0:
@@ -175,7 +184,7 @@ class TipTiltController(DeviceController):
         btn.background_color = (0,1,0,1)
         
     def _focusStepSizeButtonPushed(self, stepSize):
-        gui = self.root
+        # gui = self.root
         self.deviceInterface._focusStepSize_um = stepSize
         self.controllerWidget.resetFocusStepSizeButtons()
         if stepSize == 0.2:
@@ -191,7 +200,7 @@ class TipTiltController(DeviceController):
         btn.background_color = (0,1,0,1)
             
     def AbsGoButtonPushed(self):
-        gui = self.root
+        # gui = self.root
         tipAbsTI = self.controllerWidget.ids['tip_abs']
         tiltAbsTI = self.controllerWidget.ids['tilt_abs']
         focusAbsTI = self.controllerWidget.ids['focus_abs']
@@ -200,7 +209,9 @@ class TipTiltController(DeviceController):
 
     def stopButtonPushed(self):
         self.deviceInterface.interruptAnything()
-                 
+        
+        
+        
     def defaultButtonPushed(self):
         self.terminalManager.queueMessage('Button not assigned yet!')
         
