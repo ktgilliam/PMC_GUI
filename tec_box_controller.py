@@ -84,7 +84,7 @@ class TECBoxController(DeviceController):
                     await self.deviceInterface.sendTecCommand(tec.tecNo, val)
                     # await self.deviceInterface.addCommandsToOutgoing()  
                     count = count + 1
-                    await trio.sleep(0.01 )
+                    await trio.sleep(0.01)
         # await self.deviceInterface.startSending()
         await self.terminalManager.addMessage("Sent: "+str(count)+" TEC commands.")
         

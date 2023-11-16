@@ -78,7 +78,10 @@ class MirrorViewWidget(AnchorLayout):
         file_path = filedialog.askopenfilename(
             filetypes=[("CSV File", ".csv")])
         print(file_path)
-        mirror_file_name = os.path.basename(file_path)
+        try:
+            mirror_file_name = os.path.basename(file_path)
+        except TypeError:
+            return
         parts = mirror_file_name.split('_')
         MirrorViewWidget.instance.mirror_name = parts[0]
         cfg_list = []
