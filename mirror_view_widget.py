@@ -93,6 +93,9 @@ class MirrorViewWidget(AnchorLayout):
                     rho_phys = float(row['rho'])
                     enabled = bool(row['enabled'])
                     cfg_list.append((tec_no, theta, rho_phys, enabled))
+        except KeyError:
+            print("Key Error - Invalid config file.")
+            return
         except FileNotFoundError:
             return
         MirrorViewWidget.cfg_file_path = file_path
@@ -114,11 +117,14 @@ class MirrorViewWidget(AnchorLayout):
                 for row in reader:
                     tec_no = int(row['TEC'])
                     tec_cmd = float(row['cmd'])
-                    enabled = bool(row['enabled'])
+                    enabled = int(row['enabled'])==1
                     tec_cmd = (tec_no, tec_cmd, enabled)
                     tec_cmds.append(tec_cmd)
                     print(', '.join(row))
         except TypeError:
+            return
+        except KeyError:
+            print("Input file not formatted correctly (KeyError)")
             return
         except FileNotFoundError:
             return
