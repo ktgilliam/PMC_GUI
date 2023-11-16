@@ -14,10 +14,15 @@ PMC_GUI:
     # cols: 1     
     orientation: 'vertical'
 
-    ip_addr_prop:  app.config.get('Connection','ip_addr')
-    tip_tilt_port_prop: int(app.config.get('Connection','tip_tilt_ip_port'))
-    tec_a_port_prop: int(app.config.get('Connection','tec_a_ip_port'))
-    tec_b_port_prop: int(app.config.get('Connection','tec_b_ip_port'))
+    tip_tilt_ip_addr_prop:  app.config.get('Connection','tip_tilt_ip_addr')
+    tip_tilt_ip_port: int(app.config.get('Connection','tip_tilt_ip_port'))
+
+    tec_a_ip_addr_prop: app.config.get('Connection','tec_a_ip_addr')
+    tec_a_ip_port_prop: int(app.config.get('Connection','tec_a_ip_port'))
+
+    tec_b_ip_addr_prop: app.config.get('Connection','tec_b_ip_addr')
+    tec_b_ip_port_prop: int(app.config.get('Connection','tec_b_ip_port'))
+
     fan_speed_prop: int(app.config.get('Motion','fan_speed'))
     home_speed_prop: int(app.config.get('Motion','homing_speed'))
     homing_timeout_prop: int(app.config.get('Motion','homing_timeout'))

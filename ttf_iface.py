@@ -162,21 +162,21 @@ class TipTiltFocusControlInterface(LFASTControllerInterface):
     #             await outgoing.send(json.dumps(self._outgoingJsonMessage))
         
     async def sendStopCommand(self):
-        # await self.startNewMessage()
+        await self.startNewMessage()
         await self.addKvCommandPairs(Stop=0)
-        async with self._outgoingDataTxChannel.clone() as outgoing:
-                await outgoing.send(json.dumps(self._outgoingJsonMessage))
-        await self.addCommandsToOutgoing()
+        # async with self._outgoingDataTxChannel.clone() as outgoing:
+        #         await outgoing.send(json.dumps(self._outgoingJsonMessage))
         await trio.sleep(0)
-        if(self._cancelScope != None):
-            self._cancelScope.cancel()
+        await self.addCommandsToOutgoing()
+        # if(self._cancelScope != None):
+            # self._cancelScope.cancel()
     
     def isHomed(self):
         return self._isHomed
     
-    def checkMessages(self, replyJson):
+    async def checkMessages(self, replyJson):
         # print('\n')
-        self.numtimes = self.numtimes+1
+        # self.numtimes = self.numtimes+1
         if "HomingComplete" in replyJson:
             if replyJson["HomingComplete"] == True:
                 self._homingComplete.set()

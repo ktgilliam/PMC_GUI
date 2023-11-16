@@ -20,18 +20,24 @@ class LFASTControllerInterface:
     _streamReady = False
     _receiveBuffer = b''
     _cancelScope = None
-    _outgoingDataTxChannel, _outgoingDataRxChannel = trio.open_memory_channel(0)
-    _incomingDataTxChannel, _incomingDataRxChannel = trio.open_memory_channel(0)
+    _outgoingDataTxChannel = None
+    _outgoingDataRxChannel = None
+    _incomingDataTxChannel = None
+    _incomingDataRxChannel = None
     
-    _disconnectCommandEvent = trio.Event()
-    _newCommandDataEvent = trio.Event()
-    _handshakeReceived = trio.Event()
+    _disconnectCommandEvent = None
+    _newCommandDataEvent = None
+    _handshakeReceived = None
     _outgoingJsonMessage = {}
     _messageTypeLabel = "default"
     _debug_mode = False
     
     def __init__(self):
-        pass
+        self._outgoingDataTxChannel, self._outgoingDataRxChannel = trio.open_memory_channel(0)
+        self._incomingDataTxChannel, self._incomingDataRxChannel = trio.open_memory_channel(0)
+        self._disconnectCommandEvent = trio.Event()
+        self._newCommandDataEvent = trio.Event()
+        self._handshakeReceived = trio.Event()
     
     def reset(self):
         self._disconnectCommandEvent = trio.Event()
@@ -70,11 +76,17 @@ class LFASTControllerInterface:
     async def addCommandsToOutgoing(self):
         if self._debug_mode:
             return
-        if self._newCommandDataEvent.is_set():
-            async with self._outgoingDataTxChannel.clone() as outgoing:
-                await outgoing.send(json.dumps(self._outgoingJsonMessage))
-            self._newCommandDataEvent = trio.Event()
-            pass
+        try:
+            if self._newCommandDataEvent.is_set():
+                with trio.fail_after(default_timeout*2) as cancelScope:
+                    self._cancelScope = cancelScope
+                    async with self._outgoingDataTxChannel.clone() as outgoing:
+                        await outgoing.send(json.dumps(self._outgoingJsonMessage))
+                    self._newCommandDataEvent = trio.Event()
+                    pass
+        except trio.TooSlowError:
+            print("Timed out.\r\n")
+            return
         
     async def aSendMessages(self, task_status=trio.TASK_STATUS_IGNORED):
         if self._debug_mode:
