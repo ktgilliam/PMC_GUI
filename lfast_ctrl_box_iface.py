@@ -76,11 +76,17 @@ class LFASTControllerInterface:
     async def addCommandsToOutgoing(self):
         if self._debug_mode:
             return
-        if self._newCommandDataEvent.is_set():
-            async with self._outgoingDataTxChannel.clone() as outgoing:
-                await outgoing.send(json.dumps(self._outgoingJsonMessage))
-            self._newCommandDataEvent = trio.Event()
-            pass
+        try:
+            if self._newCommandDataEvent.is_set():
+                with trio.fail_after(default_timeout*2) as cancelScope:
+                    self._cancelScope = cancelScope
+                    async with self._outgoingDataTxChannel.clone() as outgoing:
+                        await outgoing.send(json.dumps(self._outgoingJsonMessage))
+                    self._newCommandDataEvent = trio.Event()
+                    pass
+        except trio.TooSlowError:
+            print("Timed out.\r\n")
+            return
         
     async def aSendMessages(self, task_status=trio.TASK_STATUS_IGNORED):
         if self._debug_mode:

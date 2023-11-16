@@ -80,13 +80,11 @@ class TECBoxController(DeviceController):
         for tec in list:
             if self.controllerWidget.check_if_tec_is_enabled(tec.tecNo):
                 val = self.controllerWidget.getFieldValue(tec.tecNo)
-            else:
-                val = 0.0
-            if val is not None:
-                await self.deviceInterface.sendTecCommand(tec.tecNo, val)
-                # await self.deviceInterface.addCommandsToOutgoing()  
-                count = count + 1
-                await trio.sleep(0.01)
+                if val is not None:
+                    await self.deviceInterface.sendTecCommand(tec.tecNo, val)
+                    # await self.deviceInterface.addCommandsToOutgoing()  
+                    count = count + 1
+                    await trio.sleep(0.01 )
         # await self.deviceInterface.startSending()
         await self.terminalManager.addMessage("Sent: "+str(count)+" TEC commands.")
         
