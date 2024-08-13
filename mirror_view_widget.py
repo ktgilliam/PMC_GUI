@@ -197,7 +197,7 @@ class MirrorViewWidget(AnchorLayout):
                     step_log_path.mkdir()
                     log_file = open(step_log_path / 'step_info.txt', 'w')
                     log_file.write(f"Step: {step_no}, Duration: {duration}")
-                    
+                    print(f"Step: {step_no}, Duration: {duration}")
                     for tec_cmd in step['TEC_cmds']:
                         tec_no = tec_cmd['TEC']
                         cmd_val = tec_cmd['cmd']
