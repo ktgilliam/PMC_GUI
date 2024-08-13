@@ -30,6 +30,9 @@ PMC_GUI:
     abs_speed_prop: int(app.config.get('Motion','abs_move'))
     debug_mode_prop: app.config.get('General', 'dbg_mode')=='True'
 
+    mirror_config_folder_prop: app.config.get('General', 'mirror_cfg_dir')
+    test_json_folder_prop:  app.config.get('General', 'test_json_dir')
+    test_log_folder_prop: app.config.get('General', 'test_log_dir')
     # GridLayout:   
 
     # canvas.before:
@@ -60,6 +63,9 @@ PMC_GUI:
             text: 'Mirror View'
             MirrorViewControlPanel:
                 id: tecCtrl
+                cfg_path: root.mirror_config_folder_prop
+                test_json_path: root.test_json_folder_prop
+                test_log_path: root.test_log_folder_prop
         TabbedPanelItem:
             # size_hint: 0.5, None
             # width: 160
