@@ -191,12 +191,22 @@
                 background_color: (1,0,0,1)
                 on_release: app.tecBox_B.requestConnectionToggle()
                 disabled: not root.cfg_loaded
-        Button:
-            text: "Read Command CSV"
+        GridLayout:
+            cols: 2
             size_hint_y: None
             height: 30
-            disabled: not root.cfg_loaded
-            on_release: MirrorViewWidget.readCommandCsv()
+            Button:
+                text: "Read Command CSV"
+                size_hint_y: None
+                height: 30
+                disabled: not root.cfg_loaded
+                on_release: MirrorViewWidget.readCommandCsv()
+            Button:
+                text: "Run Script CSV"
+                size_hint_y: None
+                height: 30
+                disabled: not root.cfg_loaded
+                on_release: MirrorViewWidget.readCommandCsv()
         Button:
             size_hint_y: None
             height: 40
