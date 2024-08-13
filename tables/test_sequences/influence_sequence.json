@@ -1,0 +1,506 @@
+[
+    {
+        "step": 1,
+        "duration": 600,
+        "TEC_cmds": [
+            {"TEC": 1, "cmd": 1}
+        ]
+    },
+    {
+        "step": 2,
+        "duration": 600,
+        "TEC_cmds": [
+            {"TEC": 1, "cmd": -1}
+        ]
+    },
+    {
+        "step": 3,
+        "duration": 600,
+        "TEC_cmds": [
+            {"TEC": 1, "cmd": 0}
+        ]
+    },
+    {
+        "step": 4,
+        "duration": 600,
+        "TEC_cmds": [
+            {"TEC": 2, "cmd": 1}
+        ]
+    },
+    {
+        "step": 5,
+        "duration": 600,
+        "TEC_cmds": [
+            {"TEC": 2, "cmd": -1}
+        ]
+    },
+    {
+        "step": 6,
+        "duration": 600,
+        "TEC_cmds": [
+            {"TEC": 2, "cmd": 0}
+        ]
+    },
+    {
+        "step": 7,
+        "duration": 600,
+        "TEC_cmds": [
+            {"TEC": 3, "cmd": 1}
+        ]
+    },
+    {
+        "step": 8,
+        "duration": 600,
+        "TEC_cmds": [
+            {"TEC": 3, "cmd": -1}
+        ]
+    },
+    {
+        "step": 9,
+        "duration": 600,
+        "TEC_cmds": [
+            {"TEC": 3, "cmd": 0}
+        ]
+    },
+    {
+        "step": 10,
+        "duration": 600,
+        "TEC_cmds": [
+            {"TEC": 4, "cmd": 1}
+        ]
+    },
+    {
+        "step": 11,
+        "duration": 600,
+        "TEC_cmds": [
+            {"TEC": 4, "cmd": -1}
+        ]
+    },
+    {
+        "step": 12,
+        "duration": 600,
+        "TEC_cmds": [
+            {"TEC": 4, "cmd": 0}
+        ]
+    },
+    {
+        "step": 13,
+        "duration": 600,
+        "TEC_cmds": [
+            {"TEC": 5, "cmd": 1}
+        ]
+    },
+    {
+        "step": 14,
+        "duration": 600,
+        "TEC_cmds": [
+            {"TEC": 5, "cmd": -1}
+        ]
+    },
+    {
+        "step": 15,
+        "duration": 600,
+        "TEC_cmds": [
+            {"TEC": 5, "cmd": 0}
+        ]
+    },
+    {
+        "step": 16,
+        "duration": 600,
+        "TEC_cmds": [
+            {"TEC": 6, "cmd": 1}
+        ]
+    },
+    {
+        "step": 17,
+        "duration": 600,
+        "TEC_cmds": [
+            {"TEC": 6, "cmd": -1}
+        ]
+    },
+    {
+        "step": 18,
+        "duration": 600,
+        "TEC_cmds": [
+            {"TEC": 6, "cmd": 0}
+        ]
+    },
+    {
+        "step": 19,
+        "duration": 600,
+        "TEC_cmds": [
+            {"TEC": 7, "cmd": 1}
+        ]
+    },
+    {
+        "step": 20,
+        "duration": 600,
+        "TEC_cmds": [
+            {"TEC": 7, "cmd": -1}
+        ]
+    },
+    {
+        "step": 21,
+        "duration": 600,
+        "TEC_cmds": [
+            {"TEC": 7, "cmd": 0}
+        ]
+    },
+    {
+        "step": 22,
+        "duration": 600,
+        "TEC_cmds": [
+            {"TEC": 8, "cmd": 1}
+        ]
+    },
+    {
+        "step": 23,
+        "duration": 600,
+        "TEC_cmds": [
+            {"TEC": 8, "cmd": -1}
+        ]
+    },
+    {
+        "step": 24,
+        "duration": 600,
+        "TEC_cmds": [
+            {"TEC": 8, "cmd": 0}
+        ]
+    },
+    {
+        "step": 25,
+        "duration": 600,
+        "TEC_cmds": [
+            {"TEC": 9, "cmd": 1}
+        ]
+    },
+    {
+        "step": 26,
+        "duration": 600,
+        "TEC_cmds": [
+            {"TEC": 9, "cmd": -1}
+        ]
+    },
+    {
+        "step": 27,
+        "duration": 600,
+        "TEC_cmds": [
+            {"TEC": 9, "cmd": 0}
+        ]
+    },
+    {
+        "step": 28,
+        "duration": 600,
+        "TEC_cmds": [
+            {"TEC": 10, "cmd": 1}
+        ]
+    },
+    {
+        "step": 29,
+        "duration": 600,
+        "TEC_cmds": [
+            {"TEC": 10, "cmd": -1}
+        ]
+    },
+    {
+        "step": 30,
+        "duration": 600,
+        "TEC_cmds": [
+            {"TEC": 10, "cmd": 0}
+        ]
+    },
+    {
+        "step": 31,
+        "duration": 600,
+        "TEC_cmds": [
+            {"TEC": 11, "cmd": 1}
+        ]
+    },
+    {
+        "step": 32,
+        "duration": 600,
+        "TEC_cmds": [
+            {"TEC": 11, "cmd": -1}
+        ]
+    },
+    {
+        "step": 33,
+        "duration": 600,
+        "TEC_cmds": [
+            {"TEC": 11, "cmd": 0}
+        ]
+    },
+    {
+        "step": 34,
+        "duration": 600,
+        "TEC_cmds": [
+            {"TEC": 12, "cmd": 1}
+        ]
+    },
+    {
+        "step": 35,
+        "duration": 600,
+        "TEC_cmds": [
+            {"TEC": 12, "cmd": -1}
+        ]
+    },
+    {
+        "step": 36,
+        "duration": 600,
+        "TEC_cmds": [
+            {"TEC": 12, "cmd": 0}
+        ]
+    },
+    {
+        "step": 37,
+        "duration": 600,
+        "TEC_cmds": [
+            {"TEC": 13, "cmd": 1}
+        ]
+    },
+    {
+        "step": 38,
+        "duration": 600,
+        "TEC_cmds": [
+            {"TEC": 13, "cmd": -1}
+        ]
+    },
+    {
+        "step": 39,
+        "duration": 600,
+        "TEC_cmds": [
+            {"TEC": 13, "cmd": 0}
+        ]
+    },
+    {
+        "step": 40,
+        "duration": 600,
+        "TEC_cmds": [
+            {"TEC": 14, "cmd": 1}
+        ]
+    },
+    {
+        "step": 41,
+        "duration": 600,
+        "TEC_cmds": [
+            {"TEC": 14, "cmd": -1}
+        ]
+    },
+    {
+        "step": 42,
+        "duration": 600,
+        "TEC_cmds": [
+            {"TEC": 14, "cmd": 0}
+        ]
+    },
+    {
+        "step": 43,
+        "duration": 600,
+        "TEC_cmds": [
+            {"TEC": 15, "cmd": 1}
+        ]
+    },
+    {
+        "step": 44,
+        "duration": 600,
+        "TEC_cmds": [
+            {"TEC": 15, "cmd": -1}
+        ]
+    },
+    {
+        "step": 45,
+        "duration": 600,
+        "TEC_cmds": [
+            {"TEC": 15, "cmd": 0}
+        ]
+    },
+    {
+        "step": 46,
+        "duration": 600,
+        "TEC_cmds": [
+            {"TEC": 16, "cmd": 1}
+        ]
+    },
+    {
+        "step": 47,
+        "duration": 600,
+        "TEC_cmds": [
+            {"TEC": 16, "cmd": -1}
+        ]
+    },
+    {
+        "step": 48,
+        "duration": 600,
+        "TEC_cmds": [
+            {"TEC": 16, "cmd": 0}
+        ]
+    },
+    {
+        "step": 49,
+        "duration": 600,
+        "TEC_cmds": [
+            {"TEC": 17, "cmd": 1}
+        ]
+    },
+    {
+        "step": 50,
+        "duration": 600,
+        "TEC_cmds": [
+            {"TEC": 17, "cmd": -1}
+        ]
+    },
+    {
+        "step": 51,
+        "duration": 600,
+        "TEC_cmds": [
+            {"TEC": 17, "cmd": 0}
+        ]
+    },
+    {
+        "step": 52,
+        "duration": 600,
+        "TEC_cmds": [
+            {"TEC": 18, "cmd": 1}
+        ]
+    },
+    {
+        "step": 53,
+        "duration": 600,
+        "TEC_cmds": [
+            {"TEC": 18, "cmd": -1}
+        ]
+    },
+    {
+        "step": 54,
+        "duration": 600,
+        "TEC_cmds": [
+            {"TEC": 18, "cmd": 0}
+        ]
+    },
+    {
+        "step": 55,
+        "duration": 600,
+        "TEC_cmds": [
+            {"TEC": 19, "cmd": 1}
+        ]
+    },
+    {
+        "step": 56,
+        "duration": 600,
+        "TEC_cmds": [
+            {"TEC": 19, "cmd": -1}
+        ]
+    },
+    {
+        "step": 57,
+        "duration": 600,
+        "TEC_cmds": [
+            {"TEC": 19, "cmd": 0}
+        ]
+    },
+    {
+        "step": 58,
+        "duration": 600,
+        "TEC_cmds": [
+            {"TEC": 20, "cmd": 1}
+        ]
+    },
+    {
+        "step": 59,
+        "duration": 600,
+        "TEC_cmds": [
+            {"TEC": 20, "cmd": -1}
+        ]
+    },
+    {
+        "step": 60,
+        "duration": 600,
+        "TEC_cmds": [
+            {"TEC": 20, "cmd": 0}
+        ]
+    },
+    {
+        "step": 61,
+        "duration": 600,
+        "TEC_cmds": [
+            {"TEC": 21, "cmd": 1}
+        ]
+    },
+    {
+        "step": 62,
+        "duration": 600,
+        "TEC_cmds": [
+            {"TEC": 21, "cmd": -1}
+        ]
+    },
+    {
+        "step": 63,
+        "duration": 600,
+        "TEC_cmds": [
+            {"TEC": 21, "cmd": 0}
+        ]
+    },
+    {
+        "step": 64,
+        "duration": 600,
+        "TEC_cmds": [
+            {"TEC": 22, "cmd": 1}
+        ]
+    },
+    {
+        "step": 65,
+        "duration": 600,
+        "TEC_cmds": [
+            {"TEC": 22, "cmd": -1}
+        ]
+    },
+    {
+        "step": 66,
+        "duration": 600,
+        "TEC_cmds": [
+            {"TEC": 22, "cmd": 0}
+        ]
+    },
+    {
+        "step": 67,
+        "duration": 600,
+        "TEC_cmds": [
+            {"TEC": 23, "cmd": 1}
+        ]
+    },
+    {
+        "step": 68,
+        "duration": 600,
+        "TEC_cmds": [
+            {"TEC": 23, "cmd": -1}
+        ]
+    },
+    {
+        "step": 69,
+        "duration": 600,
+        "TEC_cmds": [
+            {"TEC": 23, "cmd": 0}
+        ]
+    },
+    {
+        "step": 70,
+        "duration": 600,
+        "TEC_cmds": [
+            {"TEC": 24, "cmd": 1}
+        ]
+    },
+    {
+        "step": 71,
+        "duration": 600,
+        "TEC_cmds": [
+            {"TEC": 24, "cmd": -1}
+        ]
+    },
+    {
+        "step": 72,
+        "duration": 600,
+        "TEC_cmds": [
+            {"TEC": 24, "cmd": 0}
+        ]
+    }
+]
