@@ -202,11 +202,11 @@
                 disabled: not root.cfg_loaded
                 on_release: MirrorViewWidget.readCommandCsv()
             Button:
-                text: "Run Script CSV"
+                text: "Run Script JSON"
                 size_hint_y: None
                 height: 30
                 disabled: not root.cfg_loaded
-                on_release: MirrorViewWidget.readTestSequenceJSON()
+                on_release: MirrorViewWidget.runTestSequenceFromJSON()
             # Button:
             #     text: "stop"
             #     size_hint_y: None

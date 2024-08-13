@@ -144,8 +144,8 @@ class PMC_APP(App):
         self.fan_speed_prop = int(config.get('Motion','fan_speed'))
         self.home_speed_prop = int(config.get('Motion','homing_speed'))
         self.homing_timeout_prop = int(config.get('Motion','homing_timeout'))
-        self.rel_speed_prop: int(config.get('Motion','rel_move'))
-        self.abs_speed_prop: int(config.get('Motion','abs_move'))
+        self.rel_speed_prop = int(config.get('Motion','rel_move'))
+        self.abs_speed_prop = int(config.get('Motion','abs_move'))
         self.debug_mode_prop = config.get('General', 'dbg_mode') == 'True'
         return config
             

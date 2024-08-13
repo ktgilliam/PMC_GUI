@@ -15,6 +15,8 @@ import time
 from tec_iface import *
 
 import json
+from pathlib import Path
+from datetime import datetime
 
 class TecConfiguration():
     tec_enabled = BooleanProperty()
@@ -163,27 +165,45 @@ class MirrorViewWidget(AnchorLayout):
             writer = csv.writer(file)
             writer.writerows(rows)
             
-    def readTestSequenceJSON():
+    @staticmethod      
+    def getTestDataDirectory():
+        if os.name == 'nt':  # 'nt' indicates a Windows system
+            base_dir = Path("C:/tec_testing")
+        else:  # Assume a Unix-like system (Linux, macOS)
+            base_dir = Path.home() / "tec_testing"
+        if not base_dir.exists():
+            base_dir.mkdir(parents=True, exist_ok=True)
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        test_dir = base_dir / timestamp
+        test_dir.mkdir()
+        return test_dir
+        
+    def runTestSequenceFromJSON():
         mvw = MirrorViewWidget.instance
         file_path = filedialog.askopenfilename(
             filetypes=[("JSON File", ".json")])
         print(file_path)
+        test_dir = mvw.getTestDataDirectory()
         
         try:
             with open(file_path, 'r') as json_file:
                 test_steps = json.load(json_file)
                 for step in test_steps:
+                    mvw.all_to_zero()
                     step_no = step['step']
                     duration = step['duration']
-                    print(f"Step: {step_no}, Duration: {duration}")
-                    mvw.all_to_zero()
+                    step_log_path = test_dir / str(step_no)
+                    step_log_path.mkdir()
+                    log_file = open(step_log_path / 'step_info.txt', 'w')
+                    log_file.write(f"Step: {step_no}, Duration: {duration}")
+                    
                     for tec_cmd in step['TEC_cmds']:
                         tec_no = tec_cmd['TEC']
                         cmd_val = tec_cmd['cmd']
                         tecWidget = mvw.get_tec_by_no(tec_no)
                         if tecWidget.tec_found:
                             tecWidget.update_mag_value(cmd_val)
-                            print(f"  TEC: {tec_no}, Command: {cmd_val}")
+                            log_file.write(f"  TEC: {tec_no}, Command: {cmd_val}")
                     mvw.parent.updateActiveTecFields()
                     time.sleep(duration) # THIS IS A TEMPORARY SOLUTION!! Need to use the trio task scheduler.
         except TypeError:
@@ -198,6 +218,7 @@ class MirrorViewWidget(AnchorLayout):
         except FileNotFoundError:
             return
         
+        print("Test done.")
         
             
     def resetTecWidgets():
