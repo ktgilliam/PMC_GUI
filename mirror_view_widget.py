@@ -189,14 +189,15 @@ class MirrorViewWidget(AnchorLayout):
         try:
             with open(file_path, 'r') as json_file:
                 test_steps = json.load(json_file)
-                for step in test_steps:
+                
+                for step in sorted(test_steps, key=lambda x: x['step']):
                     mvw.all_to_zero()
                     step_no = step['step']
                     duration = step['duration']
                     step_log_path = test_dir / str(step_no)
                     step_log_path.mkdir()
                     log_file = open(step_log_path / 'step_info.txt', 'w')
-                    log_file.write(f"Step: {step_no}, Duration: {duration}")
+                    log_file.write(f"Step: {step_no}, Duration: {duration} seconds")
                     print(f"Step: {step_no}, Duration: {duration}")
                     for tec_cmd in step['TEC_cmds']:
                         tec_no = tec_cmd['TEC']
