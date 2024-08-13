@@ -1,13 +1,13 @@
 [
     {
-        "step": 1,
+        "step": 2,
         "duration": 10,
         "TEC_cmds": [
             {"TEC": 1, "cmd": 0.9}
         ]
     },
     {
-        "step": 2,
+        "step": 1,
         "duration": 5,
         "TEC_cmds": [
             {"TEC": 1, "cmd": -1},
