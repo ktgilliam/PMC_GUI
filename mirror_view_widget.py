@@ -14,6 +14,8 @@ import os
 import time
 from tec_iface import *
 
+import json
+
 class TecConfiguration():
     tec_enabled = BooleanProperty()
     tec_power_cmd = NumericProperty()
@@ -160,7 +162,44 @@ class MirrorViewWidget(AnchorLayout):
         with open(f.name, 'w', newline='') as file:
             writer = csv.writer(file)
             writer.writerows(rows)
-    
+            
+    def readTestSequenceJSON():
+        mvw = MirrorViewWidget.instance
+        file_path = filedialog.askopenfilename(
+            filetypes=[("JSON File", ".json")])
+        print(file_path)
+        
+        try:
+            with open(file_path, 'r') as json_file:
+                test_steps = json.load(json_file)
+                for step in test_steps:
+                    step_no = step['step']
+                    duration = step['duration']
+                    print(f"Step: {step_no}, Duration: {duration}")
+                    mvw.all_to_zero()
+                    for tec_cmd in step['TEC_cmds']:
+                        tec_no = tec_cmd['TEC']
+                        cmd_val = tec_cmd['cmd']
+                        tecWidget = mvw.get_tec_by_no(tec_no)
+                        if tecWidget.tec_found:
+                            tecWidget.update_mag_value(cmd_val)
+                            print(f"  TEC: {tec_no}, Command: {cmd_val}")
+                    mvw.parent.updateActiveTecFields()
+                    time.sleep(duration) # THIS IS A TEMPORARY SOLUTION!! Need to use the trio task scheduler.
+        except TypeError:
+            return
+        except KeyError:
+            print("Input file not formatted correctly (KeyError)")
+            return
+        except json.JSONDecodeError:
+            print("JSON file parsing error. Use https://jsonlint.com/ to find error.")
+            return
+            
+        except FileNotFoundError:
+            return
+        
+        
+            
     def resetTecWidgets():
         MirrorViewWidget.instance.tec_cfg_list = []
         rmList = []
@@ -221,6 +260,7 @@ class MirrorViewWidget(AnchorLayout):
         for child in self.children:
             if type(child) == TecWidget:
                 if child.id_no == no:
+                    child.tec_found = True
                     return child
         return None
     

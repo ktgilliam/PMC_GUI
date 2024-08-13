@@ -192,7 +192,7 @@
                 on_release: app.tecBox_B.requestConnectionToggle()
                 disabled: not root.cfg_loaded
         GridLayout:
-            cols: 2
+            cols: 3
             size_hint_y: None
             height: 30
             Button:
@@ -206,7 +206,12 @@
                 size_hint_y: None
                 height: 30
                 disabled: not root.cfg_loaded
-                on_release: MirrorViewWidget.readCommandCsv()
+                on_release: MirrorViewWidget.readTestSequenceJSON()
+            # Button:
+            #     text: "stop"
+            #     size_hint_y: None
+            #     size_hint_x: None
+            #     height: 30
         Button:
             size_hint_y: None
             height: 40
