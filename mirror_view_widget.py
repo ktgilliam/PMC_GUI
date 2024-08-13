@@ -176,6 +176,7 @@ class MirrorViewWidget(AnchorLayout):
         timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
         test_dir = base_dir / timestamp
         test_dir.mkdir()
+        print(f"Created test directory at: {test_dir}")
         return test_dir
         
     def runTestSequenceFromJSON():
@@ -184,7 +185,7 @@ class MirrorViewWidget(AnchorLayout):
             filetypes=[("JSON File", ".json")])
         print(file_path)
         test_dir = mvw.getTestDataDirectory()
-        
+        # print()
         try:
             with open(file_path, 'r') as json_file:
                 test_steps = json.load(json_file)
@@ -204,6 +205,7 @@ class MirrorViewWidget(AnchorLayout):
                         if tecWidget.tec_found:
                             tecWidget.update_mag_value(cmd_val)
                             log_file.write(f"  TEC: {tec_no}, Command: {cmd_val}")
+                    log_file.close()
                     mvw.parent.updateActiveTecFields()
                     time.sleep(duration) # THIS IS A TEMPORARY SOLUTION!! Need to use the trio task scheduler.
         except TypeError:
