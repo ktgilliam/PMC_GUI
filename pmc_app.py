@@ -11,6 +11,7 @@ from kivy.properties import ObjectProperty, StringProperty, NumericProperty, Boo
 from kivy.core.window import Window
 # from kivy.clock import Clock
 # from kivy.config import Config
+from kivy.event import EventDispatcher
 
 from fs_gui_iface import *
 
@@ -42,12 +43,13 @@ class PMC_GUI(BoxLayout):
     
        
 class PMC_APP(App):
-    nursery = None
     tasksStarted = False
     terminalManager = None
     tipTiltController = None
     tecBox_A = None
     tecBox_B = None
+    
+    nursery = ObjectProperty(None)
     
     tip_tilt_ip_addr_prop = StringProperty()
     tip_tilt_ip_port_prop = NumericProperty()
@@ -74,13 +76,14 @@ class PMC_APP(App):
         self.use_kivy_settings = False
         Builder.load_file('kv_files/util_widgets.kv')
         Builder.load_file('kv_files/tip_tilt_control_widget.kv')
-        # Builder.load_file('kv_files/tec_control_widget.kv')
         Builder.load_file('kv_files/mirror_view_widget.kv')
         Builder.load_file('kv_files/terminal_widget.kv')
         gui = Builder.load_file('kv_files/pmc_gui.kv')
         Window.size = (1100, 700)
         Window.minimum_width, Window.minimum_height = Window.system_size
         # Window.size = (1100, 700)
+        # mvw = gui.ids.tecCtrl.ids.mvw
+        # mvw.bind(nursery=self.setter('nursery'))
         return gui
 
     def build_config(self, config):
@@ -182,7 +185,8 @@ class PMC_APP(App):
             asynchronously and then block until they are finished or canceled
             at the `with` level. '''
             self.nursery = nursery
-
+            # self.nursery.bind(nursery)
+ 
             async def run_wrapper():
                 try:
                     # trio needs to be set so that it'll be used for the event loop
@@ -198,10 +202,19 @@ class PMC_APP(App):
             nursery.start_soon(run_wrapper)
             nursery.start_soon(self.launchTasks)
             
+            await trio.sleep(0.1)
+            
+            # mvw = self.root.ids.tecCtrl.ids.mvw
+            MirrorViewWidget.setNurseryObj(nursery)
+            # tecCtrl = tmp.children[0]
+            # print(f'ids: {gui.ids}')
+            pass
+        
     async def launchTasks(self):
         """Starts the tasks for the terminal and the main state machine
         """
         nursery = self.nursery
+        
         # time.sleep(0.5)
         await trio.sleep(0.1)
         nursery.start_soon(self.initializeTerminal)
@@ -209,7 +222,8 @@ class PMC_APP(App):
         nursery.start_soon(self.initializeTipTiltControl)
         await trio.sleep(0.1)
         nursery.start_soon(self.initializeTECControl)
-
+        
+        
         
     async def initializeTerminal(self):
         """Creates the terminal object and stores it as a variable
