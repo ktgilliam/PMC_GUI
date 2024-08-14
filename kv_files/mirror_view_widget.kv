@@ -37,6 +37,7 @@
         # disabled: False
 
 <MirrorViewWidget>:
+    # nursery_obj: root.nursery_obj
     # border_color: 1,0,0,1
     anchor_x: 'center'
     anchor_y: 'center'
@@ -157,7 +158,8 @@
 <MirrorViewControlPanel>:
     cols: 2
     opts_disabled: True if (root.active_tec == None) else not root.active_tec.tec_found
-    
+    # nursery: root.nursery
+    mvw: mvw
     MirrorViewWidget:
         id: mvw
         diameter: self.height*0.9

@@ -2,6 +2,7 @@ from kivy.uix.gridlayout import GridLayout
 from kivy.uix.anchorlayout import AnchorLayout
 from kivy.properties import ObjectProperty, NumericProperty, BooleanProperty, ListProperty, BoundedNumericProperty, StringProperty
 from kivy.uix.widget import Widget
+from kivy.event import EventDispatcher
 
 import tkinter as tk
 from tkinter import filedialog
@@ -17,6 +18,7 @@ from tec_iface import *
 import json
 from pathlib import Path
 from datetime import datetime
+
 
 class TecConfiguration():
     tec_enabled = BooleanProperty()
@@ -64,17 +66,22 @@ class MirrorCircleWidget(Widget):
     def on_diameter(self, instance, value):
         pass
     
-class MirrorViewWidget(AnchorLayout):
+class MirrorViewWidget(AnchorLayout, EventDispatcher):
     tec_cfg_list = ListProperty([])
     diameter = NumericProperty()
     cfg_file_path = StringProperty('')
     mirror_name = StringProperty('--')
+    nursery = ObjectProperty()#None,  allownone=True, rebind=True)
+    
     tec_widget_list = []
     # tec_cfg_list = []
     
     def __init__(self, **kwargs):
-        super().__init__(**kwargs)
+        super(MirrorViewWidget, self).__init__(**kwargs)
         MirrorViewWidget.instance = self
+        # tmp = self
+        # pass
+        # self.bind(nursery)
         
     def readMirrorConfigCsv():
         # root = tk.Tk()
@@ -175,6 +182,12 @@ class MirrorViewWidget(AnchorLayout):
             writer = csv.writer(file)
             writer.writerows(rows)
             
+    @staticmethod  
+    def setNurseryObj(nursery_obj):
+        mvw = MirrorViewWidget.instance
+        mvw.nursery = nursery_obj
+        pass
+    
     @staticmethod      
     def getTestDataDirectory():
         mvw = MirrorViewWidget.instance
@@ -192,6 +205,12 @@ class MirrorViewWidget(AnchorLayout):
         return test_dir
         
     def runTestSequenceFromJSON():
+        mvw = MirrorViewWidget.instance
+        nursery = mvw.nursery
+        nursery.start_soon(MirrorViewWidget.executeTestSequence)
+        
+    @staticmethod     
+    async def executeTestSequence():
         mvw = MirrorViewWidget.instance
         file_path = filedialog.askopenfilename(
             filetypes=[("JSON File", ".json")],
@@ -226,7 +245,8 @@ class MirrorViewWidget(AnchorLayout):
                     mvw.parent.updateActiveTecFields()
                     #apply TEC commands.
                     mvw.applyTecCommands(step_cmd_list)
-                    time.sleep(duration) # THIS IS A TEMPORARY SOLUTION!! Need to use the trio task scheduler.
+                    await trio.sleep(duration)
+                    # time.sleep(duration) # THIS IS A TEMPORARY SOLUTION!! Need to use the trio task scheduler.
         except TypeError:
             return
         except KeyError:
@@ -241,7 +261,7 @@ class MirrorViewWidget(AnchorLayout):
         
         print("Test done.")
         
-            
+    
     def resetTecWidgets():
         MirrorViewWidget.instance.tec_cfg_list = []
         rmList = []
@@ -332,6 +352,7 @@ class MirrorViewControlPanel(GridLayout):
     cfg_path = StringProperty()
     test_json_path = StringProperty()
     test_log_path = StringProperty()
+    
     
     def setTecEnabledState(self, active):
         if self.active_tec.tec_found:
