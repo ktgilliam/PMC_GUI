@@ -19,6 +19,7 @@ import json
 from pathlib import Path
 from datetime import datetime
 
+from tec_box_controller import TECBoxController
 
 class TecConfiguration():
     tec_enabled = BooleanProperty()
@@ -221,7 +222,6 @@ class MirrorViewWidget(AnchorLayout, EventDispatcher):
         try:
             with open(file_path, 'r') as json_file:
                 test_steps = json.load(json_file)
-                
                 for step in sorted(test_steps, key=lambda x: x['step']):
                     mvw.all_to_zero()
                     step_no = step['step']
@@ -242,11 +242,14 @@ class MirrorViewWidget(AnchorLayout, EventDispatcher):
                             tecWidget.update_mag_value(cmd_val)
                             log_file.write(f"  TEC: {tec_no}, Command: {cmd_val}")
                     log_file.close()
-                    mvw.parent.updateActiveTecFields()
                     #apply TEC commands.
                     mvw.applyTecCommands(step_cmd_list)
+                    mvw.parent.updateActiveTecFields()
+                    TECBoxController.startSendAll()
                     await trio.sleep(duration)
                     # time.sleep(duration) # THIS IS A TEMPORARY SOLUTION!! Need to use the trio task scheduler.
+        except FileNotFoundError:
+            return
         except TypeError:
             return
         except KeyError:
@@ -256,9 +259,6 @@ class MirrorViewWidget(AnchorLayout, EventDispatcher):
             print("JSON file parsing error. Use https://jsonlint.com/ to find error.")
             return
             
-        except FileNotFoundError:
-            return
-        
         print("Test done.")
         
     
@@ -369,7 +369,14 @@ class MirrorViewControlPanel(GridLayout):
                 tec_widget.enabled = True
             pass
         pass
-        
+    
+    def debug_enable_all_tecs(self):
+        mvw = self.ids['mvw']
+        for tec in mvw.tec_cfg_list:
+            tec_widget = mvw.get_tec_by_no(tec[0])
+            tec_widget.tec_found = True
+            tec_widget.enabled = True
+            
     def update_tec_color(self, val):
         if self.active_tec is not None:
             self.active_tec.update_mag_value(val)

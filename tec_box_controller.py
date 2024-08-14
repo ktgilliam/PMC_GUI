@@ -46,8 +46,11 @@ class TECBoxController(DeviceController):
     @staticmethod
     async def connectedStateHandler():
         for box in TECBoxController._instances:
-            if box.deviceInterface.tecConfigListChanged.is_set():  # TODO find a better way to do this
-                box.controllerWidget.enable_found_tecs(box.deviceInterface.getTecList())
+            if box.debugMode == True:
+                box.controllerWidget.debug_enable_all_tecs()
+            else:
+                if box.deviceInterface.tecConfigListChanged.is_set():  # TODO find a better way to do this
+                    box.controllerWidget.enable_found_tecs(box.deviceInterface.getTecList())
             pass
 
         await trio.sleep(0)
