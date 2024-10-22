@@ -198,22 +198,25 @@
             size_hint_y: None
             height: 30
             Button:
-                text: "Read Command CSV"
+                text: "Monitor CSV"
+                size_hint_y: None
+                size_hint_x: None
+                height: 30
+                disabled: not root.cfg_loaded
+                on_release: MirrorViewWidget.monitorCsv()
+                
+            Button:
+                text: "Read CSV"
                 size_hint_y: None
                 height: 30
                 disabled: not root.cfg_loaded
                 on_release: MirrorViewWidget.readCommandCsv()
             Button:
-                text: "Run Script JSON"
+                text: "Run JSON"
                 size_hint_y: None
                 height: 30
                 disabled: not root.cfg_loaded
                 on_release: MirrorViewWidget.runTestSequenceFromJSON()
-            # Button:
-            #     text: "stop"
-            #     size_hint_y: None
-            #     size_hint_x: None
-            #     height: 30
         Button:
             size_hint_y: None
             height: 40

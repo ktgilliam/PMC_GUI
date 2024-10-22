@@ -18,6 +18,7 @@ from tec_iface import *
 import json
 from pathlib import Path
 from datetime import datetime
+from typing import Callable
 
 from tec_box_controller import TECBoxController
 
@@ -80,13 +81,8 @@ class MirrorViewWidget(AnchorLayout, EventDispatcher):
     def __init__(self, **kwargs):
         super(MirrorViewWidget, self).__init__(**kwargs)
         MirrorViewWidget.instance = self
-        # tmp = self
-        # pass
-        # self.bind(nursery)
         
     def readMirrorConfigCsv():
-        # root = tk.Tk()
-        # root.withdraw()
         mvw = MirrorViewWidget.instance
         file_path = filedialog.askopenfilename(
             filetypes=[("CSV File", ".csv")],
@@ -126,14 +122,21 @@ class MirrorViewWidget(AnchorLayout, EventDispatcher):
         MirrorViewWidget.instance.tec_cfg_list = cfg_list
         MirrorViewWidget.instance.populateTecWidgets()
 
-        
-    def readCommandCsv():
+
+                
+
+    def readCommandCsv(file_path=""):
         # root = tk.Tk()
         # root.withdraw()
         mvw = MirrorViewWidget.instance
-        file_path = filedialog.askopenfilename(
-            filetypes=[("CSV File", ".csv")])
-        print(file_path)
+        if not file_path:
+            file_path = filedialog.askopenfilename(
+                filetypes=[("CSV File", ".csv")])
+            print(file_path)
+        # If no file is selected, return
+        if not file_path:
+            print("No file selected.")
+            return
         
         try:
             with open(file_path, newline='') as csvfile:
@@ -155,7 +158,43 @@ class MirrorViewWidget(AnchorLayout, EventDispatcher):
             return
         mvw.applyTecCommands(tec_cmds)
         mvw.parent.updateActiveTecFields()
+    
+
+    async def continueMonitoring(file_path, action: Callable):
+        try:
+            last_mtime = os.path.getmtime(file_path)
+        except FileNotFoundError:
+            print(f"File not found: {file_path}")
+            return
+        print(f"Monitoring changes to: {file_path}")
+        # Continuously monitor the file
+        while True:
+            await trio.sleep(1)  # Check every second
+
+            try:
+                current_mtime = os.path.getmtime(file_path)
+            except FileNotFoundError:
+                print(f"File not found: {file_path}")
+                return
+
+            # If the modification time has changed, trigger the action
+            if current_mtime != last_mtime:
+                print(f"File updated: {file_path}")
+                last_mtime = current_mtime
+                action(file_path)
+                
+    def monitorCsv():
+        file_path = filedialog.askopenfilename(
+                filetypes=[("CSV File", ".csv")])
+        if not file_path:
+            print("No file selected.")
+            return
+        MirrorViewWidget.readCommandCsv(file_path)
+        mvw = MirrorViewWidget.instance
+        nursery = mvw.nursery
+        nursery.start_soon(MirrorViewWidget.continueMonitoring, file_path, MirrorViewWidget.readCommandCsv)
         
+
     def applyTecCommands(self, cmds):
         for cmd in cmds:
             tecNo = cmd[0]
