@@ -160,7 +160,8 @@ class MirrorViewWidget(AnchorLayout, EventDispatcher):
         mvw.parent.updateActiveTecFields()
     
 
-    async def continueMonitoring(file_path, action: Callable):
+    async def continueMonitoring(file_path):
+        mvw = MirrorViewWidget.instance
         try:
             last_mtime = os.path.getmtime(file_path)
         except FileNotFoundError:
@@ -181,7 +182,8 @@ class MirrorViewWidget(AnchorLayout, EventDispatcher):
             if current_mtime != last_mtime:
                 print(f"File updated: {file_path}")
                 last_mtime = current_mtime
-                action(file_path)
+                MirrorViewWidget.readCommandCsv(file_path)
+                TECBoxController.startSendAll()
                 
     def monitorCsv():
         file_path = filedialog.askopenfilename(
@@ -192,7 +194,7 @@ class MirrorViewWidget(AnchorLayout, EventDispatcher):
         MirrorViewWidget.readCommandCsv(file_path)
         mvw = MirrorViewWidget.instance
         nursery = mvw.nursery
-        nursery.start_soon(MirrorViewWidget.continueMonitoring, file_path, MirrorViewWidget.readCommandCsv)
+        nursery.start_soon(MirrorViewWidget.continueMonitoring, file_path)
         
 
     def applyTecCommands(self, cmds):
@@ -200,9 +202,9 @@ class MirrorViewWidget(AnchorLayout, EventDispatcher):
             tecNo = cmd[0]
             val = cmd[1]
             tecWidget = self.get_tec_by_no(tecNo)
-            tecWidget.update_mag_value(val)
-            tecWidget.enabled = cmd[2] and tecWidget.tec_found
-            pass
+            if tecWidget is not None:
+                tecWidget.update_mag_value(val)
+                tecWidget.enabled = cmd[2] and tecWidget.tec_found
         
     def saveCommandCsv():    
         mvw = MirrorViewWidget.instance
