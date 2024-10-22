@@ -242,6 +242,7 @@ class PMC_APP(App):
         self.tipTiltController.registerConnectButtonId('tip_tilt_connect_btn')
         self.tipTiltController.setDeviceLabel('Tip/Tilt/Focus')
         self.tipTiltController.connectTerminal(self.terminalManager)
+        self.tipTiltController.setDebugMode(self.debug_mode_prop)
         
     async def initializeTECControl(self):
         # while (TECControlWidget.singletonControlWidget is None):
@@ -251,12 +252,14 @@ class PMC_APP(App):
         self.tecBox_A.registerConnectButtonId('tec_connect_a_btn')
         self.tecBox_A.setDeviceLabel('A')
         self.tecBox_A.connectTerminal(self.terminalManager)
+        self.tecBox_A.setDebugMode(self.debug_mode_prop)
         
         self.tecBox_B = TECBoxController(self.root.ids.tecCtrl, self.nursery, self.debug_mode_prop)
         self.tecBox_B.setConnectionInfo(self.tec_b_ip_addr_prop, self.tec_b_ip_port_prop)
         self.tecBox_B.registerConnectButtonId('tec_connect_b_btn')
         self.tecBox_B.setDeviceLabel('B')
         self.tecBox_B.connectTerminal(self.terminalManager)
+        self.tecBox_A.setDebugMode(self.debug_mode_prop)
          
          
 from task_tracer import Tracer, FilterType
