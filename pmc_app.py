@@ -12,6 +12,7 @@ from kivy.core.window import Window
 # from kivy.clock import Clock
 # from kivy.config import Config
 
+from fs_gui_iface import *
 
 from json_settings import *
 
@@ -202,6 +203,9 @@ class PMC_APP(App):
         self.tipTiltController.registerConnectButtonId('tip_tilt_connect_btn')
         self.tipTiltController.setDeviceLabel('Tip/Tilt/Focus')
         self.tipTiltController.connectTerminal(self.terminalManager)
+        
+        self.fs_iface = FocusSweepGuiInterface(self.nursery)
+        self.fs_iface.connect_tip_tilt_controller(self.tipTiltController)
         
     async def initializeTECControl(self):
         # while (TECControlWidget.singletonControlWidget is None):

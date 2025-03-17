@@ -8,11 +8,11 @@ import time
 import math
 # HOST = "127.0.0.1"  # The server's hostname or IP address
 # PORT = 65432  # The port used by the server
-HOST = "192.168.121.177"
-# HOST = "localhost"
+# HOST = "192.168.121.177"
+HOST = "localhost"
 
 # HOST = "192.168.190.101"
-PORT = 1883  # The port used by the server
+PORT = 4500  # The port used by the server
 # s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 # with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
 
@@ -84,33 +84,31 @@ class PrimaryMirrorCommsMethods(unittest.TestCase):
             
 
 if __name__ == '__main__':
-    unittest.main()
-
-
-# with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-#     err = s.connect((HOST, PORT))
-#     # s.setblocking(0)
-#     s.settimeout(20)
-    
-#     ### Handshake Test
-#     handshakeMsgStr = json.dumps(handshakeJson)
-#     txStr = handshakeMsgStr +"\0"
-#     print("Sending: "+txStr)
-#     s.sendall(txStr.encode('utf-8'))
-    
-#     rx = getReceived(s)
-#     print(f"Received:  "+ rx)
-#     time.sleep(1)
-    
-#     ### Set tip/tilt test
-#     txStr = r'{"PMCMessage": {"SetTip": 10, "MoveType": 1}}'+'\0'
-#     print("Sending: "+txStr)
-#     s.sendall(txStr.encode('utf-8'))
-    
-#     rx = getReceived(s)
-#     print(f"Received:  "+ rx)
-#     time.sleep(1)
-    
-    
-#     s.close()
+    # unittest.main()
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        err = s.connect((HOST, PORT))
+        # s.setblocking(0)
+        s.settimeout(20)
+        
+        ### Handshake Test
+        handshakeMsgStr = json.dumps(handshakeJson)
+        txStr = handshakeMsgStr +"\0"
+        print("Sending: "+txStr)
+        s.sendall(txStr.encode('utf-8'))
+        
+        rx = getReceived(s)
+        print(f"Received:  "+ rx)
+        time.sleep(1)
+        
+        ### Set tip/tilt test
+        txStr = r'{"PMCMessage": {"SetTip": 10, "MoveType": 1}}'+'\0'
+        print("Sending: "+txStr)
+        s.sendall(txStr.encode('utf-8'))
+        
+        rx = getReceived(s)
+        print(f"Received:  "+ rx)
+        time.sleep(1)
+        
+        
+        s.close()
     

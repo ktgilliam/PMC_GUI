@@ -101,6 +101,7 @@ class TipTiltController(DeviceController):
                 homeBtn.disabled = True
                 # homeBtn.text = "Home All"
                 goBtn.disabled = False
+                
             elif request == TtfControllerRequest.BOTTOM_FOUND_REQUESTED:
                 await self.terminalManager.addMessage('Bottom found. Waiting for mirror to return to center...')
                 bottomFoundBtn.disabled = True
@@ -116,6 +117,7 @@ class TipTiltController(DeviceController):
                     await self.deviceInterface.sendStopCommand()
                 else:
                     homeBtn.disabled = False
+                    
             elif request == TtfControllerRequest.TOGGLE_STEPPER_ENABLE:
                 if self.deviceInterface.steppersEnabled():
                     await self.deviceInterface.sendEnableSteppers(False)
@@ -124,17 +126,20 @@ class TipTiltController(DeviceController):
                     # TODO: Ask if system is homed and wait for reply before enabling.
                     goBtn.disabled = True
                     enableStepBtn.text = "Enable Steppers"
+                    
                 else:
                     await self.deviceInterface.sendEnableSteppers(True)
                     self.controllerWidget.enableRelativeControls(True)
                     goBtn.disabled = False
                     enableStepBtn.text = "Disable Steppers"
+                    
             elif request == TtfControllerRequest.STOP_REQUESTED:
                 await self.deviceInterface.sendStopCommand() 
                 homeBtn.disabled = False
                 homeBtn.text = "Home All"
                 bottomFoundBtn.disabled = True
-                self.deviceInterface.interruptAnything()
+                self.deviceInterface.interruptAnything() 
+
                 
         await self.deviceInterface.addCommandsToOutgoing()
             
@@ -169,6 +174,20 @@ class TipTiltController(DeviceController):
         self.terminalManager.queueMessage(' Focus [-' + str(self.deviceInterface._focusStepSize_um) + ' mm]')
         self.nursery.start_soon(self.deviceInterface.FocusRelative,DIRECTION.REVERSE)
             
+    def external_move_command(self, magnitude):
+        if not self.isConnected():
+            return 0.0
+        
+        step_size_placeholder = self.deviceInterface._focusStepSize_um
+        self.deviceInterface._focusStepSize_um = magnitude
+        if magnitude < 0: 
+            self.minusFocusButtonPushed()
+        else:
+            self.plusFocusButtonPushed()
+        self.deviceInterface._focusStepSize_um = step_size_placeholder
+        
+        return magnitude
+    
     def _angleStepSizeButtonPushed(self, stepSize):
         # gui = self.root
         self.deviceInterface._tipTiltStepSize_as = stepSize
