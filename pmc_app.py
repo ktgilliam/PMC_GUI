@@ -16,13 +16,15 @@ from fs_gui_iface import *
 
 from json_settings import *
 
-
 from terminal_widget import *
 from tip_tilt_control_widget import *
 from tec_box_controller import *
 from mirror_view_widget import *
 
 from kivy.config import Config
+
+from pathlib import Path
+
 Config.set('input', 'mouse', 'mouse,multitouch_on_demand')
 # # Config.set('graphics', 'resizable', False)
 # Window.size = (1100, 700)
@@ -63,6 +65,9 @@ class PMC_APP(App):
     abs_speed_prop = NumericProperty()
     debug_mode_prop = BooleanProperty()
 
+    mirror_config_folder_prop = StringProperty()
+    test_json_folder_prop = StringProperty()
+    test_log_folder_prop = StringProperty()
     
     def build(self):
         self.settings_cls = SettingsWithSidebar
@@ -87,6 +92,13 @@ class PMC_APP(App):
                                           "tec_b_ip_port": 4600})
         config.setdefaults("Motion", {"fan_speed":50, "homing_speed":100, "homing_timeout":60, "rel_move": 100, "abs_move": 100})
         config.setdefaults("General", {"dbg_mode":False})
+        if os.name == 'nt':  # 'nt' indicates a Windows system
+            default_dir = Path("C:/")
+        else:  # Assume a Unix-like system (Linux, macOS)
+            default_dir = Path.home()
+        config.setdefaults("General", {"mirror_cfg_dir":default_dir})
+        config.setdefaults("General", {"test_json_dir":default_dir})
+        config.setdefaults("General", {"test_log_dir":default_dir})
         return super().build_config(config)
     
     def build_settings(self, settings):
@@ -102,6 +114,12 @@ class PMC_APP(App):
                 self.tipTiltController.setDebugMode(self.debug_mode_prop)
                 self.tecBox_A.setDebugMode(self.debug_mode_prop)
                 # self.tecBox_B.setDebugMode(self.debug_mode_prop)
+            elif key == "mirror_cfg_dir":
+                self.mirror_config_folder_prop = value
+            elif key == "test_json_dir":
+                self.test_json_folder_prop = value
+            elif key == "test_log_dir":
+                self.test_log_folder_prop = value
                 
         elif section == "Connection":
             if key == "tip_tilt_ip_addr":
@@ -147,7 +165,12 @@ class PMC_APP(App):
         self.homing_timeout_prop = int(config.get('Motion','homing_timeout'))
         self.rel_speed_prop = int(config.get('Motion','rel_move'))
         self.abs_speed_prop = int(config.get('Motion','abs_move'))
+        
         self.debug_mode_prop = config.get('General', 'dbg_mode') == 'True'
+        self.mirror_config_folder_prop = config.get('General','mirror_cfg_dir')
+        self.test_json_folder_prop = config.get('General','test_json_dir')
+        self.test_log_folder_prop = config.get('General','test_log_dir')
+        
         return config
             
     async def app_func(self):
@@ -161,10 +184,14 @@ class PMC_APP(App):
             self.nursery = nursery
 
             async def run_wrapper():
-                # trio needs to be set so that it'll be used for the event loop
-                await self.async_run(async_lib='trio')
-                # time.sleep(0.5) #asynchronous delay to give the gui time to get moving
-                
+                try:
+                    # trio needs to be set so that it'll be used for the event loop
+                    await self.async_run(async_lib='trio')
+                    # time.sleep(0.5) #asynchronous delay to give the gui time to get moving
+                except Exception as e:
+                    print("Error - closing early.")
+                    print(repr(e))
+                    quit()
                 print('App done')
                 nursery.cancel_scope.cancel()
 

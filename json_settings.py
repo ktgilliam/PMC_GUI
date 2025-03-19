@@ -4,9 +4,30 @@ json_general_settings = json.dumps([
     {
         "type":"bool",
         "title":"Debug Mode",
-        "desc":"Debug mode just allows the buttons and exceptions to be tested when no actual connection is present",
+        "desc":"Debug mode just allows the buttons and exceptions to be tested when no actual connection is present. You must restart the program for this to take effect.",
         "section":"General",
         "key": "dbg_mode"
+    },
+    {
+        "type":"string",
+        "title":"Mirror Config File Directory",
+        "desc":"Default directory to look for mirror configs. You must restart the program for this to take effect.",
+        "section":"General",
+        "key": "mirror_cfg_dir"
+    },
+    {
+        "type":"string",
+        "title":"Test JSON File Directory",
+        "desc":"Default directory to look for test sequence JSON files. You must restart the program for this to take effect.",
+        "section":"General",
+        "key": "test_json_dir"
+    },
+    {
+        "type":"string",
+        "title":"Test Log File Directory",
+        "desc":"Directory to place test logs",
+        "section":"General",
+        "key": "test_log_dir"
     }
 ])
 

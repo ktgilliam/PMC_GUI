@@ -79,9 +79,18 @@ class MirrorViewWidget(AnchorLayout):
     def readMirrorConfigCsv():
         # root = tk.Tk()
         # root.withdraw()
+        mvw = MirrorViewWidget.instance
         file_path = filedialog.askopenfilename(
-            filetypes=[("CSV File", ".csv")])
+            filetypes=[("CSV File", ".csv")],
+            initialdir=mvw.parent.cfg_path)
+        
+        fp = Path(file_path)
+        if fp.parent != mvw.parent.cfg_path :
+            #update the default path in the config setting somehow.
+            mvw.parent.cfg_path = str(fp.parent)
+            pass
         print(file_path)
+        
         try:
             mirror_file_name = os.path.basename(file_path)
         except TypeError:
@@ -117,6 +126,7 @@ class MirrorViewWidget(AnchorLayout):
         file_path = filedialog.askopenfilename(
             filetypes=[("CSV File", ".csv")])
         print(file_path)
+        
         try:
             with open(file_path, newline='') as csvfile:
                 reader = csv.DictReader(csvfile)
@@ -167,8 +177,10 @@ class MirrorViewWidget(AnchorLayout):
             
     @staticmethod      
     def getTestDataDirectory():
+        mvw = MirrorViewWidget.instance
         if os.name == 'nt':  # 'nt' indicates a Windows system
-            base_dir = Path("C:/tec_testing")
+            # base_dir = Path("C:/tec_testing")
+            base_dir = Path(mvw.parent.test_log_path)
         else:  # Assume a Unix-like system (Linux, macOS)
             base_dir = Path.home() / "tec_testing"
         if not base_dir.exists():
@@ -182,7 +194,8 @@ class MirrorViewWidget(AnchorLayout):
     def runTestSequenceFromJSON():
         mvw = MirrorViewWidget.instance
         file_path = filedialog.askopenfilename(
-            filetypes=[("JSON File", ".json")])
+            filetypes=[("JSON File", ".json")],
+            initialdir=mvw.parent.test_json_path)
         print(file_path)
         test_dir = mvw.getTestDataDirectory()
         # print()
@@ -199,15 +212,20 @@ class MirrorViewWidget(AnchorLayout):
                     log_file = open(step_log_path / 'step_info.txt', 'w')
                     log_file.write(f"Step: {step_no}, Duration: {duration} seconds")
                     print(f"Step: {step_no}, Duration: {duration}")
+                    step_cmd_list = []
                     for tec_cmd in step['TEC_cmds']:
                         tec_no = tec_cmd['TEC']
                         cmd_val = tec_cmd['cmd']
+                        new_tec_cmd = (tec_no, cmd_val, 1)
+                        step_cmd_list.append(new_tec_cmd)
                         tecWidget = mvw.get_tec_by_no(tec_no)
                         if tecWidget.tec_found:
                             tecWidget.update_mag_value(cmd_val)
                             log_file.write(f"  TEC: {tec_no}, Command: {cmd_val}")
                     log_file.close()
                     mvw.parent.updateActiveTecFields()
+                    #apply TEC commands.
+                    mvw.applyTecCommands(step_cmd_list)
                     time.sleep(duration) # THIS IS A TEMPORARY SOLUTION!! Need to use the trio task scheduler.
         except TypeError:
             return
@@ -311,6 +329,9 @@ class MirrorViewControlPanel(GridLayout):
     active_tec = ObjectProperty(None,  allownone=True)
     opts_disabled = BooleanProperty(True)
     cfg_loaded = BooleanProperty(False)
+    cfg_path = StringProperty()
+    test_json_path = StringProperty()
+    test_log_path = StringProperty()
     
     def setTecEnabledState(self, active):
         if self.active_tec.tec_found:
