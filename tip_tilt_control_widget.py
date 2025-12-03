@@ -174,18 +174,70 @@ class TipTiltController(DeviceController):
         self.terminalManager.queueMessage(' Focus [-' + str(self.deviceInterface._focusStepSize_um) + ' mm]')
         self.nursery.start_soon(self.deviceInterface.FocusRelative,DIRECTION.REVERSE)
             
-    def external_move_command(self, magnitude):
-        if not self.isConnected():
+    def external_focus_command(self, magnitude):
+        if not (self.isConnected() and self.deviceInterface.steppersEnabled()):
             return 0.0
-        
+        mag = abs(magnitude)
         step_size_placeholder = self.deviceInterface._focusStepSize_um
-        self.deviceInterface._focusStepSize_um = magnitude
-        if magnitude < 0: 
-            self.minusFocusButtonPushed()
-        else:
-            self.plusFocusButtonPushed()
-        self.deviceInterface._focusStepSize_um = step_size_placeholder
+        self.terminalManager.queueMessage(' External focus command:: [' + str(magnitude) + ' uM]')
+        self._focusStepSizeButtonPushed(mag)
         
+        if magnitude == 0:
+            self.controllerWidget.ids['do_pos_focus_btn'].disabled = False
+            self.controllerWidget.ids['do_neg_focus_btn'].disabled = False
+        else:
+            self.controllerWidget.ids['do_pos_focus_btn'].disabled = True
+            self.controllerWidget.ids['do_neg_focus_btn'].disabled = True
+            if magnitude < 0: 
+                self.minusFocusButtonPushed()
+            elif magnitude > 0:
+                self.plusFocusButtonPushed()
+        
+        # self._focusStepSizeButtonPushed(step_size_placeholder)
+        return magnitude
+    
+    def external_tip_command(self, magnitude):
+        if not (self.isConnected() and self.deviceInterface.steppersEnabled()):
+            return 0.0
+        mag = abs(magnitude)
+        step_size_placeholder = self.deviceInterface._tipTiltStepSize_as
+        self.terminalManager.queueMessage(' External tip command:: [' + str(magnitude) + ' aS]')
+        self._angleStepSizeButtonPushed(mag)
+        
+        if magnitude == 0:
+            self.controllerWidget.ids['do_pos_tip_btn'].disabled = False
+            self.controllerWidget.ids['do_neg_tip_btn'].disabled = False
+        else:
+            self.controllerWidget.ids['do_pos_tip_btn'].disabled = True
+            self.controllerWidget.ids['do_neg_tip_btn'].disabled = True
+            if magnitude < 0: 
+                self.minusTipButtonPushed()
+            elif magnitude > 0:
+                self.plusTipButtonPushed()
+        
+        # self._focusStepSizeButtonPushed(step_size_placeholder)
+        return magnitude
+    
+    def external_tilt_command(self, magnitude):
+        if not (self.isConnected() and self.deviceInterface.steppersEnabled()):
+            return 0.0
+        mag = abs(magnitude)
+        step_size_placeholder = self.deviceInterface._tipTiltStepSize_as
+        self.terminalManager.queueMessage(' External tilt command:: [' + str(magnitude) + ' aS]')
+        self._angleStepSizeButtonPushed(mag)
+        
+        if magnitude == 0:
+            self.controllerWidget.ids['do_pos_tilt_btn'].disabled = False
+            self.controllerWidget.ids['do_neg_tilt_btn'].disabled = False
+        else:
+            self.controllerWidget.ids['do_pos_tilt_btn'].disabled = True
+            self.controllerWidget.ids['do_neg_tilt_btn'].disabled = True
+            if magnitude < 0: 
+                self.minusTiltButtonPushed()
+            elif magnitude > 0:
+                self.plusTiltButtonPushed()
+        
+        # self._focusStepSizeButtonPushed(step_size_placeholder)
         return magnitude
     
     def _angleStepSizeButtonPushed(self, stepSize):
@@ -206,6 +258,7 @@ class TipTiltController(DeviceController):
         # gui = self.root
         self.deviceInterface._focusStepSize_um = stepSize
         self.controllerWidget.resetFocusStepSizeButtons()
+        btn = None
         if stepSize == 0.2:
             btn = self.controllerWidget.ids['_0p2um_btn']
         elif stepSize == 2.0:
@@ -216,7 +269,9 @@ class TipTiltController(DeviceController):
             btn = self.controllerWidget.ids['_200um_btn']
         elif stepSize == 2000.0:
             btn = self.controllerWidget.ids['_2000um_btn']
-        btn.background_color = (0,1,0,1)
+            
+        if btn:
+            btn.background_color = (0,1,0,1)
             
     def AbsGoButtonPushed(self):
         # gui = self.root

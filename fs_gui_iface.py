@@ -62,7 +62,17 @@ class FocusSweepGuiInterface:
                     elif decoded_message.startswith("focus: "):
                         magnitude = float(decoded_message.split("focus: ")[1])
                         print(f"Moving relative focus by {magnitude}")
-                        moved_mag = self.ttc.external_move_command(magnitude)
+                        moved_mag = self.ttc.external_focus_command(magnitude)
+                        response = f"{moved_mag}"
+                    elif decoded_message.startswith("tip: "):
+                        magnitude = float(decoded_message.split("tip: ")[1])
+                        print(f"Moving relative tip {magnitude}")
+                        moved_mag = self.ttc.external_tip_command(magnitude)
+                        response = f"{moved_mag}"
+                    elif decoded_message.startswith("tilt: "):
+                        magnitude = float(decoded_message.split("tilt: ")[1])
+                        print(f"Moving relative tilt by {magnitude}")
+                        moved_mag = self.ttc.external_tilt_command(magnitude)
                         response = f"{moved_mag}"
                     await trio.sleep(1.0)
                     await stream.send_all(response.encode())
