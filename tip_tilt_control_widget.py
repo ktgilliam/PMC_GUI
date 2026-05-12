@@ -244,6 +244,7 @@ class TipTiltController(DeviceController):
         # gui = self.root
         self.deviceInterface._tipTiltStepSize_as = stepSize
         self.controllerWidget.resetTipTiltStepSizeButtons()
+        btn = None
         if stepSize == 1.0:
             btn = self.controllerWidget.ids['_1as_btn']
         elif stepSize == 10.0:
@@ -252,7 +253,8 @@ class TipTiltController(DeviceController):
             btn = self.controllerWidget.ids['_100as_btn']
         elif stepSize == 1000.0:
             btn = self.controllerWidget.ids['_1000as_btn']
-        btn.background_color = (0,1,0,1)
+        if btn:
+            btn.background_color = (0,1,0,1)
         
     def _focusStepSizeButtonPushed(self, stepSize):
         # gui = self.root
